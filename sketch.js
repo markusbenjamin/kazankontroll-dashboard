@@ -36,15 +36,15 @@ function setup() {
   textAlign(CENTER,CENTER)
 }
 
-let albatrosStatus = 1
-let pumpsStatus = { 1: 1, 2: 0, 3: 0, 4: 0 }
+let albatrosStatus = 0
+let pumpsStatus = { 1: 0, 2: 1, 3: 1, 4: 0 }
 let roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 18, 11: 22 }
 let roomStatuses = { 1: 20, 2: 25, 3: 7, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 18, 11: 20 }
 let roomTempMax = 30
 let roomTempMin = 8
 
 function draw() {
-  background(0.5)
+  background(229/255,222/255,202/255)
 
   var pipeThickness = sqrt(width * height) * 0.011
   var cyclePipeLength = 0.45
@@ -89,8 +89,8 @@ function draw() {
         width * 0.035
       )
 
-      fill(1)
-      textSize(25)
+      fill(0)
+      textSize(20)
       text(
         roomNames[cycleToRoom[cycle][roomOnCycle]],
         width * (0.5 + xDir[cycle] * map(roomOnCycle + 1, 0.25, cycleToRoom[cycle].length + 0.5, 0.1, cyclePipeLength)),
@@ -106,9 +106,9 @@ function draw() {
 
   fill(albatrosStatus, 0, 1 - albatrosStatus)
   rect(width * 0.5, height * 0.8, width * 0.08, width * 0.08)
-  fill(1)
+  fill(0)
   noStroke()
-  textSize(25)
+  textSize(20)
   text(
     "Albatros",
     width*0.5,
