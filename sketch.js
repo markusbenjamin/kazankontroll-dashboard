@@ -36,7 +36,7 @@ function setup() {
   textAlign(CENTER,CENTER)
 }
 
-let albatrosStatus = 0
+let albatrosStatus = 1
 let pumpsStatus = { 1: 0, 2: 1, 3: 1, 4: 0 }
 let roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 18, 11: 22 }
 let roomStatuses = { 1: 20, 2: 25, 3: 7, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 18, 11: 20 }
