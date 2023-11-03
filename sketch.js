@@ -103,16 +103,15 @@ function draw() {
   strokeWeight(pipeThickness)
   line(width * 0.5, height * 0.85, width * 0.5, height * yPos[2])
 
-
   fill(albatrosStatus, 0, 1 - albatrosStatus)
-  rect(width * 0.5, height * 0.8, width * 0.08, width * 0.08)
+  rect(width * 0.5, height * 0.85, width * 0.07, width * 0.07)
   fill(0)
   noStroke()
   textSize(20)
   text(
     "Albatros",
     width*0.5,
-    height*0.925
+    height*0.95
   )
 }
 
