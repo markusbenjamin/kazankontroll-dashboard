@@ -38,12 +38,12 @@ function setup() {
 
 var albatrosStatus = 1
 var pumpsStatus = { 1: 1, 2: 1, 3: 0, 4: 0 }
-var roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 18, 11: 22 }
+var roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
 var roomStatuses = { 1: 21, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
-var roomTempMax = 30
-var roomTempMin = 10
 
-
+var roomTempMax
+var roomTempMin
+var roomTempDiffTolerance
 var pipeThickness
 var cyclePipeLength
 var pumpXPositionOffset
@@ -53,6 +53,9 @@ var roomYPositionOffset
 function draw() {
   background(229 / 255, 222 / 255, 202 / 255)
 
+  roomTempMax = 30
+  roomTempMin = 10
+  roomTempDiffTolerance = 2
   pipeThickness = sqrt(width * height) * 0.007
   cyclePipeLength = 0.55
   pumpXPositionOffset = 0.04
@@ -115,15 +118,10 @@ function draw() {
 }
 
 function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName) {
-  if (cycleState == 1 && roomSetting < roomStatus) {
+  if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance) {
     noStroke()
-    fill(1, 0, 0, 0.1)
-    rect(x, y + h / 2, w * 3.5, h * 1.1)
-  }
-  if (cycleState == 0 && roomSetting > roomStatus) {
-    noStroke()
-    fill(0, 0, 1, 0.1)
-    rect(x, y + h / 2, w * 3.5, h * 1.1)
+    fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.1)
+    rect(x, y + h / 2, w * 3.4, h * 1.05)
   }
 
   fill(1)
@@ -141,7 +139,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x, y + map(temp, roomTempMin, roomTempMax, 0, h))
       noStroke()
       fill(0)
-      textSize(15)
+      textSize(width * 0.01)
       text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
     }
     else {
@@ -150,7 +148,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x, y + map(temp, roomTempMin, roomTempMax, 0, h))
       noStroke()
       fill(0, 0.75)
-      textSize(10)
+      textSize(width * 0.0075)
       text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
     }
   }
@@ -158,7 +156,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   noStroke()
   fill(roomSettingColor)
   rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.025)
-  textSize(22)
+  textSize(width * 0.015)
   textStyle(BOLD)
   text(roomSetting, x - w * 1.2, y + map(roomTempMax - roomSetting + roomTempMin, roomTempMin, roomTempMax, 0, h))
 
@@ -166,15 +164,15 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   fill(roomStatusColor)
   ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
   topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
-  textSize(22)
+  textSize(width * 0.015)
   text(roomStatus, x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
   textStyle(NORMAL)
 
   noStroke()
-  fill(1)
+  fill(229 / 255, 222 / 255, 202 / 255)
   rect(x, y - h * 0.125, w * 3, h * 0.125)
   fill(0)
-  textSize(20)
+  textSize(width * 0.013)
   text(roomName, x, y - h * 0.125)
 }
 
@@ -228,7 +226,12 @@ function gradientLine(x1, y1, x2, y2, color1, color2) {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight)
+  if (windowWidth >= 800 && windowHeight >= 600) {
+    resizeCanvas(windowWidth, windowHeight)
+  }
+  else {
+    resizeCanvas(800, 600)
+  }
 }
 
 function findKeysWithSpecificValue(obj, valueToFind) {
