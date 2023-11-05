@@ -2,6 +2,8 @@ var plugInfo
 var roomToCycle, cycleToRoom
 var configAsTable, configAsDict
 var roomNames
+var canvas, textBox
+var roomNameTextBoxes
 
 function preload() {
   // Load the CSV file and set it to be comma-separated
@@ -10,6 +12,15 @@ function preload() {
 }
 
 function setup() {
+  canvas = createCanvas(windowWidth, windowHeight)
+  canvas.parent('canvas-container')
+  noFill()
+  noStroke()
+  colorMode(RGB, 1)
+  strokeCap(PROJECT)
+  rectMode(CENTER)
+  textAlign(CENTER, CENTER)
+
   roomToCycle = {}
   for (const row of plugInfo.getRows()) {
     roomToCycle[int(row.obj['room'])] = int(row.obj['num'])
@@ -23,17 +34,25 @@ function setup() {
   configAsDict = processTableIntoDict(configAsTable)
 
   roomNames = {}
+  roomNameTextBoxes = {}
   for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
     roomNames[room] = configAsDict['room_' + str(room)]
+    roomNameTextBoxes[room] = new TextBox(-1, -1, -1, -1)
   }
 
-  createCanvas(windowWidth, windowHeight)
-  noFill()
-  noStroke()
-  colorMode(RGB, 1)
-  strokeCap(PROJECT)
-  rectMode(CENTER)
-  textAlign(CENTER, CENTER)
+  //let x = 50;
+  //let y = 50;
+  //let w = 300;
+  //let h = 200;
+  //let texts = ['p5.js', 'JavaScript', 'OpenAI'];
+  //let sizes = [16, 24, 32];
+  //let urls = ['https://p5js.org', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript', 'https://openai.com'];
+  //let borderColor = '#333';
+  //let fillColor = 'rgba(255,255,255,1)';
+  //let hAlign = 'center'; // horizontal alignment: 'left', 'center', 'right'
+  //let vAlign = 'center'; // vertical alignment: 'top', 'center', 'bottom'
+
+  //textBox = new TextBox(x, y, w, h, texts, sizes, urls, borderColor, fillColor, hAlign, vAlign);
 }
 
 var albatrosStatus = 1
@@ -49,6 +68,8 @@ var cyclePipeLength
 var pumpXPositionOffset
 var roomXPositionOffset
 var roomYPositionOffset
+var cycleXDir
+var cycleYPos
 
 function draw() {
   background(229 / 255, 222 / 255, 202 / 255)
@@ -62,45 +83,14 @@ function draw() {
   roomXPositionOffset = -0.015 //not in width scale!
   roomYPositionOffset = 0.09
 
-  var cycleXDir = { 1: 1, 2: 1, 3: -1, 4: -1 }
-  var cycleYPos = { 1: 0.55, 2: 0.1, 3: 0.1, 4: 0.55 }
+  cycleXDir = { 1: 1, 2: 1, 3: -1, 4: -1 }
+  cycleYPos = { 1: 0.55, 2: 0.1, 3: 0.1, 4: 0.55 }
 
-  for (const cycle of [1, 2, 3, 4]) {
-    var cycleState = pumpsStatus[cycle] * albatrosStatus
-    var cycleColor = color(cycleState, 0, 1 - cycleState)
+  drawCycles()
+  drawPiping()
+}
 
-    stroke(cycleColor)
-    strokeWeight(pipeThickness)
-    line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * map(cycleToRoom[cycle].length - 1 + roomXPositionOffset, 0, cycleToRoom[cycle].length, 0.1, cyclePipeLength)), height * cycleYPos[cycle])
-    stroke(albatrosStatus, 0, 1 - albatrosStatus)
-    line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle])
-    drawPump(width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle], pumpsStatus[cycle])
-
-    for (var roomOnCycle = 0; roomOnCycle < cycleToRoom[cycle].length; roomOnCycle++) {
-      var roomX = width * (0.5 + cycleXDir[cycle] * map(roomOnCycle + roomXPositionOffset, 0, cycleToRoom[cycle].length, 0.1, cyclePipeLength))
-      var roomSetting = roomSettings[cycleToRoom[cycle][roomOnCycle]]
-      var roomStatus = roomStatuses[cycleToRoom[cycle][roomOnCycle]]
-      var roomSettingNormalized = map(roomSetting, roomTempMin, roomTempMax, 0, 1)
-      var roomStatusNormalized = map(roomStatus, roomTempMin, roomTempMax, 0, 1)
-      var roomSettingColor = color(roomSettingNormalized, 0, 1 - roomSettingNormalized)
-      var roomStatusColor = color(roomStatusNormalized, 0, 1 - roomStatusNormalized)
-      var roomBaseSize = width * 0.1
-      var roomY = height * (cycleYPos[cycle] + roomYPositionOffset)
-      var roomName = roomNames[cycleToRoom[cycle][roomOnCycle]]
-
-      stroke(cycleColor)
-      strokeWeight(pipeThickness)
-      line(
-        roomX,
-        height * cycleYPos[cycle],
-        roomX,
-        roomY
-      )
-
-      drawRoom(roomX, roomY, roomBaseSize * 0.25, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName)
-    }
-  }
-
+function drawPiping() {
   stroke(albatrosStatus, 0, 1 - albatrosStatus)
   strokeWeight(pipeThickness)
   line(width * 0.5, height * 0.85, width * 0.5, height * cycleYPos[2])
@@ -117,7 +107,46 @@ function draw() {
   )
 }
 
-function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName) {
+function drawCycles() {
+  for (const cycle of [1, 2, 3, 4]) {
+    var cycleState = pumpsStatus[cycle] * albatrosStatus
+    var cycleColor = color(cycleState, 0, 1 - cycleState)
+
+    stroke(cycleColor)
+    strokeWeight(pipeThickness)
+    line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * map(cycleToRoom[cycle].length - 1 + roomXPositionOffset, 0, cycleToRoom[cycle].length, 0.1, cyclePipeLength)), height * cycleYPos[cycle])
+    stroke(albatrosStatus, 0, 1 - albatrosStatus)
+    line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle])
+    drawPump(width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle], pumpsStatus[cycle])
+
+    for (var roomOnCycle = 0; roomOnCycle < cycleToRoom[cycle].length; roomOnCycle++) {
+      var roomNumber = cycleToRoom[cycle][roomOnCycle]
+      var roomX = width * (0.5 + cycleXDir[cycle] * map(roomOnCycle + roomXPositionOffset, 0, cycleToRoom[cycle].length, 0.1, cyclePipeLength))
+      var roomSetting = roomSettings[roomNumber]
+      var roomStatus = roomStatuses[roomNumber]
+      var roomSettingNormalized = map(roomSetting, roomTempMin, roomTempMax, 0, 1)
+      var roomStatusNormalized = map(roomStatus, roomTempMin, roomTempMax, 0, 1)
+      var roomSettingColor = color(roomSettingNormalized, 0, 1 - roomSettingNormalized)
+      var roomStatusColor = color(roomStatusNormalized, 0, 1 - roomStatusNormalized)
+      var roomBaseSize = width * 0.1
+      var roomY = height * (cycleYPos[cycle] + roomYPositionOffset)
+      var roomName = roomNames[roomNumber]
+
+      stroke(cycleColor)
+      strokeWeight(pipeThickness)
+      line(
+        roomX,
+        height * cycleYPos[cycle],
+        roomX,
+        roomY
+      )
+
+      drawRoom(roomX, roomY, roomBaseSize * 0.25, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
+    }
+  }
+}
+
+function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber) {
   if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance) {
     noStroke()
     fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.1)
@@ -168,12 +197,14 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   text(roomStatus, x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
   textStyle(NORMAL)
 
-  noStroke()
-  fill(229 / 255, 222 / 255, 202 / 255)
-  rect(x, y - h * 0.125, w * 3, h * 0.125)
-  fill(0)
-  textSize(width * 0.013)
-  text(roomName, x, y - h * 0.125)
+  //noStroke()
+  //fill(229 / 255, 222 / 255, 202 / 255)
+  //rect(x, y - h * 0.125, w * 3, h * 0.125)
+  //fill(0)
+  //textSize(width * 0.013)
+  //text(roomName, x, y - h * 0.125)
+  roomNameTextBoxes[roomNumber].setStyle(canvas, x, y - h * 0.13, textWidth(roomName) * 1.3, h * 0.13, [roomName], [width * 0.012], ['https://telex.hu'], 'rgba(229, 222, 202,0)', 'rgba(229, 222, 202,1)', 'rgba(0,0,0,1)', 'center', 'center')
+
 }
 
 function drawPump(posX, posY, state) {
@@ -205,26 +236,6 @@ function topRect(x, y, w, h) {
   rectMode(CENTER)
 }
 
-function gradientLine(x1, y1, x2, y2, color1, color2) {
-  var segments = 20;  // Number of line segments
-
-  for (var i = 0; i < segments; i++) {
-    var t = i / segments;
-    var tNext = (i + 1) / segments;
-    var xStart = x1 + (x2 - x1) * t;
-    var yStart = y1 + (y2 - y1) * t;
-    var xEnd = x1 + (x2 - x1) * tNext;
-    var yEnd = y1 + (y2 - y1) * tNext;
-
-    var r = color1._array[0] + (color2._array[0] - color1._array[0]) * t;
-    var g = color1._array[1] + (color2._array[1] - color1._array[1]) * t;
-    var b = color1._array[2] + (color2._array[2] - color1._array[2]) * t;
-
-    stroke(r, g, b);
-    line(xStart, yStart, xEnd, yEnd);
-  }
-}
-
 function windowResized() {
   if (windowWidth >= 800 && windowHeight >= 600) {
     resizeCanvas(windowWidth, windowHeight)
@@ -251,4 +262,138 @@ function processTableIntoDict(table) {
   }
 
   return csvDictionary
+}
+
+class TextBox {
+  constructor(x, y, w, h) {
+    // Initialize with default values
+    this.centerX = x;
+    this.centerY = y;
+    this.w = w || 100; // default width if not provided
+    this.h = h || 50;  // default height if not provided
+    // Default style properties
+    this.textToDisplay = ['Default Text'];
+    this.fontSizes = [16];
+    this.URLs = ['#'];
+    this.borderColor = 'rgba(0, 0, 0, 0)';
+    this.fillColor = 'rgba(255, 255, 255, 0)';
+    this.hAlign = 'center';
+    this.vAlign = 'center';
+    this.boxCreated = false; // Flag to indicate if the box has been created
+  }
+
+  setStyle(canvas, x, y, w, h, textToDisplay, fontSizes, URLs, borderColor, fillColor, fontColor, hAlign, vAlign) {
+    // Set style properties from arguments
+    this.centerX = x;
+    this.centerY = y;
+    this.w = w;
+    this.h = h;
+    this.textToDisplay = textToDisplay || this.textToDisplay;
+    this.fontSizes = fontSizes || this.fontSizes;
+    this.URLs = URLs || this.URLs;
+    this.borderColor = borderColor || this.borderColor;
+    this.fillColor = fillColor || this.fillColor;
+    
+    this.hAlign = hAlign || this.hAlign;
+    this.vAlign = vAlign || this.vAlign;
+
+    // If the box hasn't been created yet, create it
+    if (!this.boxCreated) {
+      this.box = this.createBox();
+      this.boxCreated = true;
+    }
+
+    this.box.style('font-family', 'Arial, sans-serif'); // Set font family to Arial
+    this.box.style('color', fontColor);
+
+    // Update styles and position
+    this.updateStyle(canvas);
+  }
+
+  createBox() {
+    let box = createDiv('');
+    // Set styles that are not dependent on the parameters
+    box.style('padding', '20px');
+    box.style('box-sizing', 'border-box');
+    box.style('overflow', 'auto');
+    box.style('display', 'flex');
+    box.style('flex-direction', 'column');
+    return box;
+  }
+
+  updateStyle(canvas) {
+    // Apply the updated styles to the box
+    this.box.style('background-color', this.fillColor);
+    this.box.style('border', `1px solid ${this.borderColor}`);
+    this.box.size(this.w, this.h);
+
+    // Align items based on the provided horizontal and vertical alignment
+    this.box.style('align-items', this.hAlign === 'center' ? 'center' : (this.hAlign === 'right' ? 'flex-end' : 'flex-start'));
+    this.box.style('justify-content', this.vAlign === 'center' ? 'center' : (this.vAlign === 'bottom' ? 'flex-end' : 'flex-start'));
+
+    // Remove all existing child elements
+    this.box.html('');
+
+    // Create text elements (and links if URLs are provided)
+    for (let i = 0; i < this.textToDisplay.length; i++) {
+      let text = this.textToDisplay[i];
+      let fontSize = this.fontSizes[i];
+      let url = this.URLs[i];
+      let element;
+
+      if (url) {
+        // If there's a URL, create a link
+        element = createA(url, text, '_blank');
+      } else {
+        // Just create a text element
+        element = createDiv(text);
+      }
+
+      // Style the link or text element
+      element.style('font-size', `${fontSize}px`);
+      element.style('text-align', this.hAlign);
+      element.style('color', '#000');
+      element.style('text-decoration', 'none');
+      element.style('margin', '5px');
+      element.parent(this.box);
+    }
+
+    // Update the position if the canvas is available
+    if (canvas) {
+      this.updateBoxPosition(canvas);
+    }
+    this.setScrollbarVisibility(false);
+  }
+
+  updateBoxPosition(canvas) {
+    if (this.boxCreated && canvas) {
+      const rect = canvas.elt.getBoundingClientRect();
+      let topLeftX = this.centerX - this.w / 2 + rect.left;
+      let topLeftY = this.centerY - this.h / 2 + rect.top;
+      this.box.position(topLeftX, topLeftY);
+    }
+  }
+
+  setScrollbarVisibility(visible) {
+    if (visible) {
+      this.box.style('overflow', 'auto');
+      // Remove styles that hide scrollbars
+      this.box.style('scrollbar-width', null);
+      this.box.style('-ms-overflow-style', null);
+      this.box.style('::-webkit-scrollbar', null);
+    } else {
+      this.box.style('overflow', 'scroll'); // Still need to allow scrolling
+      // Add styles to hide scrollbars
+      this.box.style('scrollbar-width', 'none'); // Firefox
+      this.box.style('-ms-overflow-style', 'none'); // IE+Edge
+
+      // Webkit browsers (Chrome, Safari, newer versions of Opera)
+      // It's tricky to do pseudo-elements in inline styles; you might need an external stylesheet or inject styles into the head
+      let styleSheet = document.createElement('style');
+      styleSheet.type = 'text/css';
+      styleSheet.innerText = '.no-scrollbar::-webkit-scrollbar { display: none; }';
+      document.head.appendChild(styleSheet);
+      this.box.addClass('no-scrollbar');
+    }
+  }
 }

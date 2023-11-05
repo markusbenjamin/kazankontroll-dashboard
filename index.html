@@ -5,10 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kazánkontroll Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.dom.js"></script>
     <!-- If you have a style.css file -->
     <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
+    <script>
+        // JavaScript to toggle overflow based on window size
+        function adjustOverflow() {
+            if (window.innerWidth < 800 || window.innerHeight < 600) { // Example threshold, set to your preference
+                document.body.style.overflow = 'auto';
+            } else {
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        // Listen for resize events
+        window.addEventListener('resize', adjustOverflow);
+
+        // Set the initial state
+        window.onload = adjustOverflow;
+    </script>
+    <div id="canvas-container"></div>
     <script src="sketch.js"></script>
 </body>
 </html>
