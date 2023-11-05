@@ -23,7 +23,7 @@ function setup() {
   strokeCap(PROJECT)
   rectMode(CENTER)
   textAlign(CENTER, CENTER)
-  textFont('Consolas Black')
+  textFont('Consolas')
 
   roomToCycle = {}
   for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
@@ -41,16 +41,10 @@ function setup() {
     roomNames[room] = configAsDict['room_' + str(room)]
   }
 
-  listenToFirebase('/test', (data) => {
-    console.log(data)
-    // Do something with the data
+  listenToFirebase('systemState', (data) => {
+    updateState(data)
   });
 }
-
-var albatrosStatus = 1
-var pumpStatuses = { 1: 1, 2: 1, 3: 0, 4: 0 }
-var roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
-var roomStatuses = { 1: 21, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
 
 var roomTempMax
 var roomTempMin
@@ -63,12 +57,26 @@ var roomYPositionOffset
 var cycleXDir
 var cycleYPos
 
-function updateState(){
+//Dummy values so no startup error occurs
+var albatrosStatus = 0
+var pumpStatuses = {1:0,2:0,3:0,4:0}
+var roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
+var roomStatuses = { 1: 21, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
 
+function updateState(dataFromFirebase){
+  albatrosStatus = dataFromFirebase['albatrosStatus']
+  pumpStatuses = dataFromFirebase['pumpStatuses']
+  roomSettings = dataFromFirebase['roomSettings']
+  roomStatuses = dataFromFirebase['roomStatuses']
+  
+  if(roomSettings[1] < 10){ //DEV
+    roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
+    roomStatuses = { 1: 21, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
+  }
 }
 
 function updateSchedulesAndConfig(){
-  //T
+  //To be written
 }
 
 function loadLogs(){
