@@ -24,6 +24,7 @@ function setup() {
   strokeCap(PROJECT)
   rectMode(CENTER)
   textAlign(CENTER, CENTER)
+  textFont('Consolas Black')
 
   roomToCycle = {}
   for (const row of plugInfo.getRows()) {
@@ -67,36 +68,21 @@ function draw() {
   roomTempMax = 30
   roomTempMin = 10
   roomTempDiffTolerance = 2
-  pipeThickness = sqrt(width * height) * 0.007
+  pipeThickness = sqrt(width * height) * 0.0075
   cyclePipeLength = 0.55
   pumpXPositionOffset = 0.04
   roomXPositionOffset = -0.015 //not in width scale!
   roomYPositionOffset = 0.09
 
   cycleXDir = { 1: 1, 2: 1, 3: -1, 4: -1 }
-  cycleYPos = { 1: 0.55, 2: 0.1, 3: 0.1, 4: 0.55 }
+  cycleYPos = { 1: 0.575, 2: 0.05, 3: 0.05, 4: 0.575 }
 
   drawCycles()
   drawPiping()
-  noLoop()
+  //drawFlame(width / 2, height *0.9, 3*400, 3*200, color(0))
 }
 
-function drawPiping() {
-  stroke(albatrosStatus, 0, 1 - albatrosStatus)
-  strokeWeight(pipeThickness)
-  line(width * 0.5, height * 0.85, width * 0.5, height * cycleYPos[2])
 
-  fill(albatrosStatus, 0, 1 - albatrosStatus)
-  ellipse(width * 0.5, height * 0.85, width * 0.05, width * 0.05)
-  fill(0)
-  noStroke()
-  textSize(20)
-  text(
-    "kazánok",
-    width * 0.5,
-    height * 0.9275
-  )
-}
 
 function drawCycles() {
   for (const cycle of [1, 2, 3, 4]) {
@@ -132,7 +118,7 @@ function drawCycles() {
         roomY
       )
 
-      drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
+      drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.5, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
     }
   }
 }
@@ -171,8 +157,8 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
 
   noStroke()
   fill(1)
-  ellipse(x, y + h * (1 - roomStatusNormalized), 1.25*w / 2.5, 1.25*w / 2.5)
-  topRect(x, y + h * (1 - roomStatusNormalized), 1.8*w / 6, h * roomStatusNormalized)
+  ellipse(x, y + h * (1 - roomStatusNormalized), 1.25 * w / 2.5, 1.25 * w / 2.5)
+  topRect(x, y + h * (1 - roomStatusNormalized), 1.8 * w / 6, h * roomStatusNormalized)
   fill(roomStatusColor)
   ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
   topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
@@ -187,37 +173,92 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
 
   noStroke()
   fill(229 / 255, 222 / 255, 202 / 255)
-  rect(x, y - h * 0.125, w * 3, h * 0.125)
+  rect(x, y - h * 0.125, w * 2.5, h * 0.14)
   if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance) {
     noStroke()
     fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
-    rect(x, y - h * 0.125, w * 3, h * 0.125)
+    rect(x, y - h * 0.125, w * 2.5, h * 0.14)
   }
   fill(0)
   textSize(width * 0.013)
   text(roomName, x, y - h * 0.125)
-  //roomNameTextBoxes[roomNumber].setStyle(canvas, x, y - h * 0.2, textWidth(roomName) * 1.3, h * 0.13, [roomName], [width * 0.012], ['https://telex.hu'], 'rgba(229, 222, 202,0)', 'rgba(229, 222, 202,1)', 'rgba(0,0,0,1)', 'center', 'center')
+}
+
+function drawFlame(x, y, w, h, col, outer) {
+  push();
+  translate(x, y);
+  fill(col);
+  noStroke();
+  beginShape();
+
+  // Draw right side of the flame using the given function and mirror for left side
+  for (let i = 0; i <= 1; i += 0.01) {
+    let flameX = (1 / 5) * pow(-1 + i, 2) * i * (-5 + 4 * i) * w;
+    let flameY = -h * i;
+    vertex(flameX, flameY);
+  }
+
+  // Draw the left side as a mirrored version of the right side
+  for (let i = 1; i >= 0; i -= 0.01) {
+    let flameX = -(1 / 5) * pow(-1 + i, 2) * i * (-5 + 4 * i) * w;
+    let flameY = -h * i;
+    vertex(flameX, flameY);
+  }
+
+  endShape(CLOSE);
+  pop();
+
+  if (outer) {
+    drawFlame(x, y - h * 0.05, w * 0.6, h * 0.5, color(1, 1, 0, 0.9), false)
+  }
+}
+
+function drawPiping() {
+  stroke(albatrosStatus, 0, 1 - albatrosStatus)
+  strokeWeight(pipeThickness)
+  line(width * 0.5, height * cycleYPos[1], width * 0.5, height * cycleYPos[2])
+
+  noStroke()
+  strokeWeight(pipeThickness)
+  stroke(albatrosStatus, 0, 1 - albatrosStatus)
+  fill(1)
+  rect(width * 0.5, height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.054, width * 0.09, 20)
+  fill(0.2)
+  noStroke()
+  rect(width * 0.5, 1.1 * height * (cycleYPos[1] + cycleYPos[2]) / 2, 0.65 * width * 0.055, 0.65 * width * 0.0175)
+  if (albatrosStatus == 1) {
+    let wiggleAmount = 0.015
+    drawFlame(width * 0.5 * 0.99, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * random(1-wiggleAmount, 1+wiggleAmount), width * 0.055 * random(1-wiggleAmount, 1+wiggleAmount), color(1, 0.5, 0, 0.875), true)
+    drawFlame(width * 0.5 * 1.01, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * 0.85 * random(1-wiggleAmount, 1+wiggleAmount), width * 0.055 * 0.85 * random(1-wiggleAmount, 1+wiggleAmount), color(1, 0.5, 0, 0.875), true)
+  }
+  fill(albatrosStatus, 0, 1 - albatrosStatus)
+  fill(1)
+  rect(width * 0.5, 1.18 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.005 + width * 0.035, width * 0.005 + width * 0.015)
 }
 
 function drawPump(posX, posY, state) {
-  var w = width * 0.007;
-  var l = width * 0.05;
+  var w = width * 0.0035;
+  var l = width * 0.03;
   stroke(0)
   strokeWeight(2)
   fill(0)
   if (state == 0) {
     rect(posX, posY, w, l)
+    ellipse(posX, posY + l / 2, width * 0.0165 * 0.55, width * 0.0165 * 0.2)
+    ellipse(posX, posY - l / 2, width * 0.0165 * 0.55, width * 0.0165 * 0.2)
   }
   else {
     rect(posX, posY, l, w)
+    ellipse(posX + l / 2, posY, width * 0.0165 * 0.2, width * 0.0165 * 0.55)
+    ellipse(posX - l / 2, posY, width * 0.0165 * 0.2, width * 0.0165 * 0.55)
   }
   strokeWeight(2)
   stroke(0)
   fill(0)
-  ellipse(posX, posY, width * 0.018, width * 0.018)
+  ellipse(posX, posY, width * 0.01, width * 0.01)
   stroke(1)
   fill(1)
-  ellipse(posX, posY, width * 0.018 / 4, width * 0.018 / 4)
+  ellipse(posX, posY, width * 0.01 * 0.25, width * 0.01 * 0.25)
 }
 
 function topRect(x, y, w, h) {
@@ -227,7 +268,6 @@ function topRect(x, y, w, h) {
   rect(adjustedX, adjustedY, w, h);
   rectMode(CENTER)
 }
-
 
 function enforceAspectRatio(aspectRatio) {
   let newWidth, newHeight;
@@ -303,7 +343,7 @@ class TextBox {
     this.URLs = URLs || this.URLs;
     this.borderColor = borderColor || this.borderColor;
     this.fillColor = fillColor || this.fillColor;
-    
+
     this.hAlign = hAlign || this.hAlign;
     this.vAlign = vAlign || this.vAlign;
 
