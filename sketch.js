@@ -11,8 +11,12 @@ function preload() {
   configAsTable = loadTable('data_and_config/config_safe.csv', 'csv', 'header')
 }
 
+var sketchAspectRatio
+
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight)
+  sketchAspectRatio = 2
+  enforceAspectRatio(sketchAspectRatio)
   canvas.parent('canvas-container')
   noFill()
   noStroke()
@@ -39,20 +43,6 @@ function setup() {
     roomNames[room] = configAsDict['room_' + str(room)]
     roomNameTextBoxes[room] = new TextBox(-1, -1, -1, -1)
   }
-
-  //let x = 50;
-  //let y = 50;
-  //let w = 300;
-  //let h = 200;
-  //let texts = ['p5.js', 'JavaScript', 'OpenAI'];
-  //let sizes = [16, 24, 32];
-  //let urls = ['https://p5js.org', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript', 'https://openai.com'];
-  //let borderColor = '#333';
-  //let fillColor = 'rgba(255,255,255,1)';
-  //let hAlign = 'center'; // horizontal alignment: 'left', 'center', 'right'
-  //let vAlign = 'center'; // vertical alignment: 'top', 'center', 'bottom'
-
-  //textBox = new TextBox(x, y, w, h, texts, sizes, urls, borderColor, fillColor, hAlign, vAlign);
 }
 
 var albatrosStatus = 1
@@ -88,6 +78,7 @@ function draw() {
 
   drawCycles()
   drawPiping()
+  noLoop()
 }
 
 function drawPiping() {
@@ -141,25 +132,15 @@ function drawCycles() {
         roomY
       )
 
-      drawRoom(roomX, roomY, roomBaseSize * 0.25, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
+      drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
     }
   }
 }
 
 function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber) {
-  if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance) {
-    noStroke()
-    fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.1)
-    rect(x, y + h / 2, w * 3.4, h * 1.05)
-  }
-
   fill(1)
   noStroke()
   rect(x, y + h / 2, w, h)
-  stroke(cycleColor)
-  strokeWeight(pipeThickness / 2)
-  line(x - w / 2, y, x + w / 2, y)
-  line(x - w / 2, y + h, x + w / 2, y + h)
 
   for (var temp = roomTempMin + 1; temp <= roomTempMax - 1; temp += 1) {
     if (temp % 5 == 0) {
@@ -178,33 +159,44 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       noStroke()
       fill(0, 0.75)
       textSize(width * 0.0075)
-      text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
     }
   }
 
   noStroke()
   fill(roomSettingColor)
   rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.025)
-  textSize(width * 0.015)
+  textSize(width * 0.017)
   textStyle(BOLD)
   text(roomSetting, x - w * 1.2, y + map(roomTempMax - roomSetting + roomTempMin, roomTempMin, roomTempMax, 0, h))
 
   noStroke()
+  fill(1)
+  ellipse(x, y + h * (1 - roomStatusNormalized), 1.25*w / 2.5, 1.25*w / 2.5)
+  topRect(x, y + h * (1 - roomStatusNormalized), 1.8*w / 6, h * roomStatusNormalized)
   fill(roomStatusColor)
   ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
   topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
-  textSize(width * 0.015)
+  textSize(width * 0.017)
   text(roomStatus, x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
   textStyle(NORMAL)
 
-  //noStroke()
-  //fill(229 / 255, 222 / 255, 202 / 255)
-  //rect(x, y - h * 0.125, w * 3, h * 0.125)
-  //fill(0)
-  //textSize(width * 0.013)
-  //text(roomName, x, y - h * 0.125)
-  roomNameTextBoxes[roomNumber].setStyle(canvas, x, y - h * 0.13, textWidth(roomName) * 1.3, h * 0.13, [roomName], [width * 0.012], ['https://telex.hu'], 'rgba(229, 222, 202,0)', 'rgba(229, 222, 202,1)', 'rgba(0,0,0,1)', 'center', 'center')
+  stroke(cycleColor)
+  strokeWeight(pipeThickness / 2)
+  line(x - w / 2, y, x + w / 2, y)
+  line(x - w / 2, y + h, x + w / 2, y + h)
 
+  noStroke()
+  fill(229 / 255, 222 / 255, 202 / 255)
+  rect(x, y - h * 0.125, w * 3, h * 0.125)
+  if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance) {
+    noStroke()
+    fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
+    rect(x, y - h * 0.125, w * 3, h * 0.125)
+  }
+  fill(0)
+  textSize(width * 0.013)
+  text(roomName, x, y - h * 0.125)
+  //roomNameTextBoxes[roomNumber].setStyle(canvas, x, y - h * 0.2, textWidth(roomName) * 1.3, h * 0.13, [roomName], [width * 0.012], ['https://telex.hu'], 'rgba(229, 222, 202,0)', 'rgba(229, 222, 202,1)', 'rgba(0,0,0,1)', 'center', 'center')
 }
 
 function drawPump(posX, posY, state) {
@@ -236,13 +228,31 @@ function topRect(x, y, w, h) {
   rectMode(CENTER)
 }
 
+
+function enforceAspectRatio(aspectRatio) {
+  let newWidth, newHeight;
+
+  // Calculate the aspect ratio based on the current window dimensions
+  let windowRatio = windowWidth / windowHeight;
+  let desiredRatio = aspectRatio;
+
+  // Adjust the canvas size based on the aspect ratio
+  if (windowRatio > desiredRatio) {
+    // Window is wider than the desired ratio, so the height is the constraining dimension
+    newHeight = windowHeight;
+    newWidth = newHeight * desiredRatio;
+  } else {
+    // Window is narrower than the desired ratio, so the width is the constraining dimension
+    newWidth = windowWidth;
+    newHeight = newWidth / desiredRatio;
+  }
+
+  // Resize the canvas to fit the new dimensions while maintaining the aspect ratio
+  resizeCanvas(newWidth, newHeight);
+}
+
 function windowResized() {
-  if (windowWidth >= 800 && windowHeight >= 600) {
-    resizeCanvas(windowWidth, windowHeight)
-  }
-  else {
-    resizeCanvas(800, 600)
-  }
+  enforceAspectRatio(sketchAspectRatio)
 }
 
 function findKeysWithSpecificValue(obj, valueToFind) {

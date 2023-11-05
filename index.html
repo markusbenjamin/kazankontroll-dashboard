@@ -13,11 +13,7 @@
     <script>
         // JavaScript to toggle overflow based on window size
         function adjustOverflow() {
-            if (window.innerWidth < 800 || window.innerHeight < 600) { // Example threshold, set to your preference
-                document.body.style.overflow = 'auto';
-            } else {
-                document.body.style.overflow = 'hidden';
-            }
+            document.body.style.overflow = 'hidden';
         }
 
         // Listen for resize events

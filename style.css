@@ -4,6 +4,7 @@ html, body {
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: rgba(229, 222, 202,1);
 }
 
 #canvas-container {
