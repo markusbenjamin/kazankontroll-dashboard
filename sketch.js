@@ -44,7 +44,13 @@ function setup() {
     roomNames[room] = configAsDict['room_' + str(room)]
     roomNameTextBoxes[room] = new TextBox(-1, -1, -1, -1)
   }
+
+  listenToFirebase('/test', (data) => {
+    console.log(data)
+    // Do something with the data
+  });
 }
+
 
 var albatrosStatus = 1
 var pumpsStatus = { 1: 1, 2: 1, 3: 0, 4: 0 }
@@ -82,8 +88,6 @@ function draw() {
   //drawFlame(width / 2, height *0.9, 3*400, 3*200, color(0))
 }
 
-
-
 function drawCycles() {
   for (const cycle of [1, 2, 3, 4]) {
     var cycleState = pumpsStatus[cycle] * albatrosStatus
@@ -118,7 +122,7 @@ function drawCycles() {
         roomY
       )
 
-      drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.5, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
+      drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
     }
   }
 }
@@ -228,8 +232,8 @@ function drawPiping() {
   rect(width * 0.5, 1.1 * height * (cycleYPos[1] + cycleYPos[2]) / 2, 0.65 * width * 0.055, 0.65 * width * 0.0175)
   if (albatrosStatus == 1) {
     let wiggleAmount = 0.015
-    drawFlame(width * 0.5 * 0.99, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * random(1-wiggleAmount, 1+wiggleAmount), width * 0.055 * random(1-wiggleAmount, 1+wiggleAmount), color(1, 0.5, 0, 0.875), true)
-    drawFlame(width * 0.5 * 1.01, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * 0.85 * random(1-wiggleAmount, 1+wiggleAmount), width * 0.055 * 0.85 * random(1-wiggleAmount, 1+wiggleAmount), color(1, 0.5, 0, 0.875), true)
+    drawFlame(width * 0.5 * 0.99, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * random(1 - wiggleAmount, 1 + wiggleAmount), width * 0.055 * random(1 - wiggleAmount, 1 + wiggleAmount), color(1, 0.5, 0, 0.875), true)
+    drawFlame(width * 0.5 * 1.01, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * 0.85 * random(1 - wiggleAmount, 1 + wiggleAmount), width * 0.055 * 0.85 * random(1 - wiggleAmount, 1 + wiggleAmount), color(1, 0.5, 0, 0.875), true)
   }
   fill(albatrosStatus, 0, 1 - albatrosStatus)
   fill(1)
