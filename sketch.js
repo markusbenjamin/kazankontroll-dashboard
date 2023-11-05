@@ -2,19 +2,18 @@ var plugInfo
 var roomToCycle, cycleToRoom
 var configAsTable, configAsDict
 var roomNames
-var canvas, textBox
-var roomNameTextBoxes
 
 function preload() {
-  // Load the CSV file and set it to be comma-separated
-  plugInfo = loadTable('data_and_config/plug_info.csv', 'csv', 'header')
-  configAsTable = loadTable('data_and_config/config_safe.csv', 'csv', 'header')
+  configAsTable = loadTable('https://docs.google.com/spreadsheets/d/e/2PACX-1vSEiiNYdSFXxQInKCrERcHkEKH-MVJuglz2XHnUhEZvR4SBcrw85MU5X-ioQFmaF25lMGJZWkXSfWN5/pub?output=csv', 'csv', 'header')
+  //schedule loader here as well
 }
 
 var sketchAspectRatio
 
 function setup() {
-  canvas = createCanvas(windowWidth, windowHeight)
+  configAsDict = processTableIntoDict(configAsTable)
+
+  let canvas = createCanvas(windowWidth, windowHeight)
   sketchAspectRatio = 2
   enforceAspectRatio(sketchAspectRatio)
   canvas.parent('canvas-container')
@@ -27,8 +26,8 @@ function setup() {
   textFont('Consolas Black')
 
   roomToCycle = {}
-  for (const row of plugInfo.getRows()) {
-    roomToCycle[int(row.obj['room'])] = int(row.obj['num'])
+  for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
+    roomToCycle[room] = int(configAsDict['room_' + str(room)+'_plug'])
   }
 
   cycleToRoom = {}
@@ -36,13 +35,10 @@ function setup() {
     cycleToRoom[cycle] = findKeysWithSpecificValue(roomToCycle, cycle)
   }
 
-  configAsDict = processTableIntoDict(configAsTable)
 
   roomNames = {}
-  roomNameTextBoxes = {}
   for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
     roomNames[room] = configAsDict['room_' + str(room)]
-    roomNameTextBoxes[room] = new TextBox(-1, -1, -1, -1)
   }
 
   listenToFirebase('/test', (data) => {
@@ -51,9 +47,8 @@ function setup() {
   });
 }
 
-
 var albatrosStatus = 1
-var pumpsStatus = { 1: 1, 2: 1, 3: 0, 4: 0 }
+var pumpStatuses = { 1: 1, 2: 1, 3: 0, 4: 0 }
 var roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
 var roomStatuses = { 1: 21, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
 
@@ -68,9 +63,30 @@ var roomYPositionOffset
 var cycleXDir
 var cycleYPos
 
-function draw() {
-  background(229 / 255, 222 / 255, 202 / 255)
+function updateState(){
 
+}
+
+function updateSchedulesAndConfig(){
+  //T
+}
+
+function loadLogs(){
+  //For loading system logs from repo for time based plots  
+}
+
+function draw() {
+  drawStateVisualization()
+}
+
+function drawStateVisualization(){
+  background(229 / 255, 222 / 255, 202 / 255)
+  setDrawingParameters()
+  drawCycles()
+  drawPiping()
+}
+
+function setDrawingParameters(){
   roomTempMax = 30
   roomTempMin = 10
   roomTempDiffTolerance = 2
@@ -82,15 +98,11 @@ function draw() {
 
   cycleXDir = { 1: 1, 2: 1, 3: -1, 4: -1 }
   cycleYPos = { 1: 0.575, 2: 0.05, 3: 0.05, 4: 0.575 }
-
-  drawCycles()
-  drawPiping()
-  //drawFlame(width / 2, height *0.9, 3*400, 3*200, color(0))
 }
 
 function drawCycles() {
   for (const cycle of [1, 2, 3, 4]) {
-    var cycleState = pumpsStatus[cycle] * albatrosStatus
+    var cycleState = pumpStatuses[cycle] * albatrosStatus
     var cycleColor = color(cycleState, 0, 1 - cycleState)
 
     stroke(cycleColor)
@@ -98,7 +110,7 @@ function drawCycles() {
     line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * map(cycleToRoom[cycle].length - 1 + roomXPositionOffset, 0, cycleToRoom[cycle].length, 0.1, cyclePipeLength)), height * cycleYPos[cycle])
     stroke(albatrosStatus, 0, 1 - albatrosStatus)
     line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle])
-    drawPump(width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle], pumpsStatus[cycle])
+    drawPump(width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle], pumpStatuses[cycle])
 
     for (var roomOnCycle = 0; roomOnCycle < cycleToRoom[cycle].length; roomOnCycle++) {
       var roomNumber = cycleToRoom[cycle][roomOnCycle]
@@ -237,7 +249,7 @@ function drawPiping() {
   }
   fill(albatrosStatus, 0, 1 - albatrosStatus)
   fill(1)
-  rect(width * 0.5, 1.18 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.005 + width * 0.035, width * 0.005 + width * 0.015)
+  rect(width * 0.5, 1.155 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.005 + width * 0.035, width * 0.005 + width * 0.005)
 }
 
 function drawPump(posX, posY, state) {
@@ -316,138 +328,4 @@ function processTableIntoDict(table) {
   }
 
   return csvDictionary
-}
-
-class TextBox {
-  constructor(x, y, w, h) {
-    // Initialize with default values
-    this.centerX = x;
-    this.centerY = y;
-    this.w = w || 100; // default width if not provided
-    this.h = h || 50;  // default height if not provided
-    // Default style properties
-    this.textToDisplay = ['Default Text'];
-    this.fontSizes = [16];
-    this.URLs = ['#'];
-    this.borderColor = 'rgba(0, 0, 0, 0)';
-    this.fillColor = 'rgba(255, 255, 255, 0)';
-    this.hAlign = 'center';
-    this.vAlign = 'center';
-    this.boxCreated = false; // Flag to indicate if the box has been created
-  }
-
-  setStyle(canvas, x, y, w, h, textToDisplay, fontSizes, URLs, borderColor, fillColor, fontColor, hAlign, vAlign) {
-    // Set style properties from arguments
-    this.centerX = x;
-    this.centerY = y;
-    this.w = w;
-    this.h = h;
-    this.textToDisplay = textToDisplay || this.textToDisplay;
-    this.fontSizes = fontSizes || this.fontSizes;
-    this.URLs = URLs || this.URLs;
-    this.borderColor = borderColor || this.borderColor;
-    this.fillColor = fillColor || this.fillColor;
-
-    this.hAlign = hAlign || this.hAlign;
-    this.vAlign = vAlign || this.vAlign;
-
-    // If the box hasn't been created yet, create it
-    if (!this.boxCreated) {
-      this.box = this.createBox();
-      this.boxCreated = true;
-    }
-
-    this.box.style('font-family', 'Arial, sans-serif'); // Set font family to Arial
-    this.box.style('color', fontColor);
-
-    // Update styles and position
-    this.updateStyle(canvas);
-  }
-
-  createBox() {
-    let box = createDiv('');
-    // Set styles that are not dependent on the parameters
-    box.style('padding', '20px');
-    box.style('box-sizing', 'border-box');
-    box.style('overflow', 'auto');
-    box.style('display', 'flex');
-    box.style('flex-direction', 'column');
-    return box;
-  }
-
-  updateStyle(canvas) {
-    // Apply the updated styles to the box
-    this.box.style('background-color', this.fillColor);
-    this.box.style('border', `1px solid ${this.borderColor}`);
-    this.box.size(this.w, this.h);
-
-    // Align items based on the provided horizontal and vertical alignment
-    this.box.style('align-items', this.hAlign === 'center' ? 'center' : (this.hAlign === 'right' ? 'flex-end' : 'flex-start'));
-    this.box.style('justify-content', this.vAlign === 'center' ? 'center' : (this.vAlign === 'bottom' ? 'flex-end' : 'flex-start'));
-
-    // Remove all existing child elements
-    this.box.html('');
-
-    // Create text elements (and links if URLs are provided)
-    for (let i = 0; i < this.textToDisplay.length; i++) {
-      let text = this.textToDisplay[i];
-      let fontSize = this.fontSizes[i];
-      let url = this.URLs[i];
-      let element;
-
-      if (url) {
-        // If there's a URL, create a link
-        element = createA(url, text, '_blank');
-      } else {
-        // Just create a text element
-        element = createDiv(text);
-      }
-
-      // Style the link or text element
-      element.style('font-size', `${fontSize}px`);
-      element.style('text-align', this.hAlign);
-      element.style('color', '#000');
-      element.style('text-decoration', 'none');
-      element.style('margin', '5px');
-      element.parent(this.box);
-    }
-
-    // Update the position if the canvas is available
-    if (canvas) {
-      this.updateBoxPosition(canvas);
-    }
-    this.setScrollbarVisibility(false);
-  }
-
-  updateBoxPosition(canvas) {
-    if (this.boxCreated && canvas) {
-      const rect = canvas.elt.getBoundingClientRect();
-      let topLeftX = this.centerX - this.w / 2 + rect.left;
-      let topLeftY = this.centerY - this.h / 2 + rect.top;
-      this.box.position(topLeftX, topLeftY);
-    }
-  }
-
-  setScrollbarVisibility(visible) {
-    if (visible) {
-      this.box.style('overflow', 'auto');
-      // Remove styles that hide scrollbars
-      this.box.style('scrollbar-width', null);
-      this.box.style('-ms-overflow-style', null);
-      this.box.style('::-webkit-scrollbar', null);
-    } else {
-      this.box.style('overflow', 'scroll'); // Still need to allow scrolling
-      // Add styles to hide scrollbars
-      this.box.style('scrollbar-width', 'none'); // Firefox
-      this.box.style('-ms-overflow-style', 'none'); // IE+Edge
-
-      // Webkit browsers (Chrome, Safari, newer versions of Opera)
-      // It's tricky to do pseudo-elements in inline styles; you might need an external stylesheet or inject styles into the head
-      let styleSheet = document.createElement('style');
-      styleSheet.type = 'text/css';
-      styleSheet.innerText = '.no-scrollbar::-webkit-scrollbar { display: none; }';
-      document.head.appendChild(styleSheet);
-      this.box.addClass('no-scrollbar');
-    }
-  }
 }
