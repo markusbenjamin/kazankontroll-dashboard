@@ -26,10 +26,9 @@ function setup() {
     updateState(data)
   })
 
-  listenToFirebase('updates/config', (data) => {
+  listenToFirebase('updates/config/seenByRaspi', (data) => {
     console.log("Config updated detected.")
     if (data['seenByDashboard'] == false) {
-      updateDataInFirebase('updates/config/seenByDashboard',true)
       updateConfig()
     }
   })
@@ -81,6 +80,8 @@ function updateConfig() {
     for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
       roomNames[room] = configAsDict['room_' + room];
     }
+
+    updateDataInFirebase('updates/config/seenByDashboard',true)
   });
 }
 
