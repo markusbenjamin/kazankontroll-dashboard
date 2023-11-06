@@ -13,7 +13,7 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
-        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js';
+        import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js';
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -37,6 +37,29 @@
                 callback(data);
             });
         };
+
+        window.updateDataInFirebase = function (fullPath, value) {
+            // The last part of the full path will be the key you want to update
+            // and the parentPath will be the path to the parent object.
+            const lastSlashIndex = fullPath.lastIndexOf('/');
+            const parentPath = fullPath.substring(0, lastSlashIndex);
+            const key = fullPath.substring(lastSlashIndex + 1);
+
+            // Create a reference to the parent path
+            const parentRef = ref(database, parentPath);
+
+            // Create an updates object with the key and value
+            let updates = {};
+            updates[key] = value;
+
+            // Perform the update
+            update(parentRef, updates).then(() => {
+                console.log("Data updated successfully at " + fullPath);
+            }).catch((error) => {
+                console.error("Failed to update data at " + fullPath + ":", error);
+            });
+        };
+
     </script>
     <script>
         // JavaScript to toggle overflow based on window size

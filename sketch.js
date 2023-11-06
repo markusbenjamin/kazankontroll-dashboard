@@ -2,17 +2,9 @@ var plugInfo
 var roomToCycle, cycleToRoom
 var configAsTable, configAsDict
 var roomNames
-
-function preload() {
-  configAsTable = loadTable('https://docs.google.com/spreadsheets/d/e/2PACX-1vSEiiNYdSFXxQInKCrERcHkEKH-MVJuglz2XHnUhEZvR4SBcrw85MU5X-ioQFmaF25lMGJZWkXSfWN5/pub?output=csv', 'csv', 'header')
-  //schedule loader here as well
-}
-
 var sketchAspectRatio
 
 function setup() {
-  configAsDict = processTableIntoDict(configAsTable)
-
   let canvas = createCanvas(windowWidth, windowHeight)
   sketchAspectRatio = 2
   enforceAspectRatio(sketchAspectRatio)
@@ -25,25 +17,22 @@ function setup() {
   textAlign(CENTER, CENTER)
   textFont('Consolas')
 
-  roomToCycle = {}
-  for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
-    roomToCycle[room] = int(configAsDict['room_' + str(room) + '_plug'])
-  }
+  updateInProgress = false
 
-  cycleToRoom = {}
-  for (const cycle of [1, 2, 3, 4]) {
-    cycleToRoom[cycle] = findKeysWithSpecificValue(roomToCycle, cycle)
-  }
-
-
-  roomNames = {}
-  for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
-    roomNames[room] = configAsDict['room_' + str(room)]
-  }
+  updateConfig()
 
   listenToFirebase('systemState', (data) => {
+    console.log("System state change detected.")
     updateState(data)
-  });
+  })
+
+  listenToFirebase('updates/config', (data) => {
+    console.log("Config updated detected.")
+    if (data['seenByDashboard'] == false) {
+      updateDataInFirebase('updates/config/seenByDashboard',true)
+      updateConfig()
+    }
+  })
 }
 
 var roomTempMax
@@ -72,8 +61,27 @@ function updateState(dataFromFirebase) {
   externalTempAllow = dataFromFirebase['externalTempAllow']
 }
 
-function updateSchedulesAndConfig() {
-  //To be written
+function updateConfig() {
+  // loadTable is an asynchronous function
+  loadTable('https://docs.google.com/spreadsheets/d/e/2PACX-1vSEiiNYdSFXxQInKCrERcHkEKH-MVJuglz2XHnUhEZvR4SBcrw85MU5X-ioQFmaF25lMGJZWkXSfWN5/pub?output=csv', 'csv', 'header', function (table) {
+    // This callback function will be called once the table is loaded
+    configAsDict = processTableIntoDict(table);
+    roomToCycle = {};
+
+    for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
+      roomToCycle[room] = parseInt(configAsDict['room_' + room + '_plug']);
+    }
+
+    cycleToRoom = {};
+    for (const cycle of [1, 2, 3, 4]) {
+      cycleToRoom[cycle] = findKeysWithSpecificValue(roomToCycle, cycle);
+    }
+
+    roomNames = {};
+    for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
+      roomNames[room] = configAsDict['room_' + room];
+    }
+  });
 }
 
 function loadLogs() {
@@ -81,7 +89,11 @@ function loadLogs() {
 }
 
 function draw() {
-  drawStateVisualization()
+  try {
+    drawStateVisualization()
+  } catch (error) {
+    console.log("Couldn't draw.");
+  }
 }
 
 function drawStateVisualization() {
