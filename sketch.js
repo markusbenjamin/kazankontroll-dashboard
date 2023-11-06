@@ -27,7 +27,7 @@ function setup() {
 
   roomToCycle = {}
   for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
-    roomToCycle[room] = int(configAsDict['room_' + str(room)+'_plug'])
+    roomToCycle[room] = int(configAsDict['room_' + str(room) + '_plug'])
   }
 
   cycleToRoom = {}
@@ -59,27 +59,24 @@ var cycleYPos
 
 //Dummy values so no startup error occurs
 var albatrosStatus = 0
-var pumpStatuses = {1:0,2:0,3:0,4:0}
-var roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
-var roomStatuses = { 1: 21, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
+var pumpStatuses = { 1: 0, 2: 0, 3: 0, 4: 0 }
+var roomSettings = { 1: 1, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
+var roomStatuses = { 1: 0.5, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
+var externalTempAllow = 1
 
-function updateState(dataFromFirebase){
+function updateState(dataFromFirebase) {
   albatrosStatus = dataFromFirebase['albatrosStatus']
   pumpStatuses = dataFromFirebase['pumpStatuses']
   roomSettings = dataFromFirebase['roomSettings']
   roomStatuses = dataFromFirebase['roomStatuses']
-  
-  if(roomSettings[1] < 10){ //DEV
-    roomSettings = { 1: 20, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
-    roomStatuses = { 1: 21, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
-  }
+  externalTempAllow = dataFromFirebase['externalTempAllow']
 }
 
-function updateSchedulesAndConfig(){
+function updateSchedulesAndConfig() {
   //To be written
 }
 
-function loadLogs(){
+function loadLogs() {
   //For loading system logs from repo for time based plots  
 }
 
@@ -87,14 +84,14 @@ function draw() {
   drawStateVisualization()
 }
 
-function drawStateVisualization(){
+function drawStateVisualization() {
   background(229 / 255, 222 / 255, 202 / 255)
   setDrawingParameters()
   drawCycles()
   drawPiping()
 }
 
-function setDrawingParameters(){
+function setDrawingParameters() {
   roomTempMax = 30
   roomTempMin = 10
   roomTempDiffTolerance = 2
@@ -110,7 +107,7 @@ function setDrawingParameters(){
 
 function drawCycles() {
   for (const cycle of [1, 2, 3, 4]) {
-    var cycleState = pumpStatuses[cycle] * albatrosStatus
+    var cycleState = pumpStatuses[cycle] * albatrosStatus * externalTempAllow
     var cycleColor = color(cycleState, 0, 1 - cycleState)
 
     stroke(cycleColor)
@@ -152,43 +149,92 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   noStroke()
   rect(x, y + h / 2, w, h)
 
-  for (var temp = roomTempMin + 1; temp <= roomTempMax - 1; temp += 1) {
-    if (temp % 5 == 0) {
-      strokeWeight(2)
-      stroke(0, 0.75)
-      line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x, y + map(temp, roomTempMin, roomTempMax, 0, h))
-      noStroke()
-      fill(0)
-      textSize(width * 0.01)
-      text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
-    }
-    else {
-      strokeWeight(1)
-      stroke(0, 0.5)
-      line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x, y + map(temp, roomTempMin, roomTempMax, 0, h))
-      noStroke()
-      fill(0, 0.75)
-      textSize(width * 0.0075)
-    }
+  if (roomSetting == 0 || roomSetting == 1) {
+    roomSummedStatus = roomSetting * externalTempAllow
+    fill(0)
+    rect(x, y + h / 2, w * 0.3, h * 0.25)
+
+    strokeWeight(width * 0.005)
+    stroke(1)
+    line(x - w * 0.1, y + 1.025 * h / 2, x + width * 0.0325 * cos(TWO_PI * 0.125 - PI / 2 * roomSummedStatus), y + 1.025 * h / 2 + width * 0.0325 * sin(TWO_PI * 0.125 - PI / 2 * roomSummedStatus))
+    fill(1)
+    noStroke()
+    ellipse(x + width * 0.0325 * cos(TWO_PI * 0.125 - PI / 2 * roomSummedStatus), y + 1.025 * h / 2 + width * 0.0325 * sin(TWO_PI * 0.125 - PI / 2 * roomSummedStatus), width * 0.01, width * 0.01)
+    stroke(0)
+    line(x - w * 0.1, y + h / 2, x + width * 0.0325 * cos(TWO_PI * 0.125 - PI / 2 * roomSummedStatus), y + h / 2 + width * 0.0325 * sin(TWO_PI * 0.125 - PI / 2 * roomSummedStatus))
+    fill(0)
+    noStroke()
+    ellipse(x + width * 0.0325 * cos(TWO_PI * 0.125 - PI / 2 * roomSummedStatus), y + h / 2 + width * 0.0325 * sin(TWO_PI * 0.125 - PI / 2 * roomSummedStatus), width * 0.01, width * 0.01)
+
+    fill(1)
+    noStroke()
+    rect(x - w / 4, y + h / 2, w * 0.3, h * 0.25)
+
+    fill(0.7)
+    stroke(0)
+    strokeWeight(1.5)
+    rect(x * 1.00125, (y + h * 0.2) * 1.00125, w * 0.725, w * 0.65)
+    noStroke()
+    rect(x * 1.0, (y + h * 0.2) * 1.0, w * 0.725, w * 0.65)
+    textSize(width * 0.016)
+    fill(0, roomSummedStatus == 1 ? 1 : 0.25)
+    text("be", x * 1.00065, (y + h * 0.2) * 1.0025)
+    fill(1, 0, 0, roomSummedStatus == 1 ? 1 : 0.25)
+    text("be", x * 1.0005, (y + h * 0.2) * 1.001)
+
+
+    fill(0.7)
+    stroke(0)
+    strokeWeight(1.5)
+    rect(x * 1.00125, (y + h * 0.8) * 1.00125, w * 0.725, w * 0.65)
+    noStroke()
+    rect(x * 1.0, (y + h * 0.8) * 1.0, w * 0.725, w * 0.65)
+    textSize(width * 0.016)
+    fill(0, roomSummedStatus == 0 ? 1 : 0.25)
+    text("ki", x * 1.00065, (y + h * 0.8) * 1.0025)
+    fill(0, 0, 1, roomSummedStatus == 0 ? 1 : 0.25)
+    text("ki", x * 1.0005, (y + h * 0.8) * 1.001)
+
   }
+  else {
+    for (var temp = roomTempMin + 1; temp <= roomTempMax - 1; temp += 1) {
+      if (temp % 5 == 0) {
+        strokeWeight(2)
+        stroke(0, 0.75)
+        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x, y + map(temp, roomTempMin, roomTempMax, 0, h))
+        noStroke()
+        fill(0)
+        textSize(width * 0.01)
+        text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
+      }
+      else {
+        strokeWeight(1)
+        stroke(0, 0.5)
+        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x, y + map(temp, roomTempMin, roomTempMax, 0, h))
+        noStroke()
+        fill(0, 0.75)
+        textSize(width * 0.0075)
+      }
+    }
 
-  noStroke()
-  fill(roomSettingColor)
-  rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.025)
-  textSize(width * 0.017)
-  textStyle(BOLD)
-  text(roomSetting, x - w * 1.2, y + map(roomTempMax - roomSetting + roomTempMin, roomTempMin, roomTempMax, 0, h))
+    noStroke()
+    fill(roomSettingColor)
+    rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.025)
+    textSize(width * 0.017)
+    textStyle(BOLD)
+    text(roomSetting, x - w * 1.2, y + map(roomTempMax - roomSetting + roomTempMin, roomTempMin, roomTempMax, 0, h))
 
-  noStroke()
-  fill(1)
-  ellipse(x, y + h * (1 - roomStatusNormalized), 1.25 * w / 2.5, 1.25 * w / 2.5)
-  topRect(x, y + h * (1 - roomStatusNormalized), 1.8 * w / 6, h * roomStatusNormalized)
-  fill(roomStatusColor)
-  ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
-  topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
-  textSize(width * 0.017)
-  text(roomStatus, x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
-  textStyle(NORMAL)
+    noStroke()
+    fill(1)
+    ellipse(x, y + h * (1 - roomStatusNormalized), 1.25 * w / 2.5, 1.25 * w / 2.5)
+    topRect(x, y + h * (1 - roomStatusNormalized), 1.8 * w / 6, h * roomStatusNormalized)
+    fill(roomStatusColor)
+    ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
+    topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
+    textSize(width * 0.017)
+    text(roomStatus, x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
+    textStyle(NORMAL)
+  }
 
   stroke(cycleColor)
   strokeWeight(pipeThickness / 2)
@@ -261,20 +307,20 @@ function drawPiping() {
 }
 
 function drawPump(posX, posY, state) {
-  var w = width * 0.0035;
-  var l = width * 0.03;
+  var w = width * 0.0045;
+  var l = width * 0.035;
   stroke(0)
   strokeWeight(2)
   fill(0)
   if (state == 0) {
     rect(posX, posY, w, l)
-    ellipse(posX, posY + l / 2, width * 0.0165 * 0.55, width * 0.0165 * 0.2)
-    ellipse(posX, posY - l / 2, width * 0.0165 * 0.55, width * 0.0165 * 0.2)
+    ellipse(posX, posY + l / 2, width * 0.0165 * 0.6, width * 0.0165 * 0.3)
+    ellipse(posX, posY - l / 2, width * 0.0165 * 0.6, width * 0.0165 * 0.3)
   }
   else {
     rect(posX, posY, l, w)
-    ellipse(posX + l / 2, posY, width * 0.0165 * 0.2, width * 0.0165 * 0.55)
-    ellipse(posX - l / 2, posY, width * 0.0165 * 0.2, width * 0.0165 * 0.55)
+    ellipse(posX + l / 2, posY, width * 0.0165 * 0.3, width * 0.0165 * 0.6)
+    ellipse(posX - l / 2, posY, width * 0.0165 * 0.3, width * 0.0165 * 0.6)
   }
   strokeWeight(2)
   stroke(0)
