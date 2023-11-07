@@ -3,6 +3,7 @@ var roomToCycle, cycleToRoom
 var configAsTable, configAsDict
 var roomNames
 var sketchAspectRatio
+var toolTip
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight)
@@ -16,14 +17,20 @@ function setup() {
   rectMode(CENTER)
   textAlign(CENTER, CENTER)
   textFont('Consolas')
-
-  updateInProgress = false
+  toolTip = new ToolTipBox()
 
   updateConfig()
+
+
 
   listenToFirebase('systemState', (data) => {
     console.log("System state change detected.")
     updateState(data)
+  })
+
+  listenToFirebase('decisions', (data) => {
+    console.log("Decision detected.")
+    readDecisions(data)
   })
 
   listenToFirebase('updates/config/seenByRaspi', (data) => {
@@ -50,7 +57,7 @@ var albatrosStatus = 0
 var pumpStatuses = { 1: 0, 2: 0, 3: 0, 4: 0 }
 var roomSettings = { 1: 1, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
 var roomStatuses = { 1: 0.5, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
-var externalTempAllow = 1
+var externalTempAllow = 0
 
 function updateState(dataFromFirebase) {
   albatrosStatus = dataFromFirebase['albatrosStatus']
@@ -81,7 +88,7 @@ function updateConfig() {
       roomNames[room] = configAsDict['room_' + room];
     }
 
-    updateDataInFirebase('updates/config/seenByDashboard',true)
+    updateDataInFirebase('updates/config/seenByDashboard', true)
   });
 }
 
@@ -89,19 +96,43 @@ function loadLogs() {
   //For loading system logs from repo for time based plots  
 }
 
+var decisions
+
+function readDecisions(dataFromFirebase) {
+  decisions = dataFromFirebase
+}
+
 function draw() {
   try {
     drawStateVisualization()
+    drawInfoBox()
+
+    manageToolTip()
   } catch (error) {
     console.log("Couldn't draw.");
   }
+}
+
+function drawInfoBox() {
+  stroke(0)
+  strokeWeight(2)
+  var x = width * 0.2
+  var y = height * 0.75
+  var w = width * 0.275
+  var h = height * 0.4
+  rect(x, y, w, h, width * 0.01)
+}
+
+function manageToolTip() {
+  toolTip.draw()
+  toolTip.hide()
 }
 
 function drawStateVisualization() {
   background(229 / 255, 222 / 255, 202 / 255)
   setDrawingParameters()
   drawCycles()
-  drawPiping()
+  drawPipingAndBoiler()
 }
 
 function setDrawingParameters() {
@@ -128,7 +159,7 @@ function drawCycles() {
     line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * map(cycleToRoom[cycle].length - 1 + roomXPositionOffset, 0, cycleToRoom[cycle].length, 0.1, cyclePipeLength)), height * cycleYPos[cycle])
     stroke(albatrosStatus, 0, 1 - albatrosStatus)
     line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle])
-    drawPump(width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle], pumpStatuses[cycle])
+    drawPump(width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle], pumpStatuses[cycle], cycle)
 
     for (var roomOnCycle = 0; roomOnCycle < cycleToRoom[cycle].length; roomOnCycle++) {
       var roomNumber = cycleToRoom[cycle][roomOnCycle]
@@ -162,8 +193,9 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   noStroke()
   rect(x, y + h / 2, w, h)
 
+  var roomSummedStatus = roomSetting * externalTempAllow
+
   if (roomSetting == 0 || roomSetting == 1) {
-    roomSummedStatus = roomSetting * externalTempAllow
     fill(0)
     rect(x, y + h / 2, w * 0.3, h * 0.25)
 
@@ -207,7 +239,6 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     text("ki", x * 1.00065, (y + h * 0.8) * 1.0025)
     fill(0, 0, 1, roomSummedStatus == 0 ? 1 : 0.125)
     text("ki", x * 1.0005, (y + h * 0.8) * 1.001)
-
   }
   else {
     for (var temp = roomTempMin + 1; temp <= roomTempMax - 1; temp += 1) {
@@ -257,10 +288,20 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   noStroke()
   fill(229 / 255, 222 / 255, 202 / 255)
   rect(x, y - h * 0.125, w * 2.5, h * 0.14)
-  if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance) {
+
+  if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance || roomSummedStatus != cycleState) {
     noStroke()
     fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
     rect(x, y - h * 0.125, w * 2.5, h * 0.14)
+
+    if (mouseOver(x, y + h / 2, w, h)) {
+      if (roomSetting == 0 || roomSetting == 1) {
+        toolTip.show(roomSummedStatus ? 'Nem kéri, mégis fűtünk,' : 'Kéri, mégsincs fűtés.')
+      }
+      else {
+        toolTip.show(cycleState ? 'Meleg van, mégis fűtünk,' : 'Hideg van, mégsincs fűtés.')
+      }
+    }
   }
   fill(0)
   textSize(width * 0.013)
@@ -296,7 +337,18 @@ function drawFlame(x, y, w, h, col, outer) {
   }
 }
 
-function drawPiping() {
+function drawPipingAndBoiler() {
+  var x = width * 0.5
+  var y = height * (cycleYPos[1] + cycleYPos[2]) / 2
+  var w = width * 0.054
+  var h = width * 0.09
+
+  if (mouseOver(x, y, w, h)) {
+    var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
+    var to = decisions['albatros']['decision'] == 1 ? 'be' : 'ki'
+    toolTip.show('Kazánok ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')')
+  }
+
   stroke(albatrosStatus, 0, 1 - albatrosStatus)
   strokeWeight(pipeThickness)
   line(width * 0.5, height * cycleYPos[1], width * 0.5, height * cycleYPos[2])
@@ -304,8 +356,9 @@ function drawPiping() {
   noStroke()
   strokeWeight(pipeThickness)
   stroke(albatrosStatus, 0, 1 - albatrosStatus)
+
   fill(1)
-  rect(width * 0.5, height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.054, width * 0.09, 20)
+  rect(x, y, w, h, width * 0.01)
   fill(0.2)
   noStroke()
   rect(width * 0.5, 1.1 * height * (cycleYPos[1] + cycleYPos[2]) / 2, 0.65 * width * 0.055, 0.65 * width * 0.0175)
@@ -319,29 +372,51 @@ function drawPiping() {
   rect(width * 0.5, 1.155 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.005 + width * 0.035, width * 0.005 + width * 0.005)
 }
 
-function drawPump(posX, posY, state) {
+function drawPump(x, y, state, cycle) {
   var w = width * 0.0045;
   var l = width * 0.035;
+
+  if (mouseOver(x, y, l * 1.1, l * 1.1)) {
+    var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
+    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
+    var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
+    toolTip.show(who + ' kör ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['cycle'][cycle]['timestamp'] + ')')
+  }
+
   stroke(0)
   strokeWeight(2)
   fill(0)
   if (state == 0) {
-    rect(posX, posY, w, l)
-    ellipse(posX, posY + l / 2, width * 0.0165 * 0.6, width * 0.0165 * 0.3)
-    ellipse(posX, posY - l / 2, width * 0.0165 * 0.6, width * 0.0165 * 0.3)
+    rect(x, y, w, l)
+    ellipse(x, y + l / 2, width * 0.0165 * 0.6, width * 0.0165 * 0.3)
+    ellipse(x, y - l / 2, width * 0.0165 * 0.6, width * 0.0165 * 0.3)
   }
   else {
-    rect(posX, posY, l, w)
-    ellipse(posX + l / 2, posY, width * 0.0165 * 0.3, width * 0.0165 * 0.6)
-    ellipse(posX - l / 2, posY, width * 0.0165 * 0.3, width * 0.0165 * 0.6)
+    rect(x, y, l, w)
+    ellipse(x + l / 2, y, width * 0.0165 * 0.3, width * 0.0165 * 0.6)
+    ellipse(x - l / 2, y, width * 0.0165 * 0.3, width * 0.0165 * 0.6)
   }
   strokeWeight(2)
   stroke(0)
   fill(0)
-  ellipse(posX, posY, width * 0.01, width * 0.01)
+  ellipse(x, y, width * 0.01, width * 0.01)
   stroke(1)
   fill(1)
-  ellipse(posX, posY, width * 0.01 * 0.25, width * 0.01 * 0.25)
+  ellipse(x, y, width * 0.01 * 0.25, width * 0.01 * 0.25)
+}
+
+function mouseOver(centerX, centerY, w, h) {
+  // Calculate the top-left corner based on the center coordinates
+  let topLeftX = centerX - w / 2;
+  let topLeftY = centerY - h / 2;
+
+  // Check if the mouse is inside the rectangle
+  if (mouseX >= topLeftX && mouseX <= topLeftX + w &&
+    mouseY >= topLeftY && mouseY <= topLeftY + h) {
+    return true; // The mouse is over the rectangle
+  } else {
+    return false; // The mouse is not over the rectangle
+  }
 }
 
 function topRect(x, y, w, h) {
@@ -395,4 +470,74 @@ function processTableIntoDict(table) {
   }
 
   return csvDictionary
+}
+
+class ToolTipBox {
+  constructor() {
+    this.text = "";
+    this.isVisible = false;
+    this.padding = width * 0.0075;
+    this.textSize = width * 0.0125;
+    this.borderColor = color(0)
+    this.fillColor = color(1);
+    this.textColor = color(0);
+  }
+
+  // Call this function to display the tooltip with the provided text
+  show(text) {
+    this.text = text;
+    this.isVisible = true;
+  }
+
+  // Call this function to hide the tooltip
+  hide() {
+    this.isVisible = false;
+    cursor()
+  }
+
+  draw() {
+    if (this.isVisible) {
+      noCursor()
+      // Set the text properties
+      textSize(this.textSize);
+      let txtWidth = multiLineTextWidth(this.text) + this.padding * 2;
+      let txtHeight = this.textSize + this.padding * 2 * (1 + (this.text.match(/\n/g) || []).length);
+
+      // Determine the position of the tooltip so it doesn't hang off the edge
+      let posX = mouseX + txtWidth / 2; // Offset from mouse position
+      let posY = mouseY + txtHeight / 2;
+
+      // Adjust if it's going out of the canvas
+      if (posX + txtWidth > width) {
+        posX = width - txtWidth;
+      }
+      if (posY + txtHeight > height) {
+        posY = height - txtHeight;
+      }
+
+      stroke(this.borderColor);
+      strokeWeight(2)
+      rect(posX, posY, txtWidth, txtHeight, 4);
+
+      // Draw the tooltip background
+      fill(this.fillColor);
+      noStroke();
+      rect(posX, posY, txtWidth, txtHeight, 4); // Slight rounding for aesthetics
+
+      // Draw the tooltip text
+      fill(this.textColor);
+      text(this.text, posX, posY);
+    }
+  }
+}
+
+function multiLineTextWidth(text) {
+  // Split the text by new lines
+  const lines = text.split('\n');
+
+  // Map each line to its width
+  const widths = lines.map(line => textWidth(line));
+
+  // Return the maximum width
+  return max(widths);
 }
