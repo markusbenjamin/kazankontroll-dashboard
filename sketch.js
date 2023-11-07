@@ -112,7 +112,7 @@ function draw() {
 
     manageToolTip()
   } catch (error) {
-    console.log("Couldn't draw.");
+    console.log(error.message);
   }
 }
 
@@ -194,7 +194,7 @@ function drawInfoBox() {
     externalTempAllow == 1 ?
       (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.") :
       ("Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
-    externalTempAllow == 1 && wantHeatingCount > 0?
+    externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
     "Utolsó esemény:\n" + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
   ].filter(element => element !== '')
@@ -394,51 +394,31 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   else if (cycleState == 0 && roomStatus < roomSetting - roomTempDiffTolerance) {
     problematicCount += 1
     problematic = true
-    if(mouseOver(x, y + h / 2, w, h)){
+    if (mouseOver(x, y + h / 2, w, h)) {
       toolTip.show('Hideg van, mégsincs fűtés.')
     }
   }
   else if (cycleState == 1 && roomStatus > roomSetting + roomTempDiffTolerance) {
     problematicCount += 1
     problematic = true
-    if(mouseOver(x, y + h / 2, w, h)){
+    if (mouseOver(x, y + h / 2, w, h)) {
       toolTip.show('Meleg van, mégis fűtünk.')
     }
   }
-  if(problematic){
+  if (problematic) {
     fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
     rect(x, y - h * 0.125, w * 2.5, h * 0.14)
   }
 
-  /*if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance || roomSummedStatus != cycleState) {
-    problematicCount += 1
-    noStroke()
-    fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
-    rect(x, y - h * 0.125, w * 2.5, h * 0.14)
-
-    if (mouseOver(x, y + h / 2, w, h)) {
-      if (roomSetting == 0 || roomSetting == 1) {
-        if (roomSummedStatus != cycleState) {
-          toolTip.show(cycleState == 1 ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
-        }
-      }
-      else if (cycleState == 0 && roomStatus < roomSetting - roomTempDiffTolerance) {
-        toolTip.show('Hideg van, mégsincs fűtés.')
-      }
-      else if (cycleState == 1 && roomStatus > roomSetting + roomTempDiffTolerance) {
-        toolTip.show('Meleg van, mégis fűtünk.')
-      }
-    }
-  }*/
   fill(0)
   textSize(width * 0.013)
   text(roomName, x, y - h * 0.125)
 }
 
-function drawFlame(x, y, w, h, col, outer) {
+function drawFlame(x, y, w, h, colOuter, colInner, outer) {
   push();
   translate(x, y);
-  fill(col);
+  fill(colOuter);
   noStroke();
   beginShape();
 
@@ -460,7 +440,7 @@ function drawFlame(x, y, w, h, col, outer) {
   pop();
 
   if (outer) {
-    drawFlame(x, y - h * 0.05, w * 0.6, h * 0.5, color(1, 1, 0, 0.9), false)
+    drawFlame(x, y - h * 0.05, w * 0.6, h * 0.5, colInner, colInner, false)
   }
 }
 
@@ -490,10 +470,17 @@ function drawPipingAndBoiler() {
   noStroke()
   rect(width * 0.5, 1.1 * height * (cycleYPos[1] + cycleYPos[2]) / 2, 0.65 * width * 0.055, 0.65 * width * 0.0175)
   if (albatrosStatus == 1) {
-    let wiggleAmount = 0.015
-    drawFlame(width * 0.5 * 0.99, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * random(1 - wiggleAmount, 1 + wiggleAmount), width * 0.055 * random(1 - wiggleAmount, 1 + wiggleAmount), color(1, 0.5, 0, 0.875), true)
-    drawFlame(width * 0.5 * 1.01, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * 0.85 * random(1 - wiggleAmount, 1 + wiggleAmount), width * 0.055 * 0.85 * random(1 - wiggleAmount, 1 + wiggleAmount), color(1, 0.5, 0, 0.875), true)
+    let wiggleAmount = 0.016
+    drawFlame(width * 0.5 * 0.99, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * random(1 - wiggleAmount, 1 + wiggleAmount), width * 0.055 * random(1 - wiggleAmount, 1 + wiggleAmount), color(1, 0.5, 0, 0.875), color(1, 1, 0, 0.9), true)
+    drawFlame(width * 0.5 * 1.01, 1.16 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.095 * 0.85 * random(1 - wiggleAmount, 1 + wiggleAmount), width * 0.055 * 0.85 * random(1 - wiggleAmount, 1 + wiggleAmount), color(1, 0.5, 0, 0.875), color(1, 1, 0, 0.9), true)
   }
+  else {
+    let wiggleAmount = 0.035
+    for (var n = 0; n < 10; n++) {
+      drawFlame(width * 0.5+map(n,0,9,-w/3.75,w/3.75), 1.125 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.0195 * random(1 - wiggleAmount, 1 + wiggleAmount), width * 0.01 * random(1 - wiggleAmount, 1 + wiggleAmount), color(128 / 255, 234 / 255, 237 / 255, 0.875), color(47 / 255, 118 / 255, 200 / 255, 0.9), true)
+    }
+  }
+
   fill(albatrosStatus, 0, 1 - albatrosStatus)
   fill(1)
   rect(width * 0.5, 1.155 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.005 + width * 0.035, width * 0.005 + width * 0.005)
