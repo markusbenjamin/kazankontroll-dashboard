@@ -187,7 +187,7 @@ function drawInfoBox() {
     latestMessage = findLatestMessage(allDecisionMessages)
   }
   catch (error) {
-    latestMessage = {'message':''}
+    latestMessage = { 'message': '' }
   }
 
   var messages = [
@@ -388,7 +388,9 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
 
     if (mouseOver(x, y + h / 2, w, h)) {
       if (roomSetting == 0 || roomSetting == 1) {
-        toolTip.show(roomSummedStatus != cycleState ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
+        if (roomSummedStatus != cycleState) {
+          toolTip.show(cycleState == 1 ?'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
+        }
       }
       else {
         toolTip.show(cycleState ? 'Meleg van, mégis fűtünk.' : 'Hideg van, mégsincs fűtés.')
@@ -437,7 +439,7 @@ function drawPipingAndBoiler() {
 
   if (mouseOver(x, y, w, h)) {
     var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
-    var to = decisions['albatros']['decision'] == 1 ? 'be' : 'ki'
+    var to = decisions['albatros']['decision'] > 0 ? 'be' : 'ki'
     toolTip.show('Kazánok ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')')
   }
 
