@@ -1,0 +1,4 @@
+- jelezze, ha egy kör konkrétan ki van kapcsolva, és mutasson azért hőmérsékletet rá
+- mutassa, ha override miatt megy egy kör
+- schedules
+- performace
