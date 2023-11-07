@@ -155,7 +155,7 @@ function drawInfoBox() {
 
   allDecisionMessages = []
   var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
-  var to = decisions['albatros']['decision'] > 1 ? 'be' : 'ki'
+  var to = decisions['albatros']['decision'] >= 1 ? 'be' : 'ki'
   var albatrosMessage = {
     'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.',
     'timestamp': decisions['albatros']['timestamp']
@@ -362,7 +362,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
     textSize(width * 0.017)
-    text(roomStatus, x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
+    text(int(roomStatus), x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
     textStyle(NORMAL)
   }
 
@@ -380,7 +380,37 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     wantHeatingCount += 1
   }
 
-  if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance || roomSummedStatus != cycleState) {
+  var problematic = false
+
+  if (roomSetting == 0 || roomSetting == 1) {
+    if (roomSummedStatus != cycleState) {
+      problematicCount += 1
+      problematic = true
+      if (mouseOver(x, y + h / 2, w, h)) {
+        toolTip.show(cycleState == 1 ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
+      }
+    }
+  }
+  else if (cycleState == 0 && roomStatus < roomSetting - roomTempDiffTolerance) {
+    problematicCount += 1
+    problematic = true
+    if(mouseOver(x, y + h / 2, w, h)){
+      toolTip.show('Hideg van, mégsincs fűtés.')
+    }
+  }
+  else if (cycleState == 1 && roomStatus > roomSetting + roomTempDiffTolerance) {
+    problematicCount += 1
+    problematic = true
+    if(mouseOver(x, y + h / 2, w, h)){
+      toolTip.show('Meleg van, mégis fűtünk.')
+    }
+  }
+  if(problematic){
+    fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
+    rect(x, y - h * 0.125, w * 2.5, h * 0.14)
+  }
+
+  /*if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance || roomSummedStatus != cycleState) {
     problematicCount += 1
     noStroke()
     fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
@@ -392,11 +422,14 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
           toolTip.show(cycleState == 1 ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
         }
       }
-      else {
-        toolTip.show(cycleState ? 'Meleg van, mégis fűtünk.' : 'Hideg van, mégsincs fűtés.')
+      else if (cycleState == 0 && roomStatus < roomSetting - roomTempDiffTolerance) {
+        toolTip.show('Hideg van, mégsincs fűtés.')
+      }
+      else if (cycleState == 1 && roomStatus > roomSetting + roomTempDiffTolerance) {
+        toolTip.show('Meleg van, mégis fűtünk.')
       }
     }
-  }
+  }*/
   fill(0)
   textSize(width * 0.013)
   text(roomName, x, y - h * 0.125)
