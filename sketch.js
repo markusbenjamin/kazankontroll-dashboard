@@ -4,10 +4,11 @@ var configAsTable, configAsDict
 var roomNames
 var sketchAspectRatio
 var toolTip
+var noOfControlledRooms
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight)
-  sketchAspectRatio = 2
+  sketchAspectRatio = 2.125
   enforceAspectRatio(sketchAspectRatio)
   canvas.parent('canvas-container')
   noFill()
@@ -20,8 +21,6 @@ function setup() {
   toolTip = new ToolTipBox()
 
   updateConfig()
-
-
 
   listenToFirebase('systemState', (data) => {
     console.log("System state change detected.")
@@ -88,6 +87,8 @@ function updateConfig() {
       roomNames[room] = configAsDict['room_' + room];
     }
 
+    noOfControlledRooms = configAsDict['no_of_controlled_rooms']
+
     updateDataInFirebase('updates/config/seenByDashboard', true)
   });
 }
@@ -102,6 +103,8 @@ function readDecisions(dataFromFirebase) {
   decisions = dataFromFirebase
 }
 
+var problematicCount, wantHeatingCount
+
 function draw() {
   try {
     drawStateVisualization()
@@ -113,14 +116,95 @@ function draw() {
   }
 }
 
+function parseTimestampToList(timestamp) {
+  let month = parseInt(timestamp.substring(0, 2), 10);
+  let day = parseInt(timestamp.substring(3, 5), 10);
+  let hour = parseInt(timestamp.substring(7, 9), 10);
+  let minute = parseInt(timestamp.substring(10, 12), 10);
+  return [month, day, hour, minute];
+}
+
+function findLatestMessage(messages) {
+  let latestMessage = messages.reduce((latest, current) => {
+    let latestTimestampList = parseTimestampToList(latest.timestamp);
+    let currentTimestampList = parseTimestampToList(current.timestamp);
+    for (let i = 0; i < currentTimestampList.length; i++) {
+      if (currentTimestampList[i] > latestTimestampList[i]) {
+        return current;
+      } else if (currentTimestampList[i] < latestTimestampList[i]) {
+        return latest;
+      }
+    }
+    return latest; // If all components are equal, return the latest (first encountered)
+  }, messages[0] || { 'message': '', 'timestamp': '01.01. 00:00' });
+
+  return latestMessage;
+}
+
+var allDecisionMessages
+
 function drawInfoBox() {
   stroke(0)
   strokeWeight(2)
-  var x = width * 0.2
+  var x = width * 0.185
   var y = height * 0.75
-  var w = width * 0.275
+  var w = width * 0.3
   var h = height * 0.4
   rect(x, y, w, h, width * 0.01)
+
+
+  allDecisionMessages = []
+  var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
+  var to = decisions['albatros']['decision'] == 1 ? 'be' : 'ki'
+  var albatrosMessage = {
+    'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')',
+    'timestamp': decisions['albatros']['timestamp']
+  }
+  allDecisionMessages.push(albatrosMessage)
+
+  var cycleMessages = []
+  for (var cycle = 1; cycle < 5; cycle++) {
+    var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
+    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
+    var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
+    cycleMessages[cycle] = {
+      'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['cycle'][cycle]['timestamp'] + ')',
+      'timestamp': decisions['cycle'][cycle]['timestamp']
+    }
+    allDecisionMessages.push(cycleMessages[cycle])
+  }
+
+  var aboveOrBelow = decisions['externalTempAllow']['reason'] == 'above' ? 'fölé' : 'alá'
+  var onOrOff = decisions['externalTempAllow']['decision'] == 0 ? 'ki' : 'be'
+  var externalTempMessage = {
+    'message': 'Külső hőmérséklet határ ' + aboveOrBelow + ',\nfűtés ' + onOrOff + 'kapcsolva.',
+    'timestamp': decisions['externalTempAllow']['timestamp']
+  }
+  allDecisionMessages.push(externalTempMessage)
+
+  var latestMessage
+  try {
+    latestMessage = findLatestMessage(allDecisionMessages)
+  }
+  catch (error) {
+    latestMessage = {'message':''}
+  }
+
+  var messages = [
+    externalTempAllow == 1 ?
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.") :
+      ("Kinti hőmérséklet miatt nincs fűtés."),
+    externalTempAllow == 1 ?
+      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
+    "Utolsó esemény:\n" + latestMessage['message']
+  ].filter(element => element !== '')
+
+  fill(0)
+  noStroke()
+  textSize(width * 0.014)
+  text(
+    messages.join('\n\n'),
+    x, y)
 }
 
 function manageToolTip() {
@@ -129,6 +213,8 @@ function manageToolTip() {
 }
 
 function drawStateVisualization() {
+  problematicCount = 0
+  wantHeatingCount = 0
   background(229 / 255, 222 / 255, 202 / 255)
   setDrawingParameters()
   drawCycles()
@@ -288,8 +374,14 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   noStroke()
   fill(229 / 255, 222 / 255, 202 / 255)
   rect(x, y - h * 0.125, w * 2.5, h * 0.14)
+  noStroke()
+
+  if (roomSummedStatus == 1 || roomSetting - roomStatus > roomTempDiffTolerance) {
+    wantHeatingCount += 1
+  }
 
   if ((cycleState * 2 - 1) * (roomStatus - roomSetting) > roomTempDiffTolerance || roomSummedStatus != cycleState) {
+    problematicCount += 1
     noStroke()
     fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
     rect(x, y - h * 0.125, w * 2.5, h * 0.14)
