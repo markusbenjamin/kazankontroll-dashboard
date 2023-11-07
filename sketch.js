@@ -474,7 +474,7 @@ function drawPump(x, y, state, cycle) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
     var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
-    toolTip.show(who + ' kör ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['cycle'][cycle]['timestamp'] + ')')
+    toolTip.show(who + ' kör ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['cycle'][cycle]['timestamp'] + ')')
   }
 
   stroke(0)
