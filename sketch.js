@@ -155,7 +155,7 @@ function drawInfoBox() {
 
   allDecisionMessages = []
   var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
-  var to = decisions['albatros']['decision'] == 1 ? 'be' : 'ki'
+  var to = decisions['albatros']['decision'] > 1 ? 'be' : 'ki'
   var albatrosMessage = {
     'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')',
     'timestamp': decisions['albatros']['timestamp']
@@ -388,10 +388,10 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
 
     if (mouseOver(x, y + h / 2, w, h)) {
       if (roomSetting == 0 || roomSetting == 1) {
-        toolTip.show(roomSummedStatus ? 'Nem kéri, mégis fűtünk,' : 'Kéri, mégsincs fűtés.')
+        toolTip.show(roomSummedStatus != cycleState ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
       }
       else {
-        toolTip.show(cycleState ? 'Meleg van, mégis fűtünk,' : 'Hideg van, mégsincs fűtés.')
+        toolTip.show(cycleState ? 'Meleg van, mégis fűtünk.' : 'Hideg van, mégsincs fűtés.')
       }
     }
   }
