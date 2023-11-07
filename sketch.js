@@ -148,8 +148,8 @@ function drawInfoBox() {
   strokeWeight(2)
   var x = width * 0.185
   var y = height * 0.75
-  var w = width * 0.3
-  var h = height * 0.4
+  var w = width * 0.275
+  var h = height * 0.375
   rect(x, y, w, h, width * 0.01)
 
 
@@ -157,7 +157,7 @@ function drawInfoBox() {
   var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
   var to = decisions['albatros']['decision'] > 1 ? 'be' : 'ki'
   var albatrosMessage = {
-    'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')',
+    'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.',
     'timestamp': decisions['albatros']['timestamp']
   }
   allDecisionMessages.push(albatrosMessage)
@@ -168,7 +168,7 @@ function drawInfoBox() {
     var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
     cycleMessages[cycle] = {
-      'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['cycle'][cycle]['timestamp'] + ')',
+      'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.',
       'timestamp': decisions['cycle'][cycle]['timestamp']
     }
     allDecisionMessages.push(cycleMessages[cycle])
@@ -193,10 +193,10 @@ function drawInfoBox() {
   var messages = [
     externalTempAllow == 1 ?
       (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.") :
-      ("Kinti hőmérséklet miatt nincs fűtés."),
+      ("Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
-    "Utolsó esemény:\n" + latestMessage['message']
+    "Utolsó esemény:\n" + parseTimestampToList(latestMessage['timestamp'])[2]+":"+parseTimestampToList(latestMessage['timestamp'])[3]+" - "+latestMessage['message']
   ].filter(element => element !== '')
 
   fill(0)
@@ -389,7 +389,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     if (mouseOver(x, y + h / 2, w, h)) {
       if (roomSetting == 0 || roomSetting == 1) {
         if (roomSummedStatus != cycleState) {
-          toolTip.show(cycleState == 1 ?'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
+          toolTip.show(cycleState == 1 ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
         }
       }
       else {
