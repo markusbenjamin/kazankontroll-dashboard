@@ -229,7 +229,7 @@ function setDrawingParameters() {
   cyclePipeLength = 0.55
   pumpXPositionOffset = 0.04
   roomXPositionOffset = -0.015 //not in width scale!
-  roomYPositionOffset = 0.09
+  roomYPositionOffset = 0.08
 
   cycleXDir = { 1: 1, 2: 1, 3: -1, 4: -1 }
   cycleYPos = { 1: 0.575, 2: 0.05, 3: 0.05, 4: 0.575 }
