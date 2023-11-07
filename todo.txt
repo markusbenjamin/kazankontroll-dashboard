@@ -2,3 +2,4 @@
 - mutassa, ha override miatt megy egy kör
 - schedules
 - performace
+- kormozódás + őrláng kikapcsolt állapotban
