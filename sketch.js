@@ -376,7 +376,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   rect(x, y - h * 0.125, w * 2.5, h * 0.14)
   noStroke()
 
-  if (roomSummedStatus == 1 || roomSetting - roomStatus > 0) {
+  if (roomSummedStatus == 1 || roomSetting - roomStatus > 1) {
     wantHeatingCount += 1
   }
 
