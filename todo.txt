@@ -1,4 +1,5 @@
 - jelezze, ha egy kör konkrétan ki van kapcsolva, és mutasson azért hőmérsékletet rá
+- internal state monitoring
 - mutassa, ha override miatt megy egy kör
 - schedules
 - performace
