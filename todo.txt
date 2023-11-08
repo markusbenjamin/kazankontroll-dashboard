@@ -3,3 +3,7 @@
 - schedules
 - performace
 - kormozódás + őrláng kikapcsolt állapotban
+- overrideot csúszkával állítani
+- buffer zónát is mutassa
+- mutassa a hőmérsékletváltozás irányát
+- hőmérsékletek felett mutassa tooltipben, hogy mikor lett mérve és ne kerekítve
