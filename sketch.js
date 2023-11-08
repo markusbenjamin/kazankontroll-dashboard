@@ -362,7 +362,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
     textSize(width * 0.017)
-    text(round(roomStatus), x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
+    text(round(roomStatus, 1), x + w * 1.45, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
     textStyle(NORMAL)
   }
 
@@ -477,7 +477,7 @@ function drawPipingAndBoiler() {
   else {
     let wiggleAmount = 0.035
     for (var n = 0; n < 10; n++) {
-      drawFlame(width * 0.5+map(n,0,9,-w/3.75,w/3.75), 1.125 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.0195 * random(1 - wiggleAmount, 1 + wiggleAmount), width * 0.01 * random(1 - wiggleAmount, 1 + wiggleAmount), color(128 / 255, 234 / 255, 237 / 255, 0.875), color(47 / 255, 118 / 255, 200 / 255, 0.9), true)
+      drawFlame(width * 0.5 + map(n, 0, 9, -w / 3.75, w / 3.75), 1.125 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.0195 * random(1 - wiggleAmount, 1 + wiggleAmount), width * 0.01 * random(1 - wiggleAmount, 1 + wiggleAmount), color(128 / 255, 234 / 255, 237 / 255, 0.875), color(47 / 255, 118 / 255, 200 / 255, 0.9), true)
     }
   }
 
