@@ -154,7 +154,7 @@ function drawInfoBox() {
 
 
   allDecisionMessages = []
-  var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
+  var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : '\ndirektben'
   var to = decisions['albatros']['decision'] >= 1 ? 'be' : 'ki'
   var albatrosMessage = {
     'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.',
@@ -165,7 +165,7 @@ function drawInfoBox() {
   var cycleMessages = []
   for (var cycle = 1; cycle < 5; cycle++) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
-    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
+    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : '\ndirektben'
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
     cycleMessages[cycle] = {
       'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.',
