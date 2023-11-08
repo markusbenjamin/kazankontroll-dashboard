@@ -362,7 +362,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
     textSize(width * 0.017)
-    text(int(roomStatus), x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
+    text(round(roomStatus), x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
     textStyle(NORMAL)
   }
 
