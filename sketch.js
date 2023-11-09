@@ -5,6 +5,7 @@ var roomNames, bufferZones
 var sketchAspectRatio
 var toolTip
 var noOfControlledRooms
+var masterOverrides
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight)
@@ -92,6 +93,11 @@ function updateConfig() {
     bufferZones = {}
     for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
       bufferZones[room] = { 'upper': float(configAsDict['buffer_upper_' + room]), 'lower': float(configAsDict['buffer_lower_' + room]) }
+    }
+
+    masterOverrides = {}
+    for (var cycle = 1; cycle <= 4; cycle++) {
+      masterOverrides[cycle] = configAsDict['cycle_' + cycle + '_master_override']
     }
 
     updateDataInFirebase('updates/config/seenByDashboard', true)
@@ -279,12 +285,12 @@ function drawCycles() {
         roomY
       )
 
-      drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
+      drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber, cycle)
     }
   }
 }
 
-function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber) {
+function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber, cycle) {
   fill(1)
   noStroke()
   rect(x, y + h / 2, w, h)
@@ -357,14 +363,16 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
     }
 
-    noStroke()
-    fill(appendAlpha(roomSettingColor, 0.25))
-    topRect(x, y + h * (1 - roomBuffersNormalized[1]), w * 1.125, h * (roomBuffersNormalized[1]-roomBuffersNormalized[0]))
-    fill(roomSettingColor)
-    rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.0125)
-    textSize(width * 0.017)
-    textStyle(BOLD)
-    text(roomSetting, x - w * 1.2, y + map(roomTempMax - roomSetting + roomTempMin, roomTempMin, roomTempMax, 0, h))
+    if (masterOverrides[cycle] != -1) {
+      noStroke()
+      fill(appendAlpha(roomSettingColor, 0.25))
+      topRect(x, y + h * (1 - roomBuffersNormalized[1]), w * 1.125, h * (roomBuffersNormalized[1] - roomBuffersNormalized[0]))
+      fill(roomSettingColor)
+      rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.0125)
+      textSize(width * 0.017)
+      textStyle(BOLD)
+      text(roomSetting, x - w * 1.2, y + map(roomTempMax - roomSetting + roomTempMin, roomTempMin, roomTempMax, 0, h))
+    }
 
     noStroke()
     fill(1)
@@ -374,6 +382,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
     textSize(width * 0.017)
+    textStyle(BOLD)
     text(round(roomStatus, 1), x + w * 1.45, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
     textStyle(NORMAL)
   }
@@ -504,9 +513,18 @@ function drawPump(x, y, state, cycle) {
 
   if (mouseOver(x, y, l * 1.1, l * 1.1)) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
-    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
-    var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
-    toolTip.show(who + ' kör ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['cycle'][cycle]['timestamp'] + ')')
+    var how, to, timestamp
+    if (masterOverrides[cycle] != -1) {
+      how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
+      to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
+      timestamp = '\n(' + decisions['cycle'][cycle]['timestamp'] + ')'
+    }
+    else {
+      how = 'manuálisan'
+      to = masterOverrides[cycle] == -1 ? 'ki' : 'be'
+      timestamp = ''
+    }
+    toolTip.show(who + ' kör ' + how + '\n' + to + 'kapcsolva.' + timestamp)
   }
 
   stroke(0)
