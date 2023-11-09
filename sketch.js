@@ -1,7 +1,7 @@
 var plugInfo
 var roomToCycle, cycleToRoom
 var configAsTable, configAsDict
-var roomNames
+var roomNames, bufferZones
 var sketchAspectRatio
 var toolTip
 var noOfControlledRooms
@@ -89,6 +89,15 @@ function updateConfig() {
 
     noOfControlledRooms = configAsDict['no_of_controlled_rooms']
 
+    //bufferZones = {}
+    //for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
+    //  bufferZones[room] =
+    //    { 'upper': int(configAsDict['buffer_upper_' + room]) },
+    //    { 'lower': int(configAsDict['buffer_lower_' + room]) }
+    //}
+
+    //console.log(bufferZones)
+
     updateDataInFirebase('updates/config/seenByDashboard', true)
   });
 }
@@ -153,12 +162,12 @@ function drawInfoBox() {
   rect(x, y, w, h, width * 0.01)
 
   var kisteremOverride = false
-  if(decisions['albatros']['reason'] ==='zigbee mesh override'){
+  if (decisions['albatros']['reason'] === 'zigbee mesh override') {
     kisteremOverride = true
   }
 
   allDecisionMessages = []
-  var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['albatros']['reason'] ==='zigbee mesh override'?'\njeltovábbítási probléma\nmiatt':'\ndirektben')
+  var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['albatros']['reason'] === 'zigbee mesh override' ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben')
   var to = decisions['albatros']['decision'] >= 1 ? 'be' : 'ki'
   var albatrosMessage = {
     'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.',
@@ -169,7 +178,7 @@ function drawInfoBox() {
   var cycleMessages = []
   for (var cycle = 1; cycle < 5; cycle++) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
-    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['cycle'][cycle]['reason'] ==='zigbee mesh override'?'\njeltovábbítási probléma\nmiatt':'\ndirektben')
+    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['cycle'][cycle]['reason'] === 'zigbee mesh override' ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben')
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
     cycleMessages[cycle] = {
       'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.',
@@ -196,7 +205,7 @@ function drawInfoBox() {
 
   var messages = [
     externalTempAllow == 1 ?
-      (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés.":(wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.")) :
+      (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.")) :
       ("Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : ""//,
@@ -258,6 +267,8 @@ function drawCycles() {
       var roomStatus = roomStatuses[roomNumber]
       var roomSettingNormalized = map(roomSetting, roomTempMin, roomTempMax, 0, 1)
       var roomStatusNormalized = map(roomStatus, roomTempMin, roomTempMax, 0, 1)
+      //var roomBuffersNormalized = [map(bufferZones[roomNumber]['lower'], roomTempMin, roomTempMax, 0, 1), map(bufferZones[roomNumber]['upper'], roomTempMin, roomTempMax, 0, 1)]
+      var roomBuffersNormalized = {}
       var roomSettingColor = color(roomSettingNormalized, 0, 1 - roomSettingNormalized)
       var roomStatusColor = color(roomStatusNormalized, 0, 1 - roomStatusNormalized)
       var roomBaseSize = width * 0.1
@@ -273,12 +284,12 @@ function drawCycles() {
         roomY
       )
 
-      drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
+      drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber)
     }
   }
 }
 
-function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber) {
+function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber) {
   fill(1)
   noStroke()
   rect(x, y + h / 2, w, h)
@@ -351,8 +362,11 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
     }
 
-    noStroke()
-    fill(roomSettingColor)
+    //bufferZones
+    //noStroke()
+    //fill(roomSettingColor.setAlpha(0.25))
+    //topRect(x, y + h * (1 - roomSettingNormalized - roomBuffersNormalized[0]), w * 1.25, h * (roomBuffersNormalized[1] - roomBuffersNormalized[0]))
+    //fill(roomSettingColor)
     rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.025)
     textSize(width * 0.017)
     textStyle(BOLD)
@@ -380,7 +394,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   rect(x, y - h * 0.125, w * 2.5, h * 0.14)
   noStroke()
 
-  if (roomSummedStatus == 1 || roomSetting - roomStatus > 1) {
+  if (roomSummedStatus == 1 || roomSetting - roomStatus >= 0.5) {
     wantHeatingCount += 1
   }
 
