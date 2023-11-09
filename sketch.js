@@ -366,7 +366,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     //noStroke()
     //fill(roomSettingColor.setAlpha(0.25))
     //topRect(x, y + h * (1 - roomSettingNormalized - roomBuffersNormalized[0]), w * 1.25, h * (roomBuffersNormalized[1] - roomBuffersNormalized[0]))
-    //fill(roomSettingColor)
+    fill(roomSettingColor)
     rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.025)
     textSize(width * 0.017)
     textStyle(BOLD)
