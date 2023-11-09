@@ -1,11 +1,13 @@
 - jelezze, ha egy kör konkrétan ki van kapcsolva, és mutasson azért hőmérsékletet rá
-- internal state monitoring
+- internal state mirroring
 - mutassa, ha override miatt megy egy kör
 - schedules
 - performace
 - kormozódás + őrláng kikapcsolt állapotban
 - overrideot csúszkával állítani
-- buffer zónát is mutassa
 - mutassa a hőmérsékletváltozás irányát
 - hőmérsékletek felett mutassa tooltipben, hogy mikor lett mérve és ne kerekítve
+
+DONE
 - nagy lángok helyett valódibb kazánláng
+- buffer zónát is mutassa

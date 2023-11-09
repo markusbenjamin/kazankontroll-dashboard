@@ -89,14 +89,10 @@ function updateConfig() {
 
     noOfControlledRooms = configAsDict['no_of_controlled_rooms']
 
-    //bufferZones = {}
-    //for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
-    //  bufferZones[room] =
-    //    { 'upper': int(configAsDict['buffer_upper_' + room]) },
-    //    { 'lower': int(configAsDict['buffer_lower_' + room]) }
-    //}
-
-    //console.log(bufferZones)
+    bufferZones = {}
+    for (var room = 1; room <= configAsDict['no_of_controlled_rooms']; room++) {
+      bufferZones[room] = { 'upper': float(configAsDict['buffer_upper_' + room]), 'lower': float(configAsDict['buffer_lower_' + room]) }
+    }
 
     updateDataInFirebase('updates/config/seenByDashboard', true)
   });
@@ -168,7 +164,7 @@ function drawInfoBox() {
 
   allDecisionMessages = []
   var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['albatros']['reason'] === 'zigbee mesh override' ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben')
-  var to = decisions['albatros']['decision'] >= 1 ? 'be' : 'ki'
+  var to = decisions['albatros']['decision'] == 0 ? 'ki' : 'be'
   var albatrosMessage = {
     'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.',
     'timestamp': decisions['albatros']['timestamp']
@@ -208,8 +204,8 @@ function drawInfoBox() {
       (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.")) :
       ("Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
-      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : ""//,
-    //"Utolsó esemény:\n" + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
+      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
+    "Utolsó esemény:\n" + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
   ].filter(element => element !== '')
 
   fill(0)
@@ -267,8 +263,7 @@ function drawCycles() {
       var roomStatus = roomStatuses[roomNumber]
       var roomSettingNormalized = map(roomSetting, roomTempMin, roomTempMax, 0, 1)
       var roomStatusNormalized = map(roomStatus, roomTempMin, roomTempMax, 0, 1)
-      //var roomBuffersNormalized = [map(bufferZones[roomNumber]['lower'], roomTempMin, roomTempMax, 0, 1), map(bufferZones[roomNumber]['upper'], roomTempMin, roomTempMax, 0, 1)]
-      var roomBuffersNormalized = {}
+      var roomBuffersNormalized = [map(roomSetting - bufferZones[roomNumber]['lower'], roomTempMin, roomTempMax, 0, 1), map(roomSetting + bufferZones[roomNumber]['upper'], roomTempMin, roomTempMax, 0, 1)]
       var roomSettingColor = color(roomSettingNormalized, 0, 1 - roomSettingNormalized)
       var roomStatusColor = color(roomStatusNormalized, 0, 1 - roomStatusNormalized)
       var roomBaseSize = width * 0.1
@@ -362,12 +357,11 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
     }
 
-    //bufferZones
-    //noStroke()
-    //fill(roomSettingColor.setAlpha(0.25))
-    //topRect(x, y + h * (1 - roomSettingNormalized - roomBuffersNormalized[0]), w * 1.25, h * (roomBuffersNormalized[1] - roomBuffersNormalized[0]))
+    noStroke()
+    fill(appendAlpha(roomSettingColor, 0.25))
+    topRect(x, y + h * (1 - roomBuffersNormalized[1]), w * 1.125, h * (roomBuffersNormalized[1]-roomBuffersNormalized[0]))
     fill(roomSettingColor)
-    rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.025)
+    rect(x, y + h * (1 - roomSettingNormalized), w * 1.25, h * 0.0125)
     textSize(width * 0.017)
     textStyle(BOLD)
     text(roomSetting, x - w * 1.2, y + map(roomTempMax - roomSetting + roomTempMin, roomTempMin, roomTempMax, 0, h))
@@ -672,4 +666,14 @@ function multiLineTextWidth(text) {
 
   // Return the maximum width
   return max(widths);
+}
+
+function appendAlpha(col, alphaVal) {
+  // Extract the RGB components from the color object
+  let r = red(col);
+  let g = green(col);
+  let b = blue(col);
+
+  // Return a new color with the specified alpha value
+  return color(r, g, b, alphaVal);
 }
