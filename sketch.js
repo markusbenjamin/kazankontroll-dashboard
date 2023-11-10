@@ -291,6 +291,10 @@ function drawCycles() {
 
       drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber, cycle)
     }
+    
+    if(decisions['cycle'][cycle]['reason']==='vote'){
+    wantHeatingCount += decisions['cycle'][cycle]['decision']
+    }
   }
 }
 
@@ -404,10 +408,6 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   fill(229 / 255, 222 / 255, 202 / 255)
   rect(x, y - h * 0.125, w * 2.5, h * 0.14)
   noStroke()
-
-  if (roomSummedStatus == 1 || roomSetting - roomStatus >= 0.5) {
-    wantHeatingCount += 1
-  }
 
   var problematic = false
 
