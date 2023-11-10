@@ -1,14 +1,11 @@
-
 - internal state mirroring
-
 - schedules
     - mutassa, ha override miatt megy egy kör
 - performace
 - kormozódás kikapcsolt állapotban
-
 - mutassa a hőmérsékletváltozás irányát
-- hőmérsékletek felett mutassa tooltipben, hogy mikor lett mérve és ne kerekítve
 
 DONE
 - buffer zónát is mutassa
 - jelezze, ha egy kör konkrétan ki van kapcsolva, és mutasson azért hőmérsékletet rá
+- hőmérsékletek felett mutassa tooltipben, hogy mikor lett mérve és ne kerekítve

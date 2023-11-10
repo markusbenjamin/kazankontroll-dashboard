@@ -58,6 +58,8 @@ var pumpStatuses = { 1: 0, 2: 0, 3: 0, 4: 0 }
 var roomSettings = { 1: 1, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
 var roomStatuses = { 1: 0.5, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
 var externalTempAllow = 0
+var roomReachable
+var roomLastUpdate
 
 function updateState(dataFromFirebase) {
   albatrosStatus = dataFromFirebase['albatrosStatus']
@@ -65,6 +67,8 @@ function updateState(dataFromFirebase) {
   roomSettings = dataFromFirebase['roomSettings']
   roomStatuses = dataFromFirebase['roomStatuses']
   externalTempAllow = dataFromFirebase['externalTempAllow']
+  roomReachable = dataFromFirebase['roomReachable']
+  roomLastUpdate = dataFromFirebase['roomLastUpdate']
 }
 
 function updateConfig() {
@@ -378,13 +382,17 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     fill(1)
     ellipse(x, y + h * (1 - roomStatusNormalized), 1.25 * w / 2.5, 1.25 * w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), 1.8 * w / 6, h * roomStatusNormalized)
-    fill(roomStatusColor)
+    roomReachable[roomNumber] ? fill(roomStatusColor): fill(0.5)
     ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
     textSize(width * 0.017)
     textStyle(BOLD)
-    text(round(roomStatus, 1), x + w * 1.45, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
+    text(round(roomStatus), x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
     textStyle(NORMAL)
+    if(mouseOver(x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h),width*0.05,height*0.05)){
+      var lastUpdateHourMinute = roomLastUpdate[roomNumber].slice(-5)
+      toolTip.show(roomReachable[roomNumber]? roomStatus+' °C\n('+lastUpdateHourMinute+')':'Szenzor nem elérhető!')
+    }
   }
 
   stroke(cycleColor)
