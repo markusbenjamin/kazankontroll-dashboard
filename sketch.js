@@ -215,7 +215,7 @@ function drawInfoBox() {
       ("Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
-    "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "")+ parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
+    "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
   ].filter(element => element !== '')
 
   fill(0)
@@ -291,9 +291,9 @@ function drawCycles() {
 
       drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber, cycle)
     }
-    
-    if(decisions['cycle'][cycle]['reason']==='vote'){
-    wantHeatingCount += decisions['cycle'][cycle]['decision']
+
+    if (decisions['cycle'][cycle]['reason'] === 'vote') {
+      wantHeatingCount += decisions['cycle'][cycle]['decision']
     }
   }
 }
@@ -382,22 +382,33 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       text(roomSetting, x - w * 1.2, y + map(roomTempMax - roomSetting + roomTempMin, roomTempMin, roomTempMax, 0, h))
     }
 
+    var lastUpdateInHours = minutesSince(roomLastUpdate[roomNumber]) / 60
+    //console.log(lastUpdateInHours)
+
+
+    fill(appendAlpha(roomStatusColor), 1 - map(lastUpdateInHours, 0, 12, 0, 1))
+
     noStroke()
     fill(1)
     ellipse(x, y + h * (1 - roomStatusNormalized), 1.25 * w / 2.5, 1.25 * w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), 1.8 * w / 6, h * roomStatusNormalized)
-    roomReachable[roomNumber] ? fill(roomStatusColor): fill(0.5)
+    roomReachable[roomNumber] == false || lastUpdateInHours >= 12 ? fill(0.5) : fill(appendAlpha(roomStatusColor), 1 - map(lastUpdateInHours, 0, 12, 0, 1))
     ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
     textSize(width * 0.017)
     textStyle(BOLD)
     text(round(roomStatus), x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h))
     textStyle(NORMAL)
-    if(mouseOver(x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h),width*0.05,height*0.05)){
+    if (mouseOver(x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h), width * 0.05, height * 0.05)) {
       var lastUpdateHourMinute = roomLastUpdate[roomNumber].slice(-5)
-      toolTip.show(roomReachable[roomNumber]? round(roomStatus,1)+' °C\n('+lastUpdateHourMinute+')':'Szenzor nem elérhető!')
+      toolTip.show(roomReachable[roomNumber] ? round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')' : 'Szenzor nem elérhető!')
+      toolTip.show(roomReachable[roomNumber] == false || lastUpdateInHours >= 12 ? ('Szenzor nem elérhető!') : round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')' )
     }
   }
+
+  //HERE: 
+  //mutassa külön, ha valamelyik kör régen frissült vagy ha elérhetetlen a szenzor
+  //zigbee mesh decisiont kifejezetten valamelyik körre jelenítsen meg
 
   stroke(cycleColor)
   strokeWeight(pipeThickness / 2)
@@ -702,4 +713,23 @@ function appendAlpha(col, alphaVal) {
 
   // Return a new color with the specified alpha value
   return color(r, g, b, alphaVal);
+}
+
+function minutesSince(dateString) {
+  // Assuming dateString is in 'MM.DD. HH:MM' format
+  const [monthDay, time] = dateString.split('. ');
+  const [month, day] = monthDay.split('.');
+  const [hours, minutes] = time.split(':');
+
+  // Constructing a Date object from the given string
+  const year = new Date().getFullYear(); // Assuming current year
+  const date = new Date(year, month - 1, day, hours, minutes);
+
+  // Getting current date and time
+  const now = new Date();
+
+  // Calculating the difference in minutes
+  const diff = (now - date) / (1000 * 60); // Convert milliseconds to minutes
+
+  return Math.max(0, Math.floor(diff)); // Return the difference, rounded down, or 0 if it's a future date
 }
