@@ -168,12 +168,14 @@ function drawInfoBox() {
   rect(x, y, w, h, width * 0.01)
 
   var kisteremOverride = false
-  if (decisions['albatros']['reason'] === 'zigbee mesh override') {
-    kisteremOverride = true
+  for (const room in decisions['kisteremOverride']) {
+    if (decisions['kisteremOverride'][room]['override']) {
+      kisteremOverride = true
+    }
   }
 
   allDecisionMessages = []
-  var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['albatros']['reason'] === 'zigbee mesh override' ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben')
+  var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : (kisteremOverride ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben')
   var to = decisions['albatros']['decision'] == 0 ? 'ki' : 'be'
   var albatrosMessage = {
     'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.',
@@ -184,7 +186,7 @@ function drawInfoBox() {
   var cycleMessages = []
   for (var cycle = 1; cycle < 5; cycle++) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
-    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['cycle'][cycle]['reason'] === 'zigbee mesh override' ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben')
+    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben')
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
     cycleMessages[cycle] = {
       'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.',
@@ -210,8 +212,8 @@ function drawInfoBox() {
   }
 
   var messages = [
-    externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.") :đ ("Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
+    kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." :(externalTempAllow == 1 ?
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
     "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
@@ -384,14 +386,13 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     var lastUpdateInHours = minutesSince(roomLastUpdate[roomNumber]) / 60
     //console.log(lastUpdateInHours)
 
-
-    fill(appendAlpha(roomStatusColor), 1 - map(lastUpdateInHours, 0, 12, 0, 1))
+    var lastUpdateInHoursLimit = 12
 
     noStroke()
     fill(1)
     ellipse(x, y + h * (1 - roomStatusNormalized), 1.25 * w / 2.5, 1.25 * w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), 1.8 * w / 6, h * roomStatusNormalized)
-    roomReachable[roomNumber] == false || lastUpdateInHours >= 12 ? fill(0.5) : fill(appendAlpha(roomStatusColor), 1 - map(lastUpdateInHours, 0, 12, 0, 1))
+    roomReachable[roomNumber] == false || lastUpdateInHours >= lastUpdateInHoursLimit ? fill(0.5) : fill(roomStatusColor)
     ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
     textSize(width * 0.017)
@@ -401,7 +402,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     if (mouseOver(x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h), width * 0.05, height * 0.05)) {
       var lastUpdateHourMinute = roomLastUpdate[roomNumber].slice(-5)
       toolTip.show(roomReachable[roomNumber] ? round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')' : 'Szenzor nem elérhető!')
-      toolTip.show(roomReachable[roomNumber] == false || lastUpdateInHours >= 12 ? ('Szenzor nem elérhető!') : round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')')
+      toolTip.show(roomReachable[roomNumber] == false || lastUpdateInHours >= lastUpdateInHoursLimit ? ('Szenzor nem elérhető!') : round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')')
     }
   }
 
@@ -492,7 +493,7 @@ function drawPipingAndBoiler() {
   if (mouseOver(x, y, w, h)) {
     var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
     var to = decisions['albatros']['decision'] > 0 ? 'be' : 'ki'
-    toolTip.show('Kazánok ' + how + ' ' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')')
+    toolTip.show('Kazánok ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')')
   }
 
   stroke(albatrosStatus, 0, 1 - albatrosStatus)
@@ -533,7 +534,7 @@ function drawPump(x, y, state, cycle) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
     var how, to, timestamp
     if (masterOverrides[cycle] != -1) {
-      how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
+      how = decisions['kisteremOverride'][cycle]['override'] == 1 ? 'jeltovábbítási\nprobléma miatt':(decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
       to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
       timestamp = '\n(' + decisions['cycle'][cycle]['timestamp'] + ')'
     }
