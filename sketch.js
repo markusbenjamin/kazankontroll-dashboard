@@ -131,6 +131,74 @@ function draw() {
   }
 }
 
+function drawTempData() {
+
+  //BEHAVES DIFFERENTLY IN CONSOLE BUT WHY?!?!?
+  var alma = loadTempDataForDays(1, '2023.11.08', '2023.11.10')
+
+  console.log(alma.length)
+}
+
+function loadTempDataForDays(room, startDate, endDate) {
+  var daysInRange = getDaysInRange(parseTimestampWithYearToDict(startDate), parseTimestampWithYearToDict(endDate))
+
+  var paths = []
+  for (const dataDay of daysInRange) {
+    paths.push([dataDay['year'], dataDay['month'], dataDay['day']])
+  }
+
+  var tempData = []
+  for (const path of paths) {
+    loadTable("measured_temps/" + path.map(zeroPaddedString).join('_') + "/room_" + room + ".csv", function (table) {
+      // This callback function will be called once the table is loaded
+      tempData.push(table.getRows().map(row => row.arr))
+    });
+  }
+
+  return tempData
+}
+
+function parseTimestampWithYearToDict(timestamp) {
+  let year = parseInt(timestamp.substring(0, 4), 10);
+  let month = parseInt(timestamp.substring(5, 7), 10);
+  let day = parseInt(timestamp.substring(8, 10), 10);
+  let hour = parseInt(timestamp.substring(11, 13), 10);
+  let minute = parseInt(timestamp.substring(14, 16), 10);
+  return { 'year': year, 'month': month, 'day': day, 'hour': hour, 'minute': minute };
+}
+
+function zeroPaddedString(timeValue) {
+  return timeValue < 10 ? '0' + timeValue : timeValue
+}
+
+function getDaysInRange(startDateDict, endDateDict) {
+  function createDateString(dict) {
+    return `${dict.year}-${String(dict.month).padStart(2, '0')}-${String(dict.day).padStart(2, '0')}`;
+  }
+
+  function addDays(date, days) {
+    let result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }
+
+  let start = new Date(createDateString(startDateDict));
+  let end = new Date(createDateString(endDateDict));
+  let currentDate = new Date(start);
+  let daysInRange = [];
+
+  while (currentDate <= end) {
+    daysInRange.push({
+      year: currentDate.getFullYear(),
+      month: currentDate.getMonth() + 1, // JavaScript months are 0-indexed
+      day: currentDate.getDate()
+    });
+    currentDate = addDays(currentDate, 1);
+  }
+
+  return daysInRange;
+}
+
 function parseTimestampToList(timestamp) {
   let month = parseInt(timestamp.substring(0, 2), 10);
   let day = parseInt(timestamp.substring(3, 5), 10);
@@ -212,7 +280,7 @@ function drawInfoBox() {
   }
 
   var messages = [
-    kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." :(externalTempAllow == 1 ?
+    kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : (externalTempAllow == 1 ?
       (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
@@ -406,10 +474,6 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     }
   }
 
-  //HERE: 
-  //mutassa külön, ha valamelyik kör régen frissült vagy ha elérhetetlen a szenzor
-  //zigbee mesh decisiont kifejezetten valamelyik körre jelenítsen meg
-
   stroke(cycleColor)
   strokeWeight(pipeThickness / 2)
   line(x - w / 2, y, x + w / 2, y)
@@ -534,7 +598,7 @@ function drawPump(x, y, state, cycle) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
     var how, to, timestamp
     if (masterOverrides[cycle] != -1) {
-      how = decisions['kisteremOverride'][cycle]['override'] == 1 ? 'jeltovábbítási\nprobléma miatt':(decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
+      how = decisions['kisteremOverride'][cycle]['override'] == 1 ? 'jeltovábbítási\nprobléma miatt' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
       to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
       timestamp = '\n(' + decisions['cycle'][cycle]['timestamp'] + ')'
     }
