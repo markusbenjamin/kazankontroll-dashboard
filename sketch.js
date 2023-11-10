@@ -211,8 +211,7 @@ function drawInfoBox() {
 
   var messages = [
     externalTempAllow == 1 ?
-      (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.")) :
-      ("Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.") :đ ("Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
     "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
@@ -402,7 +401,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     if (mouseOver(x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h), width * 0.05, height * 0.05)) {
       var lastUpdateHourMinute = roomLastUpdate[roomNumber].slice(-5)
       toolTip.show(roomReachable[roomNumber] ? round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')' : 'Szenzor nem elérhető!')
-      toolTip.show(roomReachable[roomNumber] == false || lastUpdateInHours >= 12 ? ('Szenzor nem elérhető!') : round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')' )
+      toolTip.show(roomReachable[roomNumber] == false || lastUpdateInHours >= 12 ? ('Szenzor nem elérhető!') : round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')')
     }
   }
 
