@@ -113,7 +113,6 @@ function loadLogs() {
 }
 
 var decisions
-
 function readDecisions(dataFromFirebase) {
   decisions = dataFromFirebase
 }
@@ -125,37 +124,70 @@ function draw() {
     drawStateVisualization()
     drawInfoBox()
 
+    //drawTempData()
+
     manageToolTip()
   } catch (error) {
     console.log(error.message);
   }
 }
 
+var tempData
 function drawTempData() {
+  tempData
+  var room = 1
+  var fromDate = '2023.11.08'
+  var toDate = '2023.11.10'
+  loadTempDataForDays(room, fromDate, toDate).then(result => { tempData = result })
 
-  //BEHAVES DIFFERENTLY IN CONSOLE BUT WHY?!?!?
-  var alma = loadTempDataForDays(1, '2023.11.08', '2023.11.10')
+  var startDate = tempData[0][0]
+  var endDate = tempData[tempData.length - 2][0]
+  var totalMinutes = calculateTimeDifferenceInMinutes(startDate, endDate)
 
-  console.log(alma.length)
+  stroke(0)
+  beginShape()
+  for (const dataPoint of tempData) {
+    //console.log(dataPoint)
+    vertex(
+      map(calculateTimeDifferenceInMinutes(startDate, dataPoint[0]), 0, totalMinutes, width * 0.25, width * 0.75),
+      map(parseFl(dataPoint[1]), 10, 30, height * 0.25, height * 0.75)
+    )
+  }
+  endShape()
 }
 
-function loadTempDataForDays(room, startDate, endDate) {
+async function loadTempDataForDays(room, startDate, endDate) {
+  var room = 1
+  var startDate = '2023.11.08'
+  var endDate = '2023.11.10'
   var daysInRange = getDaysInRange(parseTimestampWithYearToDict(startDate), parseTimestampWithYearToDict(endDate))
 
   var paths = []
   for (const dataDay of daysInRange) {
-    paths.push([dataDay['year'], dataDay['month'], dataDay['day']])
+    paths.push("measured_temps/" + [dataDay['year'], dataDay['month'], dataDay['day']].map(zeroPaddedString).join('_') + "/room_" + room + ".csv")
   }
 
-  var tempData = []
-  for (const path of paths) {
-    loadTable("measured_temps/" + path.map(zeroPaddedString).join('_') + "/room_" + room + ".csv", function (table) {
-      // This callback function will be called once the table is loaded
-      tempData.push(table.getRows().map(row => row.arr))
-    });
-  }
-
+  var tempData = await loadAndConcatenateCSVs(paths)
   return tempData
+}
+
+const loadCSV = async (path) => {
+  const response = await fetch(path);
+  const text = await response.text();
+  // Assuming CSV content is separated by newlines and commas
+  return text.split('\r\n').map(line => line.split(','));
+};
+
+// Function to load all CSV files and concatenate their lines
+const loadAndConcatenateCSVs = async (filePaths) => {
+  const allLines = [];
+
+  for (const path of filePaths) {
+    const lines = await loadCSV(path);
+    allLines.push(...lines);
+  }
+
+  return allLines;
 }
 
 function parseTimestampWithYearToDict(timestamp) {
@@ -242,8 +274,15 @@ function drawInfoBox() {
     }
   }
 
+  var masterOnDetected = false
+  for (var cycle = 1; cycle < 5; cycle++) {
+    if (masterOverrides[cycle] == 1) {
+      masterOnDetected = true
+    }
+  }
+
   allDecisionMessages = []
-  var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : (kisteremOverride ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben')
+  var how = masterOnDetected ? 'manuálisan\n' : (decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : (kisteremOverride ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
   var to = decisions['albatros']['decision'] == 0 ? 'ki' : 'be'
   var albatrosMessage = {
     'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.',
@@ -254,7 +293,7 @@ function drawInfoBox() {
   var cycleMessages = []
   for (var cycle = 1; cycle < 5; cycle++) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
-    var how = decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben')
+    var how = masterOverrides[cycle] != 0 ? 'manuálisan ' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
     cycleMessages[cycle] = {
       'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.',
@@ -597,7 +636,7 @@ function drawPump(x, y, state, cycle) {
   if (mouseOver(x, y, l * 1.1, l * 1.1)) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
     var how, to, timestamp
-    if (masterOverrides[cycle] != -1) {
+    if (masterOverrides[cycle] == 0) {
       how = decisions['kisteremOverride'][cycle]['override'] == 1 ? 'jeltovábbítási\nprobléma miatt' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
       to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
       timestamp = '\n(' + decisions['cycle'][cycle]['timestamp'] + ')'
@@ -777,6 +816,20 @@ function appendAlpha(col, alphaVal) {
 
   // Return a new color with the specified alpha value
   return color(r, g, b, alphaVal);
+}
+
+function calculateTimeDifferenceInMinutes(dateString1, dateString2) {
+  // Parse the date strings into Date objects
+  const date1 = new Date(dateString1);
+  const date2 = new Date(dateString2);
+
+  // Calculate the difference in milliseconds
+  const differenceInMilliseconds = Math.abs(date2 - date1);
+
+  // Convert milliseconds to minutes
+  const differenceInMinutes = differenceInMilliseconds / 1000 / 60;
+
+  return differenceInMinutes;
 }
 
 function minutesSince(dateString) {
