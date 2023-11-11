@@ -593,8 +593,15 @@ function drawPipingAndBoiler() {
   var w = width * 0.054
   var h = width * 0.09
 
+  var masterOnDetected = false
+  for (var cycle = 1; cycle < 5; cycle++) {
+    if (masterOverrides[cycle] == 1) {
+      masterOnDetected = true
+    }
+  }
+
   if (mouseOver(x, y, w, h)) {
-    var how = decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben'
+    var how = masterOnDetected ? 'manuálisan':(decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
     var to = decisions['albatros']['decision'] > 0 ? 'be' : 'ki'
     toolTip.show('Kazánok ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')')
   }
