@@ -319,7 +319,7 @@ function drawInfoBox() {
   }
 
   var messages = [
-    kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : (externalTempAllow == 1 ?
+    kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
       (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
