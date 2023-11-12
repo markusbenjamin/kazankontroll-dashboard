@@ -125,10 +125,10 @@ var roomToDraw = 0 //DEV
 function draw() {
   try {
     background(229 / 255, 222 / 255, 202 / 255)
-    //drawStateVisualization()
-    //drawInfoBox()
+    drawStateVisualization()
+    drawInfoBox()
 
-    var prevRoom = roomToDraw //DEV
+    /*var prevRoom = roomToDraw //DEV
     roomToDraw = round(map(mouseX, 0, width, 1, 7)) //DEV
     if (prevRoom != roomToDraw) { //DEV
       dataSetLoaded = false //DEV
@@ -139,7 +139,7 @@ function draw() {
     roomToDraw = 4 //DEV
     text(roomToDraw, width * 0.5, height * 0.15) //DEV
 
-    //drawTempData(roomToDraw, '2023.11.09', '2023.11.09')
+    //drawTempData(roomToDraw, '2023.11.09', '2023.11.09')*/
     manageToolTip()
   } catch (error) {
     console.log(error.message);
