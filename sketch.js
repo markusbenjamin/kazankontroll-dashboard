@@ -6,6 +6,7 @@ var sketchAspectRatio
 var toolTip
 var noOfControlledRooms
 var masterOverrides
+var dataSetLoaded
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight)
@@ -39,6 +40,8 @@ function setup() {
       updateConfig()
     }
   })
+
+  dataSetLoaded = false
 }
 
 var roomTempMax
@@ -118,48 +121,102 @@ function readDecisions(dataFromFirebase) {
 }
 
 var problematicCount, wantHeatingCount
-
+var roomToDraw = 0 //DEV
 function draw() {
   try {
-    drawStateVisualization()
-    drawInfoBox()
+    background(229 / 255, 222 / 255, 202 / 255)
+    //drawStateVisualization()
+    //drawInfoBox()
 
-    //drawTempData()
+    var prevRoom = roomToDraw //DEV
+    roomToDraw = round(map(mouseX, 0, width, 1, 7)) //DEV
+    if (prevRoom != roomToDraw) { //DEV
+      dataSetLoaded = false //DEV
+    } //DEV
+    textSize(30) //DEV
+    noStroke() //DEV
+    fill(0) //DEV
+    roomToDraw = 4 //DEV
+    text(roomToDraw, width * 0.5, height * 0.15) //DEV
 
+    //drawTempData(roomToDraw, '2023.11.09', '2023.11.09')
     manageToolTip()
   } catch (error) {
     console.log(error.message);
   }
 }
 
-var tempData
-function drawTempData() {
-  tempData
-  var room = 1
-  var fromDate = '2023.11.08'
-  var toDate = '2023.11.10'
-  loadTempDataForDays(room, fromDate, toDate).then(result => { tempData = result })
+var tempData //DEV
+function drawTempData(room, fromDate, toDate) {
+  // var tempData //DEV
+  if (dataSetLoaded == false) {
+    loadTempDataForDays(room, fromDate, toDate).then(result => { tempData = result })
+    dataSetLoaded = true
+  }
 
   var startDate = tempData[0][0]
   var endDate = tempData[tempData.length - 2][0]
   var totalMinutes = calculateTimeDifferenceInMinutes(startDate, endDate)
+  var minMaxTemp = minMax((transposeArray(tempData))[1].map(parseFloat).filter(value => !Number.isNaN(value)))
 
+  noFill()
   stroke(0)
+  strokeWeight(5)
   beginShape()
-  for (const dataPoint of tempData) {
-    //console.log(dataPoint)
-    vertex(
-      map(calculateTimeDifferenceInMinutes(startDate, dataPoint[0]), 0, totalMinutes, width * 0.25, width * 0.75),
-      map(parseFl(dataPoint[1]), 10, 30, height * 0.25, height * 0.75)
+  for (let i = 0; i < tempData.length; i++) {
+    point(
+      map(calculateTimeDifferenceInMinutes(startDate, tempData[i][0]), 0, totalMinutes, width * 0.25, width * 0.75),
+      height-map(tempData[i][1], minMaxTemp[0], minMaxTemp[1], height * 0.1, height * 0.9)
     )
   }
+  endShape()
+
+  var timeWindow = round(map(mouseY, 0, height, 2, 24)) * 5
+  timeWindow = 60
+  textSize(30) //DEV
+  noStroke() //DEV
+  fill(0) //DEV
+  text(frameRate(), width * 0.5, height * 0.05) //DEV
+
+  noFill()
+  stroke(1, 0, 0)
+  strokeWeight(3)
+  beginShape()
+
+  //Sonoff szobáknak: simítás aztán nem-lineáris interpoláció
+  //Tuya szobáknak: nem-lineáris interpoláció
+  //legyen több szobás adatstruktúra
+  //adat betöltése és előkészítése csak egyszer a nézet megnyitásakor
+
+  for (let i = 0; i < tempData.length; i++) {
+    // Define symmetric time window around current data point
+    let windowData = tempData.filter((_, j) =>
+      Math.abs(calculateTimeDifferenceInMinutes(tempData[i][0], tempData[j][0])) <= timeWindow / 2
+    );
+
+    let weightedSum = 0;
+    let totalWeight = 0;
+    let currentTimestamp = tempData[i][0];
+
+    // Apply weights and calculate weighted sum and total weight
+    for (let [timestamp, value] of windowData) {
+      const weight = timeWindow / 2 - Math.abs(calculateTimeDifferenceInMinutes(currentTimestamp, timestamp));
+      weightedSum += parseFloat(value) * weight;
+      totalWeight += weight;
+    }
+
+    // Calculate average and ensure at least some data was in the window
+    const average = (totalWeight > 0) ? (weightedSum / totalWeight) : parseFloat(tempData[i][1]);
+    vertex(
+      map(calculateTimeDifferenceInMinutes(startDate, tempData[i][0]), 0, totalMinutes, width * 0.25, width * 0.75),
+      height-map(average, minMaxTemp[0], minMaxTemp[1], height * 0.1, height * 0.9)
+    )
+  }
+
   endShape()
 }
 
 async function loadTempDataForDays(room, startDate, endDate) {
-  var room = 1
-  var startDate = '2023.11.08'
-  var endDate = '2023.11.10'
   var daysInRange = getDaysInRange(parseTimestampWithYearToDict(startDate), parseTimestampWithYearToDict(endDate))
 
   var paths = []
@@ -167,7 +224,12 @@ async function loadTempDataForDays(room, startDate, endDate) {
     paths.push("measured_temps/" + [dataDay['year'], dataDay['month'], dataDay['day']].map(zeroPaddedString).join('_') + "/room_" + room + ".csv")
   }
 
+  for (const path of paths) {
+    console.log(paths.length)
+  }
+
   var tempData = await loadAndConcatenateCSVs(paths)
+  tempData.filter(element => element.length == 2)
   return tempData
 }
 
@@ -187,7 +249,7 @@ const loadAndConcatenateCSVs = async (filePaths) => {
     allLines.push(...lines);
   }
 
-  return allLines;
+  return allLines
 }
 
 function parseTimestampWithYearToDict(timestamp) {
@@ -293,7 +355,7 @@ function drawInfoBox() {
   var cycleMessages = []
   for (var cycle = 1; cycle < 5; cycle++) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
-    var how = masterOverrides[cycle] != 0 ? 'manuálisan ' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
+    var how = masterOverrides[cycle] != 0 ? 'manuálisan\n' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
     cycleMessages[cycle] = {
       'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.',
@@ -342,7 +404,6 @@ function manageToolTip() {
 function drawStateVisualization() {
   problematicCount = 0
   wantHeatingCount = 0
-  background(229 / 255, 222 / 255, 202 / 255)
   setDrawingParameters()
   drawCycles()
   drawPipingAndBoiler()
@@ -601,7 +662,7 @@ function drawPipingAndBoiler() {
   }
 
   if (mouseOver(x, y, w, h)) {
-    var how = masterOnDetected ? 'manuálisan':(decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
+    var how = masterOnDetected ? 'manuálisan' : (decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
     var to = decisions['albatros']['decision'] > 0 ? 'be' : 'ki'
     toolTip.show('Kazánok ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')')
   }
@@ -856,4 +917,12 @@ function minutesSince(dateString) {
   const diff = (now - date) / (1000 * 60); // Convert milliseconds to minutes
 
   return Math.max(0, Math.floor(diff)); // Return the difference, rounded down, or 0 if it's a future date
+}
+
+function transposeArray(array) {
+  return array[0].map((_, colIndex) => array.map(row => row[colIndex]));
+}
+
+function minMax(array) {
+  return [min(array), max(array)]
 }
