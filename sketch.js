@@ -608,7 +608,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Alsó hiszterézis.'
-        roomNameDecoration = '😐'
+        roomNameDecoration = '😌'
         wantHeatingList.push(roomName)
       }
     }
@@ -626,7 +626,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Felső hiszterézis.'
-        roomNameDecoration = '😐'
+        roomNameDecoration = '😊'
       }
     }
   }
