@@ -469,7 +469,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   noStroke()
   rect(x, y + h / 2, w, h)
 
-  var roomSummedStatus = roomSetting * externalTempAllow
+  var roomSummedStatus = roomSetting * externalTempAllow * (masterOverrides[cycle] == -1 ? 0 : 1)
 
   if (roomSetting == 0 || roomSetting == 1) {
     fill(0)
@@ -549,8 +549,6 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     }
 
     var lastUpdateInHours = minutesSince(roomLastUpdate[roomNumber]) / 60
-    //console.log(lastUpdateInHours)
-
     var lastUpdateInHoursLimit = 12
 
     noStroke()
