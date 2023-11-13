@@ -577,36 +577,63 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   rect(x, y - h * 0.125, w * 2.5, h * 0.14)
   noStroke()
 
+  var roomMessage = ''
   var problematic = false
 
-  if (roomSetting == 0 || roomSetting == 1) {
-    if (roomSummedStatus != cycleState) {
-      problematicCount += 1
-      problematic = true
-      if (mouseOver(x, y + h / 2, w, h)) {
-        toolTip.show(cycleState == 1 ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
+  if (masterOverrides[cycle] == 0) {
+    if (roomSetting == 0 || roomSetting == 1) {
+      if (roomSummedStatus != cycleState) {
+        problematicCount += 1
+        problematic = true
+        if (mouseOver(x, y + h / 2, w, h)) {
+        }
+        roomMessage = (cycleState == 1 ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
+      }
+    }
+    else if (cycleState == 1) {
+      if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
+        problematicCount += 1
+        problematic = true
+        roomMessage = 'Meleg van, mégis fűtünk.'
+      }
+      else if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
+        roomMessage = 'Hideg van, fűtünk.'
+      }
+      else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
+        roomMessage = 'Alsó hiszterézis.'
+      }
+    }
+    else {
+      if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
+        problematicCount += 1
+        problematic = true
+        roomMessage = 'Hideg van, mégsincs fűtés.'
+      }
+      else if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
+        roomMessage = 'Meleg van, nem fűtünk.'
+      }
+      else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
+        roomMessage = 'Felső hiszterézis.'
       }
     }
   }
-  else if (cycleState == 0 && roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
-    problematicCount += 1
-    problematic = true
-    if (mouseOver(x, y + h / 2, w, h)) {
-      toolTip.show('Hideg van, mégsincs fűtés.')
+  else {
+    if (masterOverrides[cycle] == 1) {
+      roomMessage = 'Manuálisan bekapcsolt körön.'
+    }
+    else if (masterOverrides[cycle] == -1) {
+      roomMessage = 'Manuálisan kikapcsolt körön.'
     }
   }
-  else if (cycleState == 1 && roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
-    problematicCount += 1
-    problematic = true
-    if (mouseOver(x, y + h / 2, w, h)) {
-      toolTip.show('Meleg van, mégis fűtünk.')
-    }
+
+  if (mouseOver(x, y - h * 0.125, w * 2.5, h * 0.14) && roomMessage !== '') {
+    toolTip.show(roomMessage)
   }
+
   if (problematic) {
     fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
     rect(x, y - h * 0.125, w * 2.5, h * 0.14)
   }
-
   fill(0)
   textSize(width * 0.013)
   text(roomName, x, y - h * 0.125)
@@ -733,7 +760,7 @@ function drawPump(x, y, state, cycle) {
   if (discrepancy) {
     noStroke()
     fill(1, 0, 0, 0.25)
-    ellipse(x, y, l*0.75, l*0.75)
+    ellipse(x, y, l * 0.75, l * 0.75)
   }
   stroke(0)
   strokeWeight(2)
