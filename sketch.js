@@ -34,8 +34,7 @@ function setup() {
     readDecisions(data)
   })
 
-  listenToFirebase('updates/config/seenByRaspi', (data) => {
-    console.log("Config updated detected.")
+  listenToFirebase('updates/config/timestamp', (data) => {
     updateConfig()
   })
 
@@ -164,7 +163,7 @@ function drawTempData(room, fromDate, toDate) {
   for (let i = 0; i < tempData.length; i++) {
     point(
       map(calculateTimeDifferenceInMinutes(startDate, tempData[i][0]), 0, totalMinutes, width * 0.25, width * 0.75),
-      height-map(tempData[i][1], minMaxTemp[0], minMaxTemp[1], height * 0.1, height * 0.9)
+      height - map(tempData[i][1], minMaxTemp[0], minMaxTemp[1], height * 0.1, height * 0.9)
     )
   }
   endShape()
@@ -207,7 +206,7 @@ function drawTempData(room, fromDate, toDate) {
     const average = (totalWeight > 0) ? (weightedSum / totalWeight) : parseFloat(tempData[i][1]);
     vertex(
       map(calculateTimeDifferenceInMinutes(startDate, tempData[i][0]), 0, totalMinutes, width * 0.25, width * 0.75),
-      height-map(average, minMaxTemp[0], minMaxTemp[1], height * 0.1, height * 0.9)
+      height - map(average, minMaxTemp[0], minMaxTemp[1], height * 0.1, height * 0.9)
     )
   }
 
@@ -353,7 +352,7 @@ function drawInfoBox() {
   var cycleMessages = []
   for (var cycle = 1; cycle < 5; cycle++) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
-    var how = masterOverrides[cycle] != 0 ? 'manuálisan\n' : ((decisions['cycle'][cycle]['reason'] === 'vote' || decisions['cycle'][cycle]['reason'] === 'vote1') ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
+    var how = masterOverrides[cycle] != 0 ? 'manuálisan\n' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
     cycleMessages[cycle] = {
       'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.',
@@ -459,7 +458,7 @@ function drawCycles() {
       drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber, cycle)
     }
 
-    if ((decisions['cycle'][cycle]['reason'] === 'vote' || decisions['cycle'][cycle]['reason'] === 'vote1')) {
+    if (decisions['cycle'][cycle]['reason'] === 'vote') {
       wantHeatingCount += decisions['cycle'][cycle]['decision']
     }
   }
@@ -703,7 +702,7 @@ function drawPump(x, y, state, cycle) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
     var how, to, timestamp
     if (masterOverrides[cycle] == 0) {
-      how = decisions['kisteremOverride'][cycle]['override'] == 1 ? 'jeltovábbítási\nprobléma miatt' : ((decisions['cycle'][cycle]['reason'] === 'vote' || decisions['cycle'][cycle]['reason'] === 'vote1') ? 'normál\nüzemmenetben' : 'direktben')
+      how = decisions['kisteremOverride'][cycle]['override'] == 1 ? 'jeltovábbítási\nprobléma miatt' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
       to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
       timestamp = '\n(' + decisions['cycle'][cycle]['timestamp'] + ')'
     }
@@ -712,7 +711,26 @@ function drawPump(x, y, state, cycle) {
       to = masterOverrides[cycle] == -1 ? 'ki' : 'be'
       timestamp = ''
     }
-    toolTip.show(who + ' kör ' + how + '\n' + to + 'kapcsolva.' + timestamp)
+    var coolOff = false
+    var discrepancy = false
+    if (decisions['cycle'][cycle]['decision'] == pumpStatuses[cycle]) {
+      if (
+        (decisions['cycle'][cycle]['decision'] == 0 && pumpStatuses[cycle] == 1) &&
+        day() == parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[1] &&
+        hour() == parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[2] &&
+        minute() - parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[3] <= 3.5
+      ) {
+        coolOff = true
+      }
+    }
+    else {
+      discrepancy = true
+    }
+    toolTip.show(
+      discrepancy ?
+        'Eltérés a kör és a szivattyú állapota között.' :
+        who + ' kör ' + how + '\n' + to + 'kapcsolva' + (coolOff ? '(fűtővíz lepörgetés)' : '') + '.' + timestamp
+    )
   }
 
   stroke(0)
