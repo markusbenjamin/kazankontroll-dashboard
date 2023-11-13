@@ -603,12 +603,13 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
         problematicCount += 1
         problematic = true
-        roomMessage = 'Meleg van, mégis fűtünk.'
+        roomMessage = roomStatus >= 23 ? 'Meleg van, mégis fűtünk.' : 'Kellemes meleg van.'
         roomNameDecoration = roomStatus >= 23 ? '🥵' : '😊'
         problematicList.push(roomName)
       }
       else if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
         roomMessage = 'Hideg van, fűtünk.'
+        roomMessage = roomStatus <= 18 ? (roomStatus <= 16 ? 'Hideg van, fűtünk.' : 'Hideg van, fűtünk.') : 'Kezd jó lenni.'
         roomNameDecoration = roomStatus <= 18 ? (roomStatus <= 16 ? '🥶' : '😑') : '😌'
         wantHeatingList.push(roomName)
       }
