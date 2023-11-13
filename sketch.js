@@ -613,6 +613,11 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         roomMessage = roomStatus <= 18 ? (roomStatus <= 16 ? 'Hideg van, fűtünk.' : 'Hideg van, fűtünk.') : 'Kezd jó lenni.'
         roomNameDecoration = roomStatus <= 18 ? (roomStatus <= 16 ? '🥶' : '😑') : '😌'
         wantHeatingList.push(roomName)
+        if (roomStatus <= min(19, roomSetting)) {
+          problematicList.push(roomName)
+          problematicCount += 1
+          problematic = true
+        }
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Alsó hiszterézis.'
@@ -624,14 +629,9 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
         roomMessage = 'Hideg van, mégsincs fűtés.'
         roomNameDecoration = '🥶'
-        if (min(20,roomSettingF) <= roomStatus) {
-          problematicList.push(roomName)
-          problematicCount += 1
-          problematic = true
-        }
       }
       else if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
-        roomMessage = 'Meleg van, nem fűtünk.'
+        roomMessage = 'Nem kér fűtést.'
         roomNameDecoration = '😊'
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
