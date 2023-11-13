@@ -372,7 +372,7 @@ function drawInfoBox() {
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
       (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + reshapeArray(wantHeatingList, ceil(wantHeatingList.length / 2), 2, null).map(arr => arr.join(', ')).join(',\n') + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
-      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + reshapeArray(problematicList, ceil(problematicList.length / 2), 2, null).map(arr => arr.join(', ')).join(',\n') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
+      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + reshapeArray(problematicList, ceil(problematicList.length / 2), 2, null).map(arr => arr.join(', ')).join(',\n') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
     "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
   ].filter(element => element !== '').join('\n\n')
 
@@ -469,6 +469,16 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
 
   var roomSummedStatus = roomSetting * externalTempAllow * (masterOverrides[cycle] == -1 ? 0 : 1)
 
+  var lastUpdateInHours, lastUpdateInHoursLimit, roomReachableLocal
+  
+  roomReachableLocal = true
+  if (masterOverrides[cycle] != -1) {
+    lastUpdateInHours = minutesSince(roomLastUpdate[roomNumber]) / 60
+    lastUpdateInHoursLimit = 12
+    roomReachableLocal = roomReachable[roomNumber] == false || lastUpdateInHoursLimit <= lastUpdateInHours ? false : true
+    console.log(roomReachableLocal)
+  }
+
   if (roomSetting == 0 || roomSetting == 1) {
     fill(0)
     rect(x, y + h / 2, w * 0.3, h * 0.25)
@@ -546,14 +556,11 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       text(roomSetting, x - w * 1.2, y + map(roomTempMax - roomSetting + roomTempMin, roomTempMin, roomTempMax, 0, h))
     }
 
-    var lastUpdateInHours = minutesSince(roomLastUpdate[roomNumber]) / 60
-    var lastUpdateInHoursLimit = 12
-
     noStroke()
     fill(1)
     ellipse(x, y + h * (1 - roomStatusNormalized), 1.25 * w / 2.5, 1.25 * w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), 1.8 * w / 6, h * roomStatusNormalized)
-    roomReachable[roomNumber] == false || lastUpdateInHours >= lastUpdateInHoursLimit ? fill(0.5) : fill(roomStatusColor)
+    roomReachableLocal ? fill(roomStatusColor) : fill(0.5)
     ellipse(x, y + h * (1 - roomStatusNormalized), w / 2.5, w / 2.5)
     topRect(x, y + h * (1 - roomStatusNormalized), w / 6, h * roomStatusNormalized)
     textSize(width * 0.017)
@@ -562,8 +569,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     textStyle(NORMAL)
     if (mouseOver(x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h), width * 0.05, height * 0.05)) {
       var lastUpdateHourMinute = roomLastUpdate[roomNumber].slice(-5)
-      toolTip.show(roomReachable[roomNumber] ? round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')' : 'Szenzor nem elérhető!')
-      toolTip.show(roomReachable[roomNumber] == false || lastUpdateInHours >= lastUpdateInHoursLimit ? ('Szenzor nem elérhető!') : round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')')
+      toolTip.show(roomReachableLocal ? round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')' : ('Szenzor nem elérhető!'))
     }
   }
 
@@ -603,7 +609,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
       else if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
         roomMessage = 'Hideg van, fűtünk.'
-        roomNameDecoration = roomStatus <= 18 ? (roomStatus <= 16?  '🥶': '😑') : '😌'
+        roomNameDecoration = roomStatus <= 18 ? (roomStatus <= 16 ? '🥶' : '😑') : '😌'
         wantHeatingList.push(roomName)
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
@@ -640,15 +646,15 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       roomNameDecoration = '😴'
     }
   }
+  if (roomReachableLocal == false) {
+    roomMessage = 'Szenzor nem elérhető!'
+    roomNameDecoration = '😶'
+  }
 
   if (mouseOver(x, y - h * 0.125, w * 2.5, h * 0.14) && roomMessage !== '') {
     toolTip.show(roomMessage)
   }
 
-  //if (problematic) {
-  //  fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
-  //  rect(x, y - h * 0.125, w * 2.5, h * 0.14)
-  //}
   fill(0)
   textSize(width * 0.013)
   text(roomName + (roomNameDecoration == '' ? '' : ' ' + roomNameDecoration), x, y - h * 0.125)
