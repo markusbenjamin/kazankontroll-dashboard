@@ -317,14 +317,6 @@ function findLatestMessage(messages) {
 var allDecisionMessages
 
 function drawInfoBox() {
-  stroke(0)
-  strokeWeight(2)
-  var x = width * 0.185
-  var y = height * 0.75
-  var w = width * 0.275
-  var h = height * 0.375
-  rect(x, y, w, h, width * 0.01)
-
   var kisteremOverride = false
   for (const room in decisions['kisteremOverride']) {
     if (decisions['kisteremOverride'][room]['override']) {
@@ -382,14 +374,20 @@ function drawInfoBox() {
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + reshapeArray(problematicList, ceil(problematicCount / 2) + 1, 2, '').map(arr => arr.filter(element => element !== '').join(', ')).join(',\n') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
     "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
-  ].filter(element => element !== '')
+  ].filter(element => element !== '').join('\n\n')
+
+  stroke(0)
+  strokeWeight(2)
+  var x = width * 0.185
+  var y = height * 0.75
+  var w = width * 0.275
+  var h = max((countNewLines(messages)+1) * width * 0.014, height * 0.375)
+  rect(x, y, w, h, width * 0.01)
 
   fill(0)
   noStroke()
   textSize(width * 0.014)
-  text(
-    messages.join('\n\n'),
-    x, y)
+  text(messages, x, y)
 }
 
 function manageToolTip() {
@@ -606,6 +604,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Alsó hiszterézis.'
+        wantHeatingList.push(roomName)
       }
     }
     else {
@@ -1003,4 +1002,8 @@ function reshapeArray(arr, n, m, paddingElement) {
   }
 
   return result;
+}
+
+function countNewLines(str){
+ return (str.match(/\n/g) || []).length
 }
