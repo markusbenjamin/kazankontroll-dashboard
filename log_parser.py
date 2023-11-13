@@ -4,6 +4,7 @@ import json
 import re
 from datetime import datetime
 import os
+import time
 
 # Helpers
 def line_JSONifier(bad_line):
@@ -42,14 +43,15 @@ def generate_measured_temps_data_file(temp_measurements):
     formatted_entries_by_date_and_room = {}
 
     for entry in temp_measurements:
-        timestamp = entry['4']
+        timestamp = datetime.strptime(entry['4'],"%Y-%m-%d %H:%M:%S")
+        date = timestamp.strftime('%Y_%m_%d')
         room_number = list(entry['3'].keys())[0] 
+        unix_time = int(time.mktime(timestamp.timetuple()))
         temperature = entry['3'][room_number]
-        date = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').strftime('%Y_%m_%d')
-        formatted_entries_by_date_and_room.setdefault((date, room_number), []).append((timestamp, temperature))
+        formatted_entries_by_date_and_room.setdefault((date, room_number), []).append((timestamp.year,timestamp.month,timestamp.day,timestamp.hour,timestamp.minute,timestamp.second,unix_time, temperature))
 
     for (date, room_number), data in formatted_entries_by_date_and_room.items():
-        directory_name = f'measured_temps/{date}'
+        directory_name = f'measured_temps2/{date}'
         file_name = f'{directory_name}/room_{room_number}.csv'
 
         if not os.path.exists(directory_name):

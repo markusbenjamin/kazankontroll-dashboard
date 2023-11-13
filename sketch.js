@@ -36,9 +36,7 @@ function setup() {
 
   listenToFirebase('updates/config/seenByRaspi', (data) => {
     console.log("Config updated detected.")
-    if (data['seenByDashboard'] == false) {
-      updateConfig()
-    }
+    updateConfig()
   })
 
   dataSetLoaded = false
@@ -139,7 +137,7 @@ function draw() {
     roomToDraw = 4 //DEV
     text(roomToDraw, width * 0.5, height * 0.15) //DEV
 
-    //drawTempData(roomToDraw, '2023.11.09', '2023.11.09')*/
+    drawTempData(roomToDraw, '2023.11.09', '2023.11.09')*/
     manageToolTip()
   } catch (error) {
     console.log(error.message);
@@ -355,7 +353,7 @@ function drawInfoBox() {
   var cycleMessages = []
   for (var cycle = 1; cycle < 5; cycle++) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
-    var how = masterOverrides[cycle] != 0 ? 'manuálisan\n' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
+    var how = masterOverrides[cycle] != 0 ? 'manuálisan\n' : ((decisions['cycle'][cycle]['reason'] === 'vote' || decisions['cycle'][cycle]['reason'] === 'vote1') ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
     cycleMessages[cycle] = {
       'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.',
@@ -461,7 +459,7 @@ function drawCycles() {
       drawRoom(roomX, roomY, roomBaseSize * 0.3, roomBaseSize * 1.6, roomStatus, roomSetting, roomStatusNormalized, roomSettingNormalized, roomBuffersNormalized, roomStatusColor, roomSettingColor, cycleColor, cycleState, roomName, roomNumber, cycle)
     }
 
-    if (decisions['cycle'][cycle]['reason'] === 'vote') {
+    if ((decisions['cycle'][cycle]['reason'] === 'vote' || decisions['cycle'][cycle]['reason'] === 'vote1')) {
       wantHeatingCount += decisions['cycle'][cycle]['decision']
     }
   }
@@ -705,7 +703,7 @@ function drawPump(x, y, state, cycle) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
     var how, to, timestamp
     if (masterOverrides[cycle] == 0) {
-      how = decisions['kisteremOverride'][cycle]['override'] == 1 ? 'jeltovábbítási\nprobléma miatt' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
+      how = decisions['kisteremOverride'][cycle]['override'] == 1 ? 'jeltovábbítási\nprobléma miatt' : ((decisions['cycle'][cycle]['reason'] === 'vote' || decisions['cycle'][cycle]['reason'] === 'vote1') ? 'normál\nüzemmenetben' : 'direktben')
       to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
       timestamp = '\n(' + decisions['cycle'][cycle]['timestamp'] + ')'
     }
