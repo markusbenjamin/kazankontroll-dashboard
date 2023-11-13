@@ -598,12 +598,12 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         problematicCount += 1
         problematic = true
         roomMessage = 'Meleg van, mégis fűtünk.'
-        roomNameDecoration = '🥵'
+        roomNameDecoration = roomStatus >= 23 ? '🥵' : '😊'
         problematicList.push(roomName)
       }
       else if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
         roomMessage = 'Hideg van, fűtünk.'
-        roomNameDecoration = '😌'
+        roomNameDecoration = roomStatus <= 18 ? (roomStatus <= 16?  '🥶': '😑') : '😌'
         wantHeatingList.push(roomName)
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
