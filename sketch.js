@@ -599,10 +599,10 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
     }
     else if (cycleState == 1) {
-      if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
-        roomMessage = roomStatus >= 23 ? 'Meleg van, mégis fűtünk.' : 'Kellemes meleg van.'
-        roomNameDecoration = roomStatus >= 23 ? '🥵' : '😊'
-        if (23 <= roomStatus || 3 <= roomSetting + bufferZones[roomNumber]['upper'] - roomStatus) {
+      if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) { // 😕
+        roomMessage = (23 <= roomStatus || 3 <= roomStatus - roomSetting + bufferZones[roomNumber]['upper']) ? (roomStatus >= 23 ? 'Meleg van, mégis fűtünk.' : 'Nem kéne, mégis fűtünk.') : 'Kellemes meleg van.'
+        roomNameDecoration = (23 <= roomStatus || 3 <= roomStatus - roomSetting + bufferZones[roomNumber]['upper']) ? (roomStatus >= 23 ? '🥵' : '😕') : '😊'
+        if (23 <= roomStatus || 3 <= roomStatus - roomSetting + bufferZones[roomNumber]['upper']) {
           problematicCount += 1
           problematic = true
           problematicList.push(roomName)
