@@ -470,13 +470,12 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   var roomSummedStatus = roomSetting * externalTempAllow * (masterOverrides[cycle] == -1 ? 0 : 1)
 
   var lastUpdateInHours, lastUpdateInHoursLimit, roomReachableLocal
-  
+
   roomReachableLocal = true
   if (masterOverrides[cycle] != -1) {
     lastUpdateInHours = minutesSince(roomLastUpdate[roomNumber]) / 60
     lastUpdateInHoursLimit = 12
     roomReachableLocal = roomReachable[roomNumber] == false || lastUpdateInHoursLimit <= lastUpdateInHours ? false : true
-    console.log(roomReachableLocal)
   }
 
   if (roomSetting == 0 || roomSetting == 1) {
@@ -601,11 +600,13 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     }
     else if (cycleState == 1) {
       if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
-        problematicCount += 1
-        problematic = true
         roomMessage = roomStatus >= 23 ? 'Meleg van, mégis fűtünk.' : 'Kellemes meleg van.'
         roomNameDecoration = roomStatus >= 23 ? '🥵' : '😊'
-        problematicList.push(roomName)
+        if (23 <= roomStatus) {
+          problematicCount += 1
+          problematic = true
+          problematicList.push(roomName)
+        }
       }
       else if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
         roomMessage = 'Hideg van, fűtünk.'
@@ -621,11 +622,13 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     }
     else {
       if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
-        problematicCount += 1
-        problematic = true
         roomMessage = 'Hideg van, mégsincs fűtés.'
         roomNameDecoration = '🥶'
-        problematicList.push(roomName)
+        if (min(20,roomSettingF) <= roomStatus) {
+          problematicList.push(roomName)
+          problematicCount += 1
+          problematic = true
+        }
       }
       else if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Meleg van, nem fűtünk.'
