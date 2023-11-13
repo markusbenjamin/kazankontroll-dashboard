@@ -696,6 +696,22 @@ function drawPump(x, y, state, cycle) {
   var w = width * 0.0045;
   var l = width * 0.035;
 
+  var discrepancy = false
+  var coolOff = false
+  if (decisions['cycle'][cycle]['decision'] == pumpStatuses[cycle]) {
+    if (
+      (decisions['cycle'][cycle]['decision'] == 0 && pumpStatuses[cycle] == 1) &&
+      day() == parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[1] &&
+      hour() == parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[2] &&
+      minute() - parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[3] <= 3.5
+    ) {
+      coolOff = true
+    }
+  }
+  else {
+    discrepancy = true
+  }
+
   if (mouseOver(x, y, l * 1.1, l * 1.1)) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
     var how, to, timestamp
@@ -709,28 +725,18 @@ function drawPump(x, y, state, cycle) {
       to = masterOverrides[cycle] == -1 ? 'ki' : 'be'
       timestamp = ''
     }
-    var coolOff = false
-    var discrepancy = false
-    if (decisions['cycle'][cycle]['decision'] == pumpStatuses[cycle]) {
-      if (
-        (decisions['cycle'][cycle]['decision'] == 0 && pumpStatuses[cycle] == 1) &&
-        day() == parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[1] &&
-        hour() == parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[2] &&
-        minute() - parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[3] <= 3.5
-      ) {
-        coolOff = true
-      }
-    }
-    else {
-      discrepancy = true
-    }
     toolTip.show(
       discrepancy ?
-        'Eltérés a kör és a szivattyú állapota között.' :
+        'Eltérés a kör igénye és a\nszivattyú állapota között.' :
         who + ' kör ' + how + '\n' + to + 'kapcsolva' + (coolOff ? '(fűtővíz lepörgetés)' : '') + '.' + timestamp
     )
   }
 
+  if (discrepancy) {
+    noStroke()
+    fill(1, 0, 0, 0.25)
+    ellipse(x, y, l*0.75, l*0.75)
+  }
   stroke(0)
   strokeWeight(2)
   fill(0)
