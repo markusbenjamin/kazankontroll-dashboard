@@ -610,7 +610,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
       else if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
         roomMessage = 'Hideg van, fűtünk.'
-        roomMessage = roomStatus <= 18 ? (roomStatus <= 16 ? 'Hideg van, fűtünk.' : 'Hideg van, fűtünk.') : 'Kezd jó lenni.'
+        roomMessage = roomStatus <= 18 ? (roomStatus <= 16 ? 'Hideg van.' : 'Hideg van.') : 'Kezd jó lenni.'
         roomNameDecoration = roomStatus <= 18 ? (roomStatus <= 16 ? '🥶' : '😑') : '😌'
         wantHeatingList.push(roomName)
         if (roomStatus <= min(19, roomSetting)) {
