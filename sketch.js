@@ -370,9 +370,9 @@ function drawInfoBox() {
 
   var messages = [
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + reshapeArray(wantHeatingList, ceil(wantHeatingList.length/2), 2, null).map(arr => arr.join(', ')).join(',\n') + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + reshapeArray(wantHeatingList, ceil(wantHeatingList.length / 2), 2, null).map(arr => arr.join(', ')).join(',\n') + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
-      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + reshapeArray(problematicList, ceil(problematicList.length/2), 2, null).map(arr => arr.join(', ')).join(',\n') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
+      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + reshapeArray(problematicList, ceil(problematicList.length / 2), 2, null).map(arr => arr.join(', ')).join(',\n') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
     "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
   ].filter(element => element !== '').join('\n\n')
 
@@ -578,6 +578,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   noStroke()
 
   var roomMessage = ''
+  var roomNameDecoration = ''
   var problematic = false
 
   if (masterOverrides[cycle] == 0) {
@@ -588,6 +589,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         if (mouseOver(x, y + h / 2, w, h)) {
         }
         roomMessage = (cycleState == 1 ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
+        roomNameDecoration = (cycleState == 1 ? '🥵' : '🥶')
         problematicList.push(roomName)
       }
     }
@@ -596,14 +598,17 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         problematicCount += 1
         problematic = true
         roomMessage = 'Meleg van, mégis fűtünk.'
+        roomNameDecoration = '🥵'
         problematicList.push(roomName)
       }
       else if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
         roomMessage = 'Hideg van, fűtünk.'
+        roomNameDecoration = '😌'
         wantHeatingList.push(roomName)
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Alsó hiszterézis.'
+        roomNameDecoration = '😐'
         wantHeatingList.push(roomName)
       }
     }
@@ -612,22 +617,27 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         problematicCount += 1
         problematic = true
         roomMessage = 'Hideg van, mégsincs fűtés.'
+        roomNameDecoration = '🥶'
         problematicList.push(roomName)
       }
       else if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Meleg van, nem fűtünk.'
+        roomNameDecoration = '😊'
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Felső hiszterézis.'
+        roomNameDecoration = '😐'
       }
     }
   }
   else {
     if (masterOverrides[cycle] == 1) {
       roomMessage = 'Manuálisan bekapcsolt körön.'
+      roomNameDecoration = '😬'
     }
     else if (masterOverrides[cycle] == -1) {
       roomMessage = 'Manuálisan kikapcsolt körön.'
+      roomNameDecoration = '😴'
     }
   }
 
@@ -635,13 +645,14 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     toolTip.show(roomMessage)
   }
 
-  if (problematic) {
-    fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
-    rect(x, y - h * 0.125, w * 2.5, h * 0.14)
-  }
+  //if (problematic) {
+  //  fill(1 * cycleState, 0, 1 * (1 - cycleState), 0.075)
+  //  rect(x, y - h * 0.125, w * 2.5, h * 0.14)
+  //}
   fill(0)
   textSize(width * 0.013)
-  text(roomName, x, y - h * 0.125)
+  text(roomName + (roomNameDecoration == '' ? '' : ' ' + roomNameDecoration), x, y - h * 0.125)
+
 }
 
 function drawFlame(x, y, w, h, colOuter, colInner, outer) {
