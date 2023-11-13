@@ -370,9 +370,9 @@ function drawInfoBox() {
 
   var messages = [
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + reshapeArray(wantHeatingList, ceil(wantHeatingCount / 2) + 1, 2, '').map(arr => arr.filter(element => element !== '').join(', ')).join(',\n') + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + reshapeArray(wantHeatingList, ceil(wantHeatingList.length/2), 2, null).map(arr => arr.join(', ')).join(',\n') + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
-      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + reshapeArray(problematicList, ceil(problematicCount / 2) + 1, 2, '').map(arr => arr.filter(element => element !== '').join(', ')).join(',\n') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
+      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + reshapeArray(problematicList, ceil(problematicList.length/2), 2, null).map(arr => arr.join(', ')).join(',\n') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
     "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
   ].filter(element => element !== '').join('\n\n')
 
@@ -381,7 +381,7 @@ function drawInfoBox() {
   var x = width * 0.185
   var y = height * 0.75
   var w = width * 0.275
-  var h = max((countNewLines(messages)+1) * width * 0.014, height * 0.375)
+  var h = max((countNewLines(messages) + 1) * width * 0.014, height * 0.375)
   rect(x, y, w, h, width * 0.01)
 
   fill(0)
@@ -993,8 +993,16 @@ function reshapeArray(arr, n, m, paddingElement) {
       // Compute the index in the original array
       let index = row * m + col;
 
-      // Add either the element from the original array or the padding element
-      newRow.push(index < arr.length ? arr[index] : paddingElement);
+      // Check if index is within the bounds of the original array
+      if (index < arr.length) {
+        newRow.push(arr[index]);
+      } else {
+        // If paddingElement is null and we're on the last row, break the loop
+        if (paddingElement === null && row === n - 1) {
+          break;
+        }
+        newRow.push(paddingElement);
+      }
     }
 
     // Add the completed row to the result
@@ -1004,6 +1012,6 @@ function reshapeArray(arr, n, m, paddingElement) {
   return result;
 }
 
-function countNewLines(str){
- return (str.match(/\n/g) || []).length
+function countNewLines(str) {
+  return (str.match(/\n/g) || []).length
 }
