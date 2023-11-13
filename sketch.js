@@ -43,7 +43,6 @@ function setup() {
 
 var roomTempMax
 var roomTempMin
-var roomTempDiffTolerance
 var pipeThickness
 var cyclePipeLength
 var pumpXPositionOffset
@@ -409,7 +408,6 @@ function drawStateVisualization() {
 function setDrawingParameters() {
   roomTempMax = 30
   roomTempMin = 10
-  roomTempDiffTolerance = 2
   pipeThickness = sqrt(width * height) * 0.0075
   cyclePipeLength = 0.55
   pumpXPositionOffset = 0.04
@@ -590,14 +588,14 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       }
     }
   }
-  else if (cycleState == 0 && roomStatus < roomSetting - roomTempDiffTolerance) {
+  else if (cycleState == 0 && roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
     problematicCount += 1
     problematic = true
     if (mouseOver(x, y + h / 2, w, h)) {
       toolTip.show('Hideg van, mégsincs fűtés.')
     }
   }
-  else if (cycleState == 1 && roomStatus > roomSetting + roomTempDiffTolerance) {
+  else if (cycleState == 1 && roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
     problematicCount += 1
     problematic = true
     if (mouseOver(x, y + h / 2, w, h)) {
