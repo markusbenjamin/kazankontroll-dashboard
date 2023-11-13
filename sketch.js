@@ -378,7 +378,7 @@ function drawInfoBox() {
 
   var messages = [
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(", ") + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + reshapeArray(wantHeatingList, ceil(wantHeatingCount/2)+1, 2, '').map(arr => arr.filter(element => element !== '').join(', ')).join(',\n') + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(", ") + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
     "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
@@ -978,6 +978,29 @@ function minMax(array) {
   return [min(array), max(array)]
 }
 
-function unitize(num){
-  return num == 0 ? 0 : abs(num)/abs(num)
+function unitize(num) {
+  return num == 0 ? 0 : abs(num) / abs(num)
+}
+
+function reshapeArray(arr, n, m, paddingElement) {
+  // Create an empty 2D array
+  let result = [];
+
+  for (let row = 0; row < n; row++) {
+    // Create a new row
+    let newRow = [];
+
+    for (let col = 0; col < m; col++) {
+      // Compute the index in the original array
+      let index = row * m + col;
+
+      // Add either the element from the original array or the padding element
+      newRow.push(index < arr.length ? arr[index] : paddingElement);
+    }
+
+    // Add the completed row to the result
+    result.push(newRow);
+  }
+
+  return result;
 }
