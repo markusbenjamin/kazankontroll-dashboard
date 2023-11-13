@@ -116,7 +116,7 @@ function readDecisions(dataFromFirebase) {
   decisions = dataFromFirebase
 }
 
-var problematicCount, wantHeatingCount
+var problematicCount, problematicList, wantHeatingCount, wantHeatingList
 var roomToDraw = 0 //DEV
 function draw() {
   try {
@@ -378,9 +378,9 @@ function drawInfoBox() {
 
   var messages = [
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingCount + " helyiség.") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(", ") + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
-      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések száma: " + problematicCount + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
+      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(", ") + " (" + round(100 * problematicCount / noOfControlledRooms) + "%)") : "",
     "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
   ].filter(element => element !== '')
 
@@ -399,7 +399,9 @@ function manageToolTip() {
 
 function drawStateVisualization() {
   problematicCount = 0
+  problematicList = []
   wantHeatingCount = 0
+  wantHeatingList = []
   setDrawingParameters()
   drawCycles()
   drawPipingAndBoiler()
@@ -588,6 +590,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         if (mouseOver(x, y + h / 2, w, h)) {
         }
         roomMessage = (cycleState == 1 ? 'Nem kéri, mégis fűtünk.' : 'Kéri, mégsincs fűtés.')
+        problematicList.push(roomName)
       }
     }
     else if (cycleState == 1) {
@@ -595,9 +598,11 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         problematicCount += 1
         problematic = true
         roomMessage = 'Meleg van, mégis fűtünk.'
+        problematicList.push(roomName)
       }
       else if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
         roomMessage = 'Hideg van, fűtünk.'
+        wantHeatingList.push(roomName)
       }
       else if (roomSetting - bufferZones[roomNumber]['lower'] <= roomStatus <= roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Alsó hiszterézis.'
@@ -608,6 +613,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         problematicCount += 1
         problematic = true
         roomMessage = 'Hideg van, mégsincs fűtés.'
+        problematicList.push(roomName)
       }
       else if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = 'Meleg van, nem fűtünk.'
@@ -723,7 +729,7 @@ function drawPump(x, y, state, cycle) {
 
   var discrepancy = false
   var coolOff = false
-  if (decisions['cycle'][cycle]['decision'] == pumpStatuses[cycle]) {
+  if (unitize(decisions['cycle'][cycle]['decision']) == pumpStatuses[cycle]) {
     if (
       (decisions['cycle'][cycle]['decision'] == 0 && pumpStatuses[cycle] == 1) &&
       day() == parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[1] &&
@@ -970,4 +976,8 @@ function transposeArray(array) {
 
 function minMax(array) {
   return [min(array), max(array)]
+}
+
+function unitize(num){
+  return num == 0 ? 0 : abs(num)/abs(num)
 }
