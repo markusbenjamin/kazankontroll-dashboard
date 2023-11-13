@@ -602,7 +602,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) {
         roomMessage = roomStatus >= 23 ? 'Meleg van, mégis fűtünk.' : 'Kellemes meleg van.'
         roomNameDecoration = roomStatus >= 23 ? '🥵' : '😊'
-        if (23 <= roomStatus) {
+        if (23 <= roomStatus || 3 <= roomSetting + bufferZones[roomNumber]['upper'] - roomStatus) {
           problematicCount += 1
           problematic = true
           problematicList.push(roomName)
