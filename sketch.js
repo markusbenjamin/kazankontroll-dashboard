@@ -750,12 +750,7 @@ function drawPump(x, y, state, cycle) {
   var discrepancy = false
   var coolOff = false
   if (unitize(decisions['cycle'][cycle]['decision']) == pumpStatuses[cycle]) {
-    if (
-      (decisions['cycle'][cycle]['decision'] == 0 && pumpStatuses[cycle] == 1) &&
-      day() == parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[1] &&
-      hour() == parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[2] &&
-      minute() - parseTimestampToList(decisions['cycle'][cycle]['timestamp'])[3] <= 3.5
-    ) {
+    if (millisSince(decisions['cycle'][cycle]['timestamp']) <= 3000) {
       coolOff = true
     }
   }
@@ -779,7 +774,7 @@ function drawPump(x, y, state, cycle) {
     toolTip.show(
       discrepancy ?
         'Eltérés a kör igénye és a\nszivattyú állapota között.' :
-        who + ' kör ' + how + '\n' + to + 'kapcsolva' + (coolOff ? '(fűtővíz lepörgetés)' : '') + '.' + timestamp
+        who + ' kör ' + how + '\n' + to + 'kapcsolva' + (coolOff ? '\n(fűtővíz lepörgetés)' : '') + '.' + timestamp
     )
   }
 
@@ -971,7 +966,11 @@ function calculateTimeDifferenceInMinutes(dateString1, dateString2) {
   return differenceInMinutes;
 }
 
-function minutesSince(dateString) {
+function minutesSince(dateString){
+  return millisSince(dateString)/(60*1000)
+}
+
+function millisSince(dateString) {
   // Assuming dateString is in 'MM.DD. HH:MM' format
   const [monthDay, time] = dateString.split('. ');
   const [month, day] = monthDay.split('.');
@@ -984,10 +983,8 @@ function minutesSince(dateString) {
   // Getting current date and time
   const now = new Date();
 
-  // Calculating the difference in minutes
-  const diff = (now - date) / (1000 * 60); // Convert milliseconds to minutes
-
-  return Math.max(0, Math.floor(diff)); // Return the difference, rounded down, or 0 if it's a future date
+  // Calculating the difference in millis
+  return (now - date)
 }
 
 function transposeArray(array) {
