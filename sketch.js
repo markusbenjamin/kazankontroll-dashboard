@@ -749,13 +749,13 @@ function drawPump(x, y, state, cycle) {
 
   var discrepancy = false
   var coolOff = false
-  if (unitize(decisions['cycle'][cycle]['decision']) == pumpStatuses[cycle]) {
-    if (millisSince(decisions['cycle'][cycle]['timestamp']) <= 3000) {
+  if (unitize(decisions['cycle'][cycle]['decision']) != pumpStatuses[cycle]) {
+    if (millisSince(decisions['cycle'][cycle]['timestamp']) <= 10000) {
       coolOff = true
     }
-  }
-  else {
-    discrepancy = true
+    else {
+      discrepancy = true
+    }
   }
 
   if (mouseOver(x, y, l * 1.1, l * 1.1)) {
@@ -966,8 +966,8 @@ function calculateTimeDifferenceInMinutes(dateString1, dateString2) {
   return differenceInMinutes;
 }
 
-function minutesSince(dateString){
-  return millisSince(dateString)/(60*1000)
+function minutesSince(dateString) {
+  return millisSince(dateString) / (60 * 1000)
 }
 
 function millisSince(dateString) {
