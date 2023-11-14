@@ -753,7 +753,7 @@ function drawPump(x, y, state, cycle) {
   var discrepancy = false
   var coolOff = false
   if (unitize(decisions['cycle'][cycle]['decision']) != pumpStatuses[cycle]) {
-    if (millisSince(decisions['cycle'][cycle]['timestamp'])/60*1000 <= 3) {
+    if (millisSince(decisions['cycle'][cycle]['timestamp'])/(60*1000) <= 3) {
       coolOff = true
     }
     else {
