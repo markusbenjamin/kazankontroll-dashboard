@@ -597,6 +597,9 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         roomNameDecoration = (cycleState == 1 ? '🥵' : '🥶')
         problematicList.push(roomName)
       }
+      if(roomSetting == 1){
+        wantHeatingList.push(roomName)
+      }
     }
     else if (cycleState == 1) {
       if (roomStatus > roomSetting + bufferZones[roomNumber]['upper']) { // 😕
