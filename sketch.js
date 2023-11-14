@@ -597,8 +597,16 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         roomNameDecoration = (cycleState == 1 ? '🥵' : '🥶')
         problematicList.push(roomName)
       }
-      if(roomSetting == 1){
-        wantHeatingList.push(roomName)
+      else {
+        if (roomSetting == 1) {
+          wantHeatingList.push(roomName)
+          roomMessage = 'Fűtünk.'
+          roomNameDecoration = '😌'
+        }
+        else{
+          roomMessage = 'Nem kér fűtést.'
+          roomNameDecoration = '😊'
+        }
       }
     }
     else if (cycleState == 1) {
@@ -612,7 +620,6 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         }
       }
       else if (roomStatus < roomSetting - bufferZones[roomNumber]['lower']) {
-        roomMessage = 'Hideg van, fűtünk.'
         roomMessage = roomStatus <= 18 ? (roomStatus <= 16 ? 'Hideg van.' : 'Hideg van.') : 'Kezd jó lenni.'
         roomNameDecoration = roomStatus <= 18 ? (roomStatus <= 16 ? '🥶' : '😑') : '😌'
         wantHeatingList.push(roomName)
@@ -753,7 +760,7 @@ function drawPump(x, y, state, cycle) {
   var discrepancy = false
   var coolOff = false
   if (unitize(decisions['cycle'][cycle]['decision']) != pumpStatuses[cycle]) {
-    if (millisSince(decisions['cycle'][cycle]['timestamp'])/(60*1000) <= 4) {
+    if (millisSince(decisions['cycle'][cycle]['timestamp']) / (60 * 1000) <= 4) {
       coolOff = true
     }
     else {
