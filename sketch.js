@@ -379,7 +379,7 @@ function drawInfoBox() {
 
   var messagesPre1 = [
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma miatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ') + ".") : "Határérték feletti kinti hőmérséklet miatt nincs fűtés."),
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "   Fűtést kér: " + wantHeatingList.join(', ') + ".") : "Határérték feletti kinti hőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(', ') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
     "Utolsó esemény: " + latestMessage['message'].substring(0, latestMessage['message'].length - 1) + " ("+lastEventTimestamp + ")."
@@ -389,14 +389,14 @@ function drawInfoBox() {
   var messagesPre2 = []
   for (const line of messagesPre1) {
     if (w < multiLineTextWidth(line)) {
-      var sublines = split(line, ' ')
+      var words = split(line, ' ')
       var wrappedLine = ''
-      for (const subline of sublines) {
-        if (multiLineTextWidth(wrappedLine + subline) < w * 0.8) {
-          wrappedLine += subline + ' '
+      for (const word of words) {
+        if (multiLineTextWidth(wrappedLine + word) < w * 0.9) {
+          wrappedLine += word + ' '
         }
         else {
-          wrappedLine += '\n' + subline + ' '
+          wrappedLine += '\n' + word + ' '
         }
       }
       messagesPre2.push(wrappedLine)
