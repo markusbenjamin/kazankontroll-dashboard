@@ -368,25 +368,54 @@ function drawInfoBox() {
     latestMessage = { 'message': '' }
   }
 
-  var messages = [
+
+  var x = width * 0.185
+  var y = height * 0.75
+  var w = width * 0.275
+  var h = height * 0.375
+  var fontSize = width * 0.014
+
+  var messagesPre1 = [
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
       (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + reshapeArray(wantHeatingList, ceil(wantHeatingList.length / 2), 2, null).map(arr => arr.join(', ')).join(',\n') + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + reshapeArray(problematicList, ceil(problematicList.length / 2), 2, null).map(arr => arr.join(', ')).join(',\n') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
     "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
-  ].filter(element => element !== '').join('\n\n')
+  ].filter(element => element !== '')
 
+
+  var messagesPre2 = []
+  for (const line of messagesPre1) {
+    if (w < multiLineTextWidth(line)) {
+      var sublines = split(line, ' ')
+      var newLine = ''
+      for (const subline of sublines) {
+        if (multiLineTextWidth(newLine + subline) < w*0.9) {
+          newLine += subline + ' '
+        }
+        else {
+          newLine += '\n' + subline
+        }
+        console.log(newLine)
+      }
+      messagesPre2.push(newLine)
+    }
+    else {
+      messagesPre2.push(line)
+    }
+  }
+
+  var messages = messagesPre2.join('\n\n')
+
+  h = max((countNewLines(messages) + 1) * fontSize, h)
   stroke(0)
   strokeWeight(2)
-  var x = width * 0.185
-  var y = height * 0.75
-  var w = width * 0.275
-  var h = max((countNewLines(messages) + 1) * width * 0.014, height * 0.375)
+
   rect(x, y, w, h, width * 0.01)
 
   fill(0)
   noStroke()
-  textSize(width * 0.014)
+  textSize(fontSize)
   text(messages, x, y)
 }
 
@@ -603,7 +632,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
           roomMessage = 'Fűtünk.'
           roomNameDecoration = '😌'
         }
-        else{
+        else {
           roomMessage = 'Nem kér fűtést.'
           roomNameDecoration = '😊'
         }
@@ -793,23 +822,44 @@ function drawPump(x, y, state, cycle) {
     fill(1, 0, 0, 0.25)
     ellipse(x, y, l * 0.75, l * 0.75)
   }
-  stroke(0)
-  strokeWeight(2)
-  fill(0)
+
+  var innerShade = 0
+  var outerShade = 0
+
   if (state == 0) {
+    stroke(outerShade)
+    strokeWeight(2)
+    fill(outerShade)
     rect(x, y, w, l)
     ellipse(x, y + l / 2, width * 0.0165 * 0.6, width * 0.0165 * 0.3)
     ellipse(x, y - l / 2, width * 0.0165 * 0.6, width * 0.0165 * 0.3)
+    stroke(innerShade)
+    strokeWeight(1)
+    fill(innerShade)
+    rect(x, y, w * 0.3, l)
+    ellipse(x, y + l / 2, width * 0.0165 * 0.6 * 0.5, width * 0.0165 * 0.3 * 0.28)
+    ellipse(x, y - l / 2, width * 0.0165 * 0.6 * 0.5, width * 0.0165 * 0.3 * 0.28)
   }
   else {
+    stroke(outerShade)
+    strokeWeight(2)
+    fill(outerShade)
     rect(x, y, l, w)
     ellipse(x + l / 2, y, width * 0.0165 * 0.3, width * 0.0165 * 0.6)
     ellipse(x - l / 2, y, width * 0.0165 * 0.3, width * 0.0165 * 0.6)
+    stroke(innerShade)
+    strokeWeight(2)
+    fill(innerShade)
+    rect(x, y, l, w * 0.3)
+    ellipse(x + l / 2, y, width * 0.0165 * 0.3 * 0.28, width * 0.0165 * 0.3 * 0.5)
+    ellipse(x - l / 2, y, width * 0.0165 * 0.3 * 0.28, width * 0.0165 * 0.3 * 0.5)
   }
   strokeWeight(2)
-  stroke(0)
-  fill(0)
+  stroke(outerShade)
+  fill(outerShade)
   ellipse(x, y, width * 0.01, width * 0.01)
+  stroke(innerShade)
+  fill(innerShade)
   stroke(1)
   fill(1)
   ellipse(x, y, width * 0.01 * 0.25, width * 0.01 * 0.25)
