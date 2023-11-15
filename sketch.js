@@ -379,9 +379,9 @@ function drawInfoBox() {
 
   var messagesPre1 = [
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma miatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "   Fűtést kér: " + wantHeatingList.join(', ') + ".") : "Határérték feletti kinti hőmérséklet miatt nincs fűtés."),
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ') + ".") : "Határérték feletti kinti hőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
-      (problematicCount == 0 ? "Nincs problémás helyiség." : "   Eltérések: " + problematicList.join(', ') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
+      (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(', ') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
     "Utolsó esemény: " + latestMessage['message'].substring(0, latestMessage['message'].length - 1) + " ("+lastEventTimestamp + ")."
   ].filter(element => element !== '')
 
