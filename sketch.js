@@ -332,7 +332,7 @@ function drawInfoBox() {
   }
 
   allDecisionMessages = []
-  var how = masterOnDetected ? 'manuálisan\n' : (decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : (kisteremOverride ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
+  var how = masterOnDetected ? 'manuálisan' : (decisions['albatros']['reason'] === 'vote' ? 'normál üzemmenetben' : (kisteremOverride ? 'jeltovábbítási probléma miatt' : 'direktben'))
   var to = decisions['albatros']['decision'] == 0 ? 'ki' : 'be'
   var albatrosMessage = {
     'message': 'Kazánok ' + how + ' ' + to + 'kapcsolva.',
@@ -343,7 +343,7 @@ function drawInfoBox() {
   var cycleMessages = []
   for (var cycle = 1; cycle < 5; cycle++) {
     var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
-    var how = masterOverrides[cycle] != 0 ? 'manuálisan\n' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál\nüzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? '\njeltovábbítási probléma\nmiatt' : '\ndirektben'))
+    var how = masterOverrides[cycle] != 0 ? 'manuálisan' : (decisions['cycle'][cycle]['reason'] === 'vote' ? 'normál üzemmenetben' : (decisions['kisteremOverride'][cycle]['override'] ? 'jeltovábbítási probléma miatt' : 'direktben'))
     var to = decisions['cycle'][cycle]['decision'] == 0 ? 'ki' : 'be'
     cycleMessages[cycle] = {
       'message': who + ' kör ' + how + ' ' + to + 'kapcsolva.',
@@ -355,7 +355,7 @@ function drawInfoBox() {
   var aboveOrBelow = decisions['externalTempAllow']['reason'] == 'above' ? 'fölé' : 'alá'
   var onOrOff = decisions['externalTempAllow']['decision'] == 0 ? 'ki' : 'be'
   var externalTempMessage = {
-    'message': 'Külső hőmérséklet határ ' + aboveOrBelow + ',\nfűtés ' + onOrOff + 'kapcsolva.',
+    'message': 'Külső hőmérséklet határ ' + aboveOrBelow + ',fűtés ' + onOrOff + 'kapcsolva.',
     'timestamp': decisions['externalTempAllow']['timestamp']
   }
   allDecisionMessages.push(externalTempMessage)
@@ -368,6 +368,8 @@ function drawInfoBox() {
     latestMessage = { 'message': '' }
   }
 
+  var lastEventTimestamp = (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3]
+
 
   var x = width * 0.185
   var y = height * 0.75
@@ -376,11 +378,11 @@ function drawInfoBox() {
   var fontSize = width * 0.014
 
   var messagesPre1 = [
-    kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma\nmiatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ') + ".") : "Határérték feletti kinti\nhőmérséklet miatt nincs fűtés."),
+    kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma miatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ') + ".") : "Határérték feletti kinti hőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(', ') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
-    "Utolsó esemény:\n" + (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3] + " - " + latestMessage['message']
+    "Utolsó esemény: " + latestMessage['message'].substring(0, latestMessage['message'].length - 1) + " ("+lastEventTimestamp + ")."
   ].filter(element => element !== '')
 
 
@@ -388,17 +390,16 @@ function drawInfoBox() {
   for (const line of messagesPre1) {
     if (w < multiLineTextWidth(line)) {
       var sublines = split(line, ' ')
-      var newLine = ''
+      var wrappedLine = ''
       for (const subline of sublines) {
-        if (multiLineTextWidth(newLine + subline) < w*0.9) {
-          newLine += subline + ' '
+        if (multiLineTextWidth(wrappedLine + subline) < w * 0.8) {
+          wrappedLine += subline + ' '
         }
         else {
-          newLine += '\n' + subline
+          wrappedLine += '\n' + subline + ' '
         }
-        console.log(newLine)
       }
-      messagesPre2.push(newLine)
+      messagesPre2.push(wrappedLine)
     }
     else {
       messagesPre2.push(line)
@@ -416,7 +417,7 @@ function drawInfoBox() {
   fill(0)
   noStroke()
   textSize(fontSize)
-  text(messages, x, y)
+  text(messages, x+width*0.005, y)
 }
 
 function manageToolTip() {
