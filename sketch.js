@@ -569,8 +569,9 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
         stroke(0, 0.5)
         line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x, y + map(temp, roomTempMin, roomTempMax, 0, h))
         noStroke()
-        fill(0, 0.75)
+        fill(0, 0.5)
         textSize(width * 0.0075)
+        text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
       }
     }
 
