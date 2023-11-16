@@ -7,6 +7,12 @@ var toolTip
 var noOfControlledRooms
 var masterOverrides
 var dataSetLoaded
+var raspiConsole, raspiImage
+var radioCommList = []
+
+function preload() {
+  raspiImage = loadImage('raspi_logo.png');
+}
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight)
@@ -19,6 +25,7 @@ function setup() {
   strokeCap(PROJECT)
   rectMode(CENTER)
   textAlign(CENTER, CENTER)
+  imageMode(CENTER)
   textFont('Consolas')
   toolTip = new ToolTipBox()
 
@@ -38,6 +45,11 @@ function setup() {
     updateConfig()
   })
 
+  raspiConsole = []
+  listenToFirebase('console/message', (data) => {
+    storeRasPiConsole(data)
+  })
+
   dataSetLoaded = false
 }
 
@@ -54,16 +66,20 @@ var cycleYPos
 //Dummy values so no startup error occurs
 var albatrosStatus = 0
 var pumpStatuses = { 1: 0, 2: 0, 3: 0, 4: 0 }
+var prevPumpStatuses = pumpStatuses
 var roomSettings = { 1: 1, 2: 21, 3: 20, 4: 16, 5: 16, 6: 21, 7: 16, 8: 16, 9: 16, 10: 22, 11: 22 }
 var roomStatuses = { 1: 0.5, 2: 25, 3: 12, 4: 16, 5: 20, 6: 22, 7: 24, 8: 14, 9: 15, 10: 17, 11: 20 }
+var prevRoomStatuses = roomStatuses
 var externalTempAllow = 0
 var roomReachable
 var roomLastUpdate
 
 function updateState(dataFromFirebase) {
   albatrosStatus = dataFromFirebase['albatrosStatus']
+  prevPumpStatuses = pumpStatuses
   pumpStatuses = dataFromFirebase['pumpStatuses']
   roomSettings = dataFromFirebase['roomSettings']
+  prevRoomStatuses = roomStatuses
   roomStatuses = dataFromFirebase['roomStatuses']
   externalTempAllow = dataFromFirebase['externalTempAllow']
   roomReachable = dataFromFirebase['roomReachable']
@@ -107,10 +123,6 @@ function updateConfig() {
   });
 }
 
-function loadLogs() {
-  //For loading system logs from repo for time based plots  
-}
-
 var decisions
 function readDecisions(dataFromFirebase) {
   decisions = dataFromFirebase
@@ -139,6 +151,15 @@ function draw() {
     manageToolTip()
   } catch (error) {
     console.log(error.message);
+  }
+}
+
+function drawRadioWaves() {
+  for (var i = radioCommList.length - 1; i >= 0; i--) {
+    radioCommList[i].draw()
+    if (radioCommList[i].dead) {
+      radioCommList.splice(i, 1)
+    }
   }
 }
 
@@ -370,7 +391,6 @@ function drawInfoBox() {
 
   var lastEventTimestamp = (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3]
 
-
   var x = width * 0.185
   var y = height * 0.75
   var w = width * 0.275
@@ -382,28 +402,13 @@ function drawInfoBox() {
       (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ') + ".") : "Határérték feletti kinti hőmérséklet miatt nincs fűtés."),
     externalTempAllow == 1 && wantHeatingCount > 0 ?
       (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(', ') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
-    "Utolsó esemény: " + latestMessage['message'].substring(0, latestMessage['message'].length - 1) + " ("+lastEventTimestamp + ")."
+    "Utolsó esemény: " + latestMessage['message'].substring(0, latestMessage['message'].length - 1) + " (" + lastEventTimestamp + ")."
   ].filter(element => element !== '')
 
 
   var messagesPre2 = []
   for (const line of messagesPre1) {
-    if (w < multiLineTextWidth(line)) {
-      var words = split(line, ' ')
-      var wrappedLine = ''
-      for (const word of words) {
-        if (multiLineTextWidth(wrappedLine + word) < w * 0.9) {
-          wrappedLine += word + ' '
-        }
-        else {
-          wrappedLine += '\n' + word + ' '
-        }
-      }
-      messagesPre2.push(wrappedLine)
-    }
-    else {
-      messagesPre2.push(line)
-    }
+    messagesPre2.push(wrapLine(line, w * 1.1))
   }
 
   var messages = messagesPre2.join('\n\n')
@@ -411,13 +416,13 @@ function drawInfoBox() {
   h = max((countNewLines(messages) + 1) * fontSize, h)
   stroke(0)
   strokeWeight(2)
-
+  fill(1)
   rect(x, y, w, h, width * 0.01)
 
   fill(0)
   noStroke()
   textSize(fontSize)
-  text(messages, x+width*0.005, y)
+  text(messages, x + width * 0.005, y)
 }
 
 function manageToolTip() {
@@ -433,6 +438,9 @@ function drawStateVisualization() {
   setDrawingParameters()
   drawCycles()
   drawPipingAndBoiler()
+  drawRasPiWiring()
+  drawRasPi()
+  drawRadioWaves()
 }
 
 function setDrawingParameters() {
@@ -599,7 +607,21 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     textStyle(NORMAL)
     if (mouseOver(x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h), width * 0.05, height * 0.05)) {
       var lastUpdateHourMinute = roomLastUpdate[roomNumber].slice(-5)
-      toolTip.show(roomReachableLocal ? round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')' : ('Szenzor nem elérhető!'))
+      toolTip.show(roomReachableLocal ? round(roomStatus, 1) + ' °C\n(' + lastUpdateHourMinute + ')' : ('Szenzor nem elérhető!'), color(1), color(0), color(0), 4, width * 0.0125, CENTER)
+    }
+
+    if (prevRoomStatuses[roomNumber] != roomStatus) {
+      var label = 'room' + roomNumber
+      var labelExists = false
+      for (const radioComm of radioCommList) {
+        if (label === radioComm.label) {
+          labelExists = true
+        }
+      }
+      if (labelExists == false) {
+        radioCommList.push(new RadioCommunication(x + w * 1.2, y + map(roomTempMax - roomStatus + roomTempMin, roomTempMin, roomTempMax, 0, h), raspiX, raspiY, 30, label))
+        prevRoomStatuses[roomNumber] = roomStatus
+      }
     }
   }
 
@@ -697,7 +719,7 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
   }
 
   if (mouseOver(x, y - h * 0.125, w * 2.5, h * 0.14) && roomMessage !== '') {
-    toolTip.show(roomMessage)
+    toolTip.show(roomMessage, color(1), color(0), color(0), 4, width * 0.0125, CENTER)
   }
 
   fill(0)
@@ -735,6 +757,94 @@ function drawFlame(x, y, w, h, colOuter, colInner, outer) {
   }
 }
 
+function storeRasPiConsole(line) {
+  if (50 < raspiConsole.length) {
+    raspiConsole.splice(0, 1)
+  }
+  raspiConsole.push(line)
+}
+
+function drawRasPiWiring() {
+  let x1 = 0
+  let x2 = 0
+  let cx1 = 0
+  let cx2 = 0
+  if (albatrosStatus == 1) {
+    x1 = width * 0.49, y1 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.2
+    x2 = width * 0.5, y2 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.525
+    cx1 = width * 0.46, cy1 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.21
+    cx2 = width * 0.46, cy2 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.625
+  }
+  else {
+    x1 = width * 0.46, y1 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.25
+    x2 = width * 0.5, y2 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.525
+    cx1 = width * 0.475, cy1 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.21
+    cx2 = width * 0.46, cy2 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.625
+  }
+
+  noFill();
+
+  stroke(0.9);
+  strokeWeight(5)
+  bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
+  stroke(252 / 255, 178 / 255, 40 / 255);
+  strokeWeight(4)
+  bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
+  if (albatrosStatus == 0) {
+    noStroke()
+    fill(0.5)
+    rect(x1*0.98, y1, width*0.005, width*0.001)
+    fill(0)
+    rect(x1*0.99, y1, width*0.0065, width*0.0025)
+  }
+
+
+  x1 = width * 0.5, y1 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.22
+  x2 = width * 0.5, y2 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.54
+  cx1 = width * 0.47, cy1 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.19
+  cx2 = width * 0.46, cy2 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.525
+
+  noFill()
+  stroke(0.9);
+  strokeWeight(5)
+  bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
+  stroke(23 / 255, 255 / 255, 236 / 255)
+  strokeWeight(3)
+  bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2)
+
+  stroke(0.5)
+  strokeWeight(1)
+  fill(0.95)
+  rect(width * 0.5, 1.21 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.025, height * 0.026)
+}
+
+var raspiX, raspiY
+
+function drawRasPi() {
+  raspiX = width * 0.5
+  raspiY = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.585
+  var x = raspiX
+  var y = raspiY
+
+  var w = width * 0.025
+  var h = width * 0.035
+
+  fill(0)
+  noStroke()
+  rect(x - w / 2, y - h / 4, w * 0.175, h * 0.3)
+
+  fill(65 / 255, 255 / 255, 113 / 255)
+  strokeWeight(1)
+  stroke(0)
+  rect(x, y, w, h)
+  var breather = map(sin(map(round(millis()) % 2500, 0, 2500, 0, TWO_PI)), -1, 1, 0.785, 0.815)
+  image(raspiImage, x, y * 1.005, w * breather, w * breather);
+
+  if (mouseOver(x, y, w, h)) {
+    toolTip.show(raspiConsole.slice(max(raspiConsole.length - 40, 0), raspiConsole.length).map(element => element.replace(/[\n]/g, '')).map(line => wrapLine(line, width * 0.5)).join("\n"), color(0), color(0), color(1), 1, width * 0.0075, LEFT)
+  }
+}
+
 function drawPipingAndBoiler() {
   var x = width * 0.5
   var y = height * (cycleYPos[1] + cycleYPos[2]) / 2
@@ -751,7 +861,7 @@ function drawPipingAndBoiler() {
   if (mouseOver(x, y, w, h)) {
     var how = masterOnDetected ? 'manuálisan' : (decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
     var to = decisions['albatros']['decision'] > 0 ? 'be' : 'ki'
-    toolTip.show('Kazánok ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')')
+    toolTip.show('Kazánok ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')', color(1), color(0), color(0), 4, width * 0.0125, CENTER)
   }
 
   stroke(albatrosStatus, 0, 1 - albatrosStatus)
@@ -779,7 +889,6 @@ function drawPipingAndBoiler() {
     }
   }
 
-  fill(albatrosStatus, 0, 1 - albatrosStatus)
   fill(1)
   rect(width * 0.5, 1.155 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.005 + width * 0.035, width * 0.005 + width * 0.005)
 }
@@ -815,7 +924,9 @@ function drawPump(x, y, state, cycle) {
     toolTip.show(
       discrepancy ?
         'Eltérés a kör igénye és a\nszivattyú állapota között.' :
-        who + ' kör ' + how + '\n' + to + 'kapcsolva' + (coolOff ? '\n(fűtővíz lepörgetés)' : '') + '.' + timestamp
+        who + ' kör ' + how + '\n' + to + 'kapcsolva' + (coolOff ? '\n(fűtővíz lepörgetés)' : '') + '.' + timestamp,
+      color(1), color(0), color(0), 4,
+      width * 0.0125, CENTER
     )
   }
 
@@ -865,6 +976,20 @@ function drawPump(x, y, state, cycle) {
   stroke(1)
   fill(1)
   ellipse(x, y, width * 0.01 * 0.25, width * 0.01 * 0.25)
+
+  if (prevPumpStatuses[cycle] != pumpStatuses[cycle]) {
+    var label = 'pump' + cycle
+    var labelExists = false
+    for (const radioComm of radioCommList) {
+      if (label === radioComm.label) {
+        labelExists = true
+      }
+    }
+    if (labelExists == false) {
+      radioCommList.push(new RadioCommunication(raspiX, raspiY, x, y, 10, label))
+      prevPumpStatuses[cycle] = pumpStatuses[cycle]
+    }
+  }
 }
 
 function mouseOver(centerX, centerY, w, h) {
@@ -940,15 +1065,24 @@ class ToolTipBox {
     this.isVisible = false;
     this.padding = width * 0.0075;
     this.textSize = width * 0.0125;
+    this.rounding = 4
+    this.hAlign = CENTER;
     this.borderColor = color(0)
     this.fillColor = color(1);
     this.textColor = color(0);
   }
 
   // Call this function to display the tooltip with the provided text
-  show(text) {
-    this.text = text;
-    this.isVisible = true;
+  show(text, fillColor, borderColor, textColor, rounding, textSize, hAlign) {
+    this.text = text
+    this.isVisible = true
+    this.textSize = textSize
+    this.hAlign = hAlign
+    this.borderColor = textColor
+    this.fillColor = fillColor
+    this.borderColor = borderColor
+    this.textColor = textColor
+    this.rounding = rounding
   }
 
   // Call this function to hide the tooltip
@@ -962,33 +1096,32 @@ class ToolTipBox {
       noCursor()
       // Set the text properties
       textSize(this.textSize);
+      textAlign(this.hAlign, CENTER)
       let txtWidth = multiLineTextWidth(this.text) + this.padding * 2;
-      let txtHeight = this.textSize + this.padding * 2 * (1 + (this.text.match(/\n/g) || []).length);
+      let txtHeight = 2 * this.padding + 1.2 * this.textSize * (1 + (this.text.match(/\n/g) || []).length);
 
       // Determine the position of the tooltip so it doesn't hang off the edge
       let posX = mouseX + txtWidth / 2; // Offset from mouse position
       let posY = mouseY + txtHeight / 2;
 
       // Adjust if it's going out of the canvas
-      if (posX + txtWidth > width) {
-        posX = width - txtWidth;
+      if (posX + txtWidth / 2 > width) {
+        posX = width - txtWidth / 2;
       }
-      if (posY + txtHeight > height) {
-        posY = height - txtHeight;
+      if (posY + txtHeight / 2 > height) {
+        posY = height - txtHeight / 2;
       }
 
       stroke(this.borderColor);
-      strokeWeight(2)
-      rect(posX, posY, txtWidth, txtHeight, 4);
-
-      // Draw the tooltip background
+      strokeWeight(1)
       fill(this.fillColor);
-      noStroke();
-      rect(posX, posY, txtWidth, txtHeight, 4); // Slight rounding for aesthetics
+      rect(posX, posY, txtWidth, txtHeight, this.rounding);
 
       // Draw the tooltip text
+      noStroke()
       fill(this.textColor);
-      text(this.text, posX, posY);
+      text(this.text, posX + (this.hAlign === CENTER ? 0 : -txtWidth / 2 + this.padding), posY);
+      textAlign(CENTER, CENTER)
     }
   }
 }
@@ -1094,4 +1227,89 @@ function reshapeArray(arr, n, m, paddingElement) {
 
 function countNewLines(str) {
   return (str.match(/\n/g) || []).length
+}
+
+function wrapLine(line, w) {
+  if (w < multiLineTextWidth(line)) {
+    var words = split(line, ' ')
+    var wrappedLine = ''
+    var wrappingLenght = 0
+    for (const word of words) {
+      if (wrappingLenght < w * 0.9) {
+        wrappedLine += word + ' '
+        wrappingLenght += multiLineTextWidth(wrappedLine + word)
+      }
+      else {
+        wrappedLine += '\n' + ('\t'.repeat((line.match(/\t/g) || []).length)) + word + ' '
+        wrappingLenght = 0
+      }
+    }
+    return wrappedLine
+  }
+  else {
+    return line
+  }
+}
+
+class RadioCommunication {
+  constructor(x1, y1, x2, y2, maxEmit, label) {
+    this.x1 = x1 // Starting point x-coordinate
+    this.y1 = y1 // Starting point y-coordinate
+    this.x2 = x2 // Ending point x-coordinate
+    this.y2 = y2 // Ending point y-coordinate
+    this.angle = atan2(y2 - y1, x2 - x1)
+    this.d = dist(x1, y1, x2, y2)
+    this.maxEmit = maxEmit // Number of arcs to emit
+
+    this.speed = map(this.d, 0, dist(0, 0, width * 0.5, height * 0.5), 15, 40) // Speed of wave expansion
+    this.arcAngle = TWO_PI * 0.03 // Size of the arc
+
+    this.radii = []
+    this.col = []
+    this.emitting = false
+    this.emitCount = 0
+    this.dead = false
+    this.label = label
+
+    this.initEmit()
+  }
+
+  initEmit() {
+    if (this.emitting == false) {
+      this.emitting = true
+    }
+  }
+
+  addWave(col) {
+    this.radii.push(10)
+    this.col.push(col)
+    this.emitCount++
+  }
+
+  draw() {
+    //strokeWeight(1)
+    //stroke(1, 0, 0)
+    //line(this.x1, this.y1, this.x2, this.y2)
+    if (this.emitting) {
+      for (var i = this.radii.length - 1; i > 0; i--) {
+        stroke(this.col[i])
+        strokeWeight(2)
+        strokeCap(PROJECT)
+        noFill()
+        this.radii[i] += this.speed
+        if (this.radii[i] / 2 < this.d) {
+          arc(this.x1, this.y1, this.radii[i], this.radii[i], this.angle - this.arcAngle / 2, this.angle + this.arcAngle / 2)
+        }
+        else {
+          this.radii.splice(i, 1)
+          if (this.radii.length == 1) {
+            this.dead = true
+          }
+        }
+      }
+      if (this.emitCount < this.maxEmit) {
+        this.addWave(color(0, 0.5))
+      }
+    }
+  }
 }
