@@ -562,24 +562,24 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
     text("ki", x * 1.0005, (y + h * 0.8) * 1.001)
   }
   else {
-    for (var temp = roomTempMin + 1; temp <= roomTempMax - 1; temp += 1) {
-      if (temp % 5 == 0) {
+    for (var temp = roomTempMin + 0.5; temp <= roomTempMax - 0.5; temp += 0.5) {
+      if (temp % 1 == 0) {
         strokeWeight(2)
-        stroke(0, 0.75)
-        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x, y + map(temp, roomTempMin, roomTempMax, 0, h))
+        stroke(0, 0.45)
+        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x - w*0.1, y + map(temp, roomTempMin, roomTempMax, 0, h))
         noStroke()
-        fill(0)
-        textSize(width * 0.01)
+        fill(0,0.65)
+        textSize(width * 0.008)
         text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
       }
       else {
         strokeWeight(1)
         stroke(0, 0.5)
-        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x, y + map(temp, roomTempMin, roomTempMax, 0, h))
+        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x - w*0.2, y + map(temp, roomTempMin, roomTempMax, 0, h))
         noStroke()
         fill(0, 0.5)
         textSize(width * 0.0075)
-        text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
+        //text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
       }
     }
 
