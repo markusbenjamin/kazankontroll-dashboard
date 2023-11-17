@@ -793,11 +793,10 @@ function drawRasPiWiring() {
   if (albatrosStatus == 0) {
     noStroke()
     fill(0.5)
-    rect(x1*0.98, y1, width*0.005, width*0.001)
+    tiltedRect(x1*0.98, y1*1.02, width*0.005, width*0.001,TWO_PI*(-0.058))
     fill(0)
-    rect(x1*0.99, y1, width*0.0065, width*0.0025)
-  }
-
+    tiltedRect(x1*0.99, y1*1.01, width*0.0065, width*0.0025,TWO_PI*(-0.058))
+  } 
 
   x1 = width * 0.5, y1 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.22
   x2 = width * 0.5, y2 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.54
@@ -1013,6 +1012,16 @@ function topRect(x, y, w, h) {
   rect(adjustedX, adjustedY, w, h);
   rectMode(CENTER)
 }
+
+function tiltedRect(x, y, w, h, angle) {
+  push(); // Save the current drawing state
+  translate(x, y); // Move the origin to the rectangle's center
+  rotate(angle); // Rotate by the specified angle (in radians)
+  rectMode(CENTER); // Draw the rectangle from its center
+  rect(0, 0, w, h); // Draw the rectangle
+  pop(); // Restore the original drawing state
+}
+
 
 function enforceAspectRatio(aspectRatio) {
   let newWidth, newHeight;
