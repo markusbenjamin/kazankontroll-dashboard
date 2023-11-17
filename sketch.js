@@ -841,7 +841,7 @@ function drawRasPi() {
   image(raspiImage, x, y * 1.005, w * breather, w * breather);
 
   if (mouseOver(x, y, w, h)) {
-    toolTip.show(raspiConsole.slice(max(raspiConsole.length - 40, 0), raspiConsole.length).map(element => element.replace(/[\n]/g, '')).map(line => wrapLine(line, width * 0.5)).join("\n"), color(0), color(0), color(1), 1, width * 0.0075, LEFT)
+    toolTip.show(raspiConsole.slice(max(raspiConsole.length - 40, 0), raspiConsole.length).map(element => element.replace(/[\n]/g, '')).map(line => wrapLine(line, width * 0.7)).join("\n"), color(0), color(0), color(1), 1, width * 0.0075, LEFT)
   }
 }
 
