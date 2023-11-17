@@ -408,7 +408,7 @@ function drawInfoBox() {
 
   var messagesPre2 = []
   for (const line of messagesPre1) {
-    messagesPre2.push(wrapLine(line, w * 0.9))
+    messagesPre2.push(wrapLine(line, w * 0.95))
   }
 
   var messages = messagesPre2.join('\n\n')
