@@ -785,10 +785,10 @@ function drawRasPiWiring() {
   noFill();
 
   stroke(0.9);
-  strokeWeight(5)
+  strokeWeight(width*0.0035)
   bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
   stroke(252 / 255, 178 / 255, 40 / 255);
-  strokeWeight(4)
+  strokeWeight(width*0.003)
   bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
   if (albatrosStatus == 0) {
     noStroke()
@@ -806,10 +806,10 @@ function drawRasPiWiring() {
 
   noFill()
   stroke(0.9);
-  strokeWeight(5)
+  strokeWeight(width*0.0035)
   bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
   stroke(23 / 255, 255 / 255, 236 / 255)
-  strokeWeight(3)
+  strokeWeight(width*0.003)
   bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2)
 
   stroke(0.5)
