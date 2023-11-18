@@ -1,0 +1,14 @@
+[Unit]
+Description=heatmeters
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+User=pi
+WorkingDirectory=/media/pi/B355-928E/kazankontroll-dashboard/
+ExecStart=/usr/bin/python3 /media/pi/B355-928E/kazankontroll-dashboard/heatmeters.py 30 3
+
+[Install]
+WantedBy=multi-user.target

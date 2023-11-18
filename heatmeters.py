@@ -4,6 +4,7 @@ from pygame.locals import *
 import time
 import os
 import argparse
+from datetime import datetime
 
 def startup():
     # Initialize Pygame and the camera
@@ -24,10 +25,9 @@ def startup():
     modes = cam.get_size()
     if not modes:
         raise ValueError("Camera doesn't support any modes.")
-    max_resolution = modes[0]*modes[1]
-
+    
     # Recreate the Camera object with the maximum resolution
-    cam = pygame.camera.Camera(camlist[cam_index], max_resolution)
+    cam = pygame.camera.Camera(camlist[cam_index], modes)
     cam.start()
     
     return cam
@@ -46,7 +46,8 @@ def capture_images(capture_duration,capture_frequency, cam):
             img = cam.get_image()
 
             # Save the image to disk
-            timestamp = time.strftime("%Y%m%d-%H%M%S")
+            now = datetime.now()
+            timestamp = time.strftime("%Y%m%d-%H%M%S") + f"{now.microsecond // 1000:03d}"
             pygame.image.save(img, f'{save_path}{timestamp}.jpg')
             print(f'Captured image.')
 
