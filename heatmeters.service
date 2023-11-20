@@ -1,8 +1,8 @@
 [Unit]
 Description=heatmeters
 After=network.target
-Wants=media-pi-B355-928E.mount
-BindsTo=media-pi-B355-928E.mount
+BAD LINE Wants=media-pi-B355-928E.mount
+BAD LINE BindsTo=media-pi-B355-928E.mount
 
 [Service]
 Type=simple

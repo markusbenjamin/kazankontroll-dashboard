@@ -1,8 +1,6 @@
-- internal state mirroring
 - schedules
     - mutassa, ha override miatt megy egy kör
 - performace
-- kormozódás kikapcsolt állapotban
 - mutassa a hőmérsékletváltozás irányát
 
 DONE
