@@ -52,7 +52,7 @@ def zoom_array(array, pad_ratio, fill_value=255):
 
         return resized_array
 
-def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, match_weights, diff_weights, da1_threshold = 0.03, total_da_threshold = 0.18, h_shift_min=0,h_shift_max=0.25,h_shift_step=0.05,v_shift_min=-0.1,v_shift_max=0.1,v_shift_step=0.05,zoom_min=0.05,zoom_max=0.25,zoom_step=0.05):
+def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.03, total_da_threshold = 0.18, h_shift_min=0,h_shift_max=0.25,h_shift_step=0.05,v_shift_min=-0.1,v_shift_max=0.1,v_shift_step=0.05,zoom_min=0.05,zoom_max=0.25,zoom_step=0.05):
     resized_archetype_vectors_2D = []
     archetype_dimensions = archetype_vectors_2D[0].shape
     unknown_dimensions = unknown_vector_2D.shape
@@ -63,15 +63,16 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, match_weights, dif
     for h_shift in np.arange(h_shift_min,h_shift_max+h_shift_step,h_shift_step):
         for v_shift in np.arange(v_shift_min,v_shift_max+v_shift_step,v_shift_step):
             for zoom_level in np.arange(zoom_min,zoom_max+zoom_step,zoom_step):
-                segment_pixels = np.where(shift_array(zoom_array(copy.deepcopy(resized_archetype_vectors_2D[8]), zoom_level),h_shift,v_shift).flatten() == 0)[0]
+                #segment_pixels = np.where(shift_array(zoom_array(copy.deepcopy(resized_archetype_vectors_2D[8]), zoom_level),h_shift,v_shift).flatten() == 0)[0]
                 activation = {}
                 for num in np.arange(0,10,1):
                     archetype_vector = 1 - (shift_array(zoom_array(copy.deepcopy(resized_archetype_vectors_2D[num]), zoom_level),h_shift,v_shift).flatten())/255
                     unknown_vector = 1 - unknown_vector_2D.flatten()/255
-                    activation[num] = np.mean([
-                        np.dot(archetype_vector,unknown_vector)/np.mean([np.sum(archetype_vector),np.sum(unknown_vector)])*match_weights[num],
-                        np.sum(archetype_vector[segment_pixels]==unknown_vector[segment_pixels])/len(segment_pixels)*diff_weights[num]
-                    ])
+                    #activation[num] = np.mean([
+                    #    np.dot(archetype_vector,unknown_vector)/np.mean([np.sum(archetype_vector),np.sum(unknown_vector)])*match_weights[num],
+                    #    np.sum(archetype_vector[segment_pixels]==unknown_vector[segment_pixels])/len(segment_pixels)*diff_weights[num]
+                    #])
+                    activation[num] = np.dot(archetype_vector,unknown_vector)/np.mean([np.sum(archetype_vector),np.sum(unknown_vector)])
                 activations.append(activation)
 
     def activation_checks(activation_as_array):
@@ -102,36 +103,36 @@ if __name__ == "__main__":
             archetype_vectors_2D.append(np.array(img.convert('L')))
 
     
-    match_weights = {
-        0:1,
-        1:1,
-        2:1,
-        3:1,
-        4:1,
-        5:1,
-        6:1,
-        7:1,
-        8:1,
-        9:1
-    }
-
-    diff_weights = {
-        0:0,
-        1:0,
-        2:0,
-        3:0,
-        4:0,
-        5:0,
-        6:0,
-        7:0,
-        8:0,
-        9:0
-    }
+    #match_weights = {
+    #    0:1,
+    #    1:1,
+    #    2:1,
+    #    3:1,
+    #    4:1,
+    #    5:1,
+    #    6:1,
+    #    7:1,
+    #    8:1,
+    #    9:1
+    #}
+#
+    #diff_weights = {
+    #    0:0,
+    #    1:0,
+    #    2:0,
+    #    3:0,
+    #    4:0,
+    #    5:0,
+    #    6:0,
+    #    7:0,
+    #    8:0,
+    #    9:0
+    #}
 
     for char_img in [file for file in os.listdir('batch/chars') if file.lower().endswith('.jpg')]:
         with Image.open(f"batch/chars/{char_img}") as img:
             unknown_vector_2D = np.array(img)
-            prediction = seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, match_weights, diff_weights, da1_threshold = 0.03, total_da_threshold = 0.16)
-            if not os.path.exists(f'preds_diff/{prediction}'):
-                os.makedirs(f'preds_diff/{prediction}')
-            img.save(f'preds_diff/{prediction}/{char_img}.jpg')
+            prediction = seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.03, total_da_threshold = 0.18)
+            if not os.path.exists(f'preds/{prediction}'):
+                os.makedirs(f'preds/{prediction}')
+            img.save(f'preds/{prediction}/{char_img}.jpg')

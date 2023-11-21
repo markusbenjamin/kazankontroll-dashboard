@@ -5,6 +5,7 @@ import os
 from skimage import restoration, util
 from scipy.ndimage import zoom
 from datetime import datetime
+import csv
 
 def slice_into_chars(img):
     # Calculate the width and height of each piece
@@ -337,7 +338,7 @@ def zoom_array(array, pad_ratio, fill_value=255):
 
         return resized_array
 
-def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, match_weights, diff_weights, da1_threshold = 0.03, total_da_threshold = 0.18, h_shift_min=0,h_shift_max=0.25,h_shift_step=0.05,v_shift_min=-0.1,v_shift_max=0.1,v_shift_step=0.05,zoom_min=0.05,zoom_max=0.25,zoom_step=0.05):
+def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.03, total_da_threshold = 0.18, h_shift_min=0,h_shift_max=0.25,h_shift_step=0.05,v_shift_min=-0.1,v_shift_max=0.1,v_shift_step=0.05,zoom_min=0.05,zoom_max=0.25,zoom_step=0.05):
     resized_archetype_vectors_2D = []
     archetype_dimensions = archetype_vectors_2D[0].shape
     unknown_dimensions = unknown_vector_2D.shape
@@ -353,10 +354,7 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, match_weights, dif
                 for num in np.arange(0,10,1):
                     archetype_vector = 1 - (shift_array(zoom_array(copy.deepcopy(resized_archetype_vectors_2D[num]), zoom_level),h_shift,v_shift).flatten())/255
                     unknown_vector = 1 - unknown_vector_2D.flatten()/255
-                    activation[num] = np.mean([
-                        np.dot(archetype_vector,unknown_vector)/np.mean([np.sum(archetype_vector),np.sum(unknown_vector)])*match_weights[num],
-                        np.sum(archetype_vector[segment_pixels]==unknown_vector[segment_pixels])/len(segment_pixels)*diff_weights[num]
-                    ])
+                    activation[num] = np.dot(archetype_vector,unknown_vector)/np.mean([np.sum(archetype_vector),np.sum(unknown_vector)])
                 activations.append(activation)
 
     def activation_checks(activation_as_array):
@@ -379,7 +377,6 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, match_weights, dif
 
     return prediction
 
-
 if __name__ == "__main__":
     folder_path = 'C:/Users/Beno/Documents/SZAKI/kazankontroll-dashboard/heatmeter_images/2023_11_18'
     image_names = [file for file in os.listdir(folder_path) if file.lower().endswith('.jpg')]
@@ -388,35 +385,8 @@ if __name__ == "__main__":
     for n in np.arange(0,10,1):
         with Image.open(f'archetypes/archetype_{n}.png') as img:
             archetype_vectors_2D.append(np.array(img.convert('L')))
-    
-    match_weights = {
-        0:1,
-        1:1,
-        2:1,
-        3:1,
-        4:1,
-        5:1,
-        6:1,
-        7:1,
-        8:1,
-        9:1
-    }
 
-    diff_weights = {
-        0:0,
-        1:0,
-        2:0,
-        3:0,
-        4:0,
-        5:0,
-        6:0,
-        7:0,
-        8:0,
-        9:0
-    }
-
-    readouts = []
-    for image_name in image_names[0:3]:
+    for image_name in image_names[10:-1]:
         with Image.open(os.path.join(folder_path, image_name)) as img:
             timestamp = datetime.strptime(image_name[0:-7:], "%Y%m%d-%H%M%S")
             img, cycle_crops, chars = process_image(img)
@@ -426,9 +396,12 @@ if __name__ == "__main__":
                     cycle_readout = ''
                     for char in range(1,5):
                         unknown_vector_2D = np.array(chars[cycle-1][char-1])
-                        prediction = seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, match_weights, diff_weights, da1_threshold = 0.03, total_da_threshold = 0.16)
+                        prediction = seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.03, total_da_threshold = 0.18)
                         cycle_readout += str(prediction)
                     cycle_readouts.append(cycle_readout)
-            readouts.append([timestamp.strftime('%Y.%m.%d %H:%M:%S'),cycle_readouts])
+            readout = f"{timestamp.strftime('%Y.%m.%d %H:%M:%S')},{cycle_readouts[0]},{cycle_readouts[1]},{cycle_readouts[2]},{cycle_readouts[3]}"
     
-    print(readouts)
+            print(readout)
+            with open('readouts.csv', 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(readout.split(','))
