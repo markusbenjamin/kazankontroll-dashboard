@@ -14,7 +14,7 @@ def capture_images(capture_duration, capture_frequency):
 
     while time.time() - start_time < capture_duration:
         now = datetime.now()
-        timestamp = now.strftime("%Y%m%d-%H%M%S") + f"{now.microsecond // 1000:03d}"
+        timestamp = now.strftime("%Y%m%d-%H%M%S")
         image_filename = f'{save_path}{timestamp}.jpg'
 
         # Capture an image using fswebcam
@@ -30,4 +30,4 @@ if __name__ == "__main__":
     parser.add_argument('frequency', type=float, help='Capture frequency in seconds')
 
     args = parser.parse_args()
-    #capture_images(args.duration, args.frequency)
+    capture_images(args.duration, args.frequency)
