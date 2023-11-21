@@ -128,11 +128,10 @@ if __name__ == "__main__":
         9:0
     }
 
-
-    for char_img in [file for file in os.listdir('batch/chars') if file.lower().endswith('.jpg')][20:40]:
+    for char_img in [file for file in os.listdir('batch/chars') if file.lower().endswith('.jpg')]:
         with Image.open(f"batch/chars/{char_img}") as img:
             unknown_vector_2D = np.array(img)
-            prediction = seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, match_weights, diff_weights, da1_threshold = 0.02, total_da_threshold = 0.2)
-            if not os.path.exists(f'preds_match/{prediction}'):
-                os.makedirs(f'preds_match/{prediction}')
-            img.save(f'preds_match/{prediction}/{char_img}.jpg')
+            prediction = seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, match_weights, diff_weights, da1_threshold = 0.03, total_da_threshold = 0.16)
+            if not os.path.exists(f'preds_diff/{prediction}'):
+                os.makedirs(f'preds_diff/{prediction}')
+            img.save(f'preds_diff/{prediction}/{char_img}.jpg')
