@@ -1,8 +1,8 @@
 [Unit]
-Description=Run heatmeters service every 15 minutes
+Description=Run heatmeters service every 30 minutes
 
 [Timer]
-OnCalendar=*:0/15
+OnCalendar=*:0/30
 Persistent=true
 
 [Install]

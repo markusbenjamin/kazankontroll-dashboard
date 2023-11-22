@@ -1,8 +1,8 @@
 [Unit]
 Description=heatmeters
 After=network.target
-BAD LINE Wants=media-pi-B355-928E.mount
-BAD LINE BindsTo=media-pi-B355-928E.mount
+Wants=media-pi-B355\x2d928E.mount
+BindsTo=media-pi-B355\x2d928E.mount
 
 [Service]
 Type=simple
@@ -11,7 +11,7 @@ RestartSec=60
 User=pi
 WorkingDirectory=/media/pi/B355-928E/kazankontroll-dashboard/
 ExecStartPre=/bin/sh -c 'while ! mountpoint -q /media/pi/B355-928E; do sleep 1; done'
-ExecStart=/usr/bin/python3 /media/pi/B355-928E/kazankontroll-dashboard/heatmeters.py 30 3
+ExecStart=/usr/bin/python3 /media/pi/B355-928E/kazankontroll-dashboard/heatmeters.py 60 12
 
 [Install]
 WantedBy=multi-user.target
