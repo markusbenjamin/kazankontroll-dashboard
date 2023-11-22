@@ -1,5 +1,5 @@
 [Unit]
-Description=heatmeters
+Description=gas_metering
 After=network.target
 Wants=media-pi-B355\x2d928E.mount
 BindsTo=media-pi-B355\x2d928E.mount
