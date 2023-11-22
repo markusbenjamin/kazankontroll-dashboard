@@ -1,0 +1,17 @@
+[Unit]
+Description=heatmeters
+After=network.target
+Wants=media-pi-B355\x2d928E.mount
+BindsTo=media-pi-B355\x2d928E.mount
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=60
+User=pi
+WorkingDirectory=/media/pi/B355-928E/kazankontroll-dashboard/
+ExecStartPre=/bin/sh -c 'while ! mountpoint -q /media/pi/B355-928E; do sleep 1; done'
+ExecStart=/usr/bin/python3 /media/pi/B355-928E/kazankontroll-dashboard/gas_metering.py
+
+[Install]
+WantedBy=multi-user.target
