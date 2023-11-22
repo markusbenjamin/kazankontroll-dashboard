@@ -236,58 +236,71 @@ def process_image(img):
     img = img.transpose(Image.ROTATE_90)
     oimg = copy.deepcopy(img)
 
-    img = img.convert('L')
-    img = image_grayscale_shifter(img)
-    img = Image.fromarray((np.round(np.array(img)/255)*255).astype(np.uint8), mode='L')
-    img = img.resize((round(height/4),round(width/4)))
-    img = edge_detector(img)
-    significant_points = [element * 4 for element in find_significant_points(img)]
-    img = draw_points(oimg,significant_points,point_size=20)
+    #img = img.convert('L')
+    #img = image_grayscale_shifter(img)
+    #img = Image.fromarray((np.round(np.array(img)/255)*255).astype(np.uint8), mode='L')
+    #img = img.resize((round(height/4),round(width/4)))
+    #img = edge_detector(img)
+    #significant_points = [element * 4 for element in find_significant_points(img)]
+    #img = draw_points(oimg,significant_points,point_size=20)
     
     cycle_crops = []
     chars = []
-    if 0<len(significant_points):
-        reference_point = significant_points[np.argmax([np.linalg.norm(point) for point in significant_points])]
+    crop_rectangles = [
+        (182,385,215,401),
+        (185,536,218,552),
+        (184,685,218,702),
+        (176,234,210,249)
+    ]
 
-        crop_rectangles = [
-            (reference_point[0]-288,reference_point[1]-819,reference_point[0]-238,reference_point[1]-789),
-            (reference_point[0]-207,reference_point[1]-553,reference_point[0]-158,reference_point[1]-530),
-            (reference_point[0]-192,reference_point[1]-349,reference_point[0]-144,reference_point[1]-327),
-            (reference_point[0]-179,reference_point[1]-152,reference_point[0]-130,reference_point[1]-126)
-        ]
+    rotates = [0, 0, 3, 0]
+    brightness1_factors = [1.25, 1.25, 1.25, 1.25]
+    contrast1_factors = [2, 2, 2, 2]
+    contrast2_factors = [4, 4, 4, 4]
 
-        rotates = [4, 0, 0, -3]
-        brightness1_factors = [3, 3, 3, 3]
-        contrast1_factors = [5, 5, 5, 5]
+    for cycle in range(1, 5):
+        cycle_crop = oimg.crop(crop_rectangles[cycle - 1])
+        width, height = cycle_crop.size
+        zoom = 4
+        cycle_crop = cycle_crop.resize((round(width*zoom), round(height*zoom)), Image.BICUBIC)
 
-        for cycle in range(1, 5):
-            cycle_crop = oimg.crop(crop_rectangles[cycle - 1])
-            width, height = cycle_crop.size
-            zoom = 4
-            cycle_crop = cycle_crop.resize((round(width*zoom), round(height*zoom)), Image.BICUBIC)
+        cycle_crop = grayscale_with_channel_control(cycle_crop, 1, 1, 1)
 
-            cycle_crop = grayscale_with_channel_control(cycle_crop, 0.5, 0.5, 1)
+        cycle_crop_np = np.array(cycle_crop)
+        cycle_crop_np = restoration.denoise_nl_means(cycle_crop_np, patch_size=2, patch_distance=2, h=1)            
+        cycle_crop = Image.fromarray(util.img_as_ubyte(cycle_crop_np))
+        
+        cycle_crop = cycle_crop.filter(ImageFilter.SHARPEN).filter(ImageFilter.SHARPEN).filter(ImageFilter.SHARPEN)
 
-            cycle_crop_np = np.array(cycle_crop)
-            cycle_crop_np = restoration.denoise_nl_means(cycle_crop_np, patch_size=2, patch_distance=2, h=1)            
-            cycle_crop = Image.fromarray(util.img_as_ubyte(cycle_crop_np))
+        cycle_crop_np = np.array(cycle_crop)
+        cycle_crop_np = restoration.denoise_nl_means(cycle_crop_np, patch_size=2, patch_distance=2, h=1)    
+        cycle_crop_np = map_to_zero_and_one(cycle_crop_np)        
+        cycle_crop = Image.fromarray(util.img_as_ubyte(cycle_crop_np))
+        
+        enhancer = ImageEnhance.Contrast(cycle_crop)
+        cycle_crop = enhancer.enhance(contrast1_factors[cycle - 1])
+        enhancer = ImageEnhance.Brightness(cycle_crop)
+        cycle_crop = enhancer.enhance(brightness1_factors[cycle - 1])
 
-            cycle_crop = cycle_crop.filter(ImageFilter.SHARPEN)
-
-            enhancer = ImageEnhance.Contrast(cycle_crop)
-            cycle_crop = enhancer.enhance(contrast1_factors[cycle - 1])
-            enhancer = ImageEnhance.Brightness(cycle_crop)
-            cycle_crop = enhancer.enhance(brightness1_factors[cycle - 1])
-
+        if rotates[cycle - 1] != 0:
             cycle_crop = cycle_crop.rotate(rotates[cycle - 1], expand=True, fillcolor='white')
             cycle_crop = crop_to_aspect_ratio(cycle_crop,(2,1))
 
-            thresholding_factor = np.mean(np.array(cycle_crop)[np.array(cycle_crop)<255*0.2])
-            cycle_crop = Image.fromarray(util.img_as_ubyte(np.array(cycle_crop) > thresholding_factor))
-            
-            cycle_crops.append(cycle_crop)
+        #thresholding_factor = np.mean(np.array(cycle_crop)[np.array(cycle_crop)<255*0.9])
+        #cycle_crop = Image.fromarray(util.img_as_ubyte(np.array(cycle_crop) > thresholding_factor))
+        
+        cycle_crop_np = np.array(cycle_crop)
+        cycle_crop_np = map_to_zero_and_one(cycle_crop_np)        
+        cycle_crop = Image.fromarray(util.img_as_ubyte(cycle_crop_np))
 
-            chars.append(slice_into_chars(cycle_crop))
+        enhancer = ImageEnhance.Contrast(cycle_crop)
+        cycle_crop = enhancer.enhance(contrast2_factors[cycle - 1])
+        #enhancer = ImageEnhance.Brightness(cycle_crop)
+        #cycle_crop = enhancer.enhance(brightness1_factors[cycle - 1])
+        
+        cycle_crops.append(cycle_crop)
+
+        chars.append(slice_into_chars(cycle_crop))
             
     return img, cycle_crops, chars
 
@@ -378,7 +391,7 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.
     return prediction
 
 if __name__ == "__main__":
-    folder_path = 'C:/Users/Beno/Documents/SZAKI/kazankontroll-dashboard/heatmeter_images/2023_11_18'
+    folder_path = 'C:/Users/Beno/Documents/SZAKI/kazankontroll-dashboard/heatmeter_images/2023_11_21'
     image_names = [file for file in os.listdir(folder_path) if file.lower().endswith('.jpg')]
 
     archetype_vectors_2D = []
@@ -386,14 +399,15 @@ if __name__ == "__main__":
         with Image.open(f'archetypes/archetype_{n}.png') as img:
             archetype_vectors_2D.append(np.array(img.convert('L')))
 
-    for image_name in image_names[10:-1]:
+    for image_name in image_names:
         with Image.open(os.path.join(folder_path, image_name)) as img:
-            timestamp = datetime.strptime(image_name[0:-7:], "%Y%m%d-%H%M%S")
+            timestamp = datetime.strptime(image_name[0:-4:], "%Y%m%d-%H%M%S")
             img, cycle_crops, chars = process_image(img)
             if len(cycle_crops) == 4:
                 cycle_readouts = []
                 for cycle in range(1,5):
                     cycle_readout = ''
+                    #cycle_crops[cycle-1].save(f"cycle_{cycle}_{image_name}")
                     for char in range(1,5):
                         unknown_vector_2D = np.array(chars[cycle-1][char-1])
                         prediction = seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.03, total_da_threshold = 0.18)
