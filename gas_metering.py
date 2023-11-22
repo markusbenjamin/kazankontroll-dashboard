@@ -10,8 +10,8 @@ GPIO.setmode(GPIO.BCM)  # Use the Broadcom pin numbering
 GPIO.setup(pulse_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Pull-up resistor enabled
 
 # Define the callback function to run when a signal is detected
-def signal_detected():
-    with open("/gas_pulse_times.txt", "a") as file:
+def signal_detected(arg):
+    with open("gas_pulse_times.txt", "a") as file:
         # Write the current time to the file
         file.write(f"{datetime.now()}\n")
         print(f"Pulse detected at {datetime.now()}") 
