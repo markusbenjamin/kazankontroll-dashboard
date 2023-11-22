@@ -391,12 +391,12 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.
     return prediction
 
 if __name__ == "__main__":
-    folder_path = 'C:/Users/Beno/Documents/SZAKI/kazankontroll-dashboard/heatmeter_images/2023_11_21'
+    folder_path = 'heatmeter_images/2023_11_22'
     image_names = [file for file in os.listdir(folder_path) if file.lower().endswith('.jpg')]
 
     archetype_vectors_2D = []
     for n in np.arange(0,10,1):
-        with Image.open(f'archetypes/archetype_{n}.png') as img:
+        with Image.open(f'ocr_archetypes/archetype_{n}.png') as img:
             archetype_vectors_2D.append(np.array(img.convert('L')))
 
     for image_name in image_names:
@@ -416,6 +416,6 @@ if __name__ == "__main__":
             readout = f"{timestamp.strftime('%Y.%m.%d %H:%M:%S')},{cycle_readouts[0]},{cycle_readouts[1]},{cycle_readouts[2]},{cycle_readouts[3]}"
     
             print(readout)
-            with open('readouts.csv', 'a', newline='') as file:
+            with open('heatmeter_readouts.csv', 'a', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(readout.split(','))
