@@ -391,7 +391,7 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.
     return prediction
 
 if __name__ == "__main__":
-    folder_path = 'heatmeter_images/2023_11_22'
+    folder_path = 'heatmeter_images/2023_11_23'
     image_names = [file for file in os.listdir(folder_path) if file.lower().endswith('.jpg')]
 
     archetype_vectors_2D = []

@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     44769,        966]
-NotebookOptionsPosition[     42425,        918]
-NotebookOutlinePosition[     42889,        935]
-CellTagsIndexPosition[     42846,        932]
+NotebookDataLength[     20570,        495]
+NotebookOptionsPosition[     18545,        452]
+NotebookOutlinePosition[     19009,        469]
+CellTagsIndexPosition[     18966,        466]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -30,29 +30,29 @@ Cell[BoxData[
     RowBox[{"date1", ",", "date2", ",", "unit"}], "]"}], "]"}]}]], "Input",
  InitializationCell->True,
  CellChangeTimes->{{3.9084526517756166`*^9, 3.908452651776616*^9}},
- CellLabel->"In[34]:="],
+ CellLabel->"In[1]:="],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
  DynamicBox[ToBoxes[
    StringJoin["Making second backup, ", 
-    FileNameTake[NotebookBackup`Private`bakfile2$8358], "..."], StandardForm],
+    FileNameTake[NotebookBackup`Private`bakfile2$7611], "..."], StandardForm],
   
   Evaluator->"Local",
   ImageSizeCache->{318.498046875, {3., 9.}}]], "PrintTemporary",
- CellChangeTimes->{3.9097265068993573`*^9},
- CellLabel->"During evaluation of In[34]:="],
+ CellChangeTimes->{3.909732753802496*^9},
+ CellLabel->"During evaluation of In[1]:="],
 
 Cell[BoxData[
  DynamicBox[ToBoxes[
    StringJoin["Backing up ", 
-    FileNameTake[NotebookBackup`Private`nbfile$8358], " to ", 
-    FileNameTake[NotebookBackup`Private`bakfile$8358], "..."], StandardForm],
+    FileNameTake[NotebookBackup`Private`nbfile$7611], " to ", 
+    FileNameTake[NotebookBackup`Private`bakfile$7611], "..."], StandardForm],
   Evaluator->"Local",
   ImageSizeCache->{404.267578125, {3., 9.}}]], "PrintTemporary",
- CellChangeTimes->{3.909726506945719*^9},
- CellLabel->"During evaluation of In[34]:="]
+ CellChangeTimes->{3.9097327538755226`*^9},
+ CellLabel->"During evaluation of In[1]:="]
 }, Open  ]]
 }, Open  ]],
 
@@ -90,7 +90,7 @@ Cell[BoxData[
  InitializationCell->True,
  CellChangeTimes->{{3.909595160403163*^9, 3.909595172046154*^9}, {
   3.9095953444993*^9, 3.90959536152275*^9}},
- CellLabel->"In[2]:="],
+ CellLabel->"In[38]:="],
 
 Cell[BoxData[
  RowBox[{
@@ -122,7 +122,7 @@ Cell[BoxData[
    "\[IndentingNewLine]", "]"}]}]], "Input",
  InitializationCell->True,
  CellChangeTimes->{{3.909595552164418*^9, 3.9095955630293283`*^9}},
- CellLabel->"In[3]:="],
+ CellLabel->"In[36]:="],
 
 Cell[BoxData[
  RowBox[{
@@ -207,7 +207,7 @@ Cell[BoxData[
  InitializationCell->True,
  CellChangeTimes->{{3.909672239284593*^9, 3.909672252436393*^9}, 
    3.9096725234075937`*^9},
- CellLabel->"In[4]:="],
+ CellLabel->"In[37]:="],
 
 Cell[BoxData[
  RowBox[{
@@ -222,7 +222,7 @@ Cell[BoxData[
  CellChangeTimes->{{3.909672104701314*^9, 3.9096721516669874`*^9}, {
   3.909672349749567*^9, 3.9096723665026913`*^9}, {3.9096733782092967`*^9, 
   3.9096733788498087`*^9}},
- CellLabel->"In[6]:="],
+ CellLabel->"In[39]:="],
 
 Cell[CellGroupData[{
 
@@ -233,7 +233,7 @@ Cell[BoxData[
     RowBox[{"[", "1", "]"}], "]"}], "]"}]}]], "Input",
  CellChangeTimes->{{3.9096723542110243`*^9, 3.9096723691074667`*^9}, 
    3.909673383106286*^9},
- CellLabel->"In[7]:="],
+ CellLabel->"In[40]:="],
 
 Cell[BoxData[
  TemplateBox[{
@@ -252,8 +252,9 @@ Cell[BoxData[
   "DateObject",
   Editable->False]], "Output",
  CellChangeTimes->{3.9096722536504226`*^9, 3.9096723698341923`*^9, 
-  3.909673383661172*^9, 3.909674364196951*^9, 3.909724117763827*^9},
- CellLabel->"Out[7]="]
+  3.909673383661172*^9, 3.909674364196951*^9, 3.909724117763827*^9, 
+  3.909726511726429*^9},
+ CellLabel->"Out[40]="]
 }, Open  ]],
 
 Cell[BoxData[
@@ -262,7 +263,7 @@ Cell[BoxData[
  CellChangeTimes->{{3.909672271748087*^9, 3.9096722808034697`*^9}, {
   3.9096726158587284`*^9, 3.909672618418378*^9}, {3.909672744370235*^9, 
   3.9096727457141995`*^9}, {3.909672867154132*^9, 3.9096728677310004`*^9}},
- CellLabel->"In[8]:="],
+ CellLabel->"In[41]:="],
 
 Cell[BoxData[
  RowBox[{
@@ -279,7 +280,7 @@ Cell[BoxData[
  CellChangeTimes->{{3.9096723720819683`*^9, 3.9096723872669945`*^9}, {
   3.909672897716729*^9, 3.909672900023387*^9}, {3.909673385410671*^9, 
   3.909673390769606*^9}},
- CellLabel->"In[9]:="],
+ CellLabel->"In[42]:="],
 
 Cell[CellGroupData[{
 
@@ -290,7 +291,7 @@ Cell[BoxData[
    RowBox[{
     RowBox[{"60", "<", "#"}], "&"}]}], "]"}]], "Input",
  CellChangeTimes->{{3.9096734717774725`*^9, 3.909673483169407*^9}},
- CellLabel->"In[10]:="],
+ CellLabel->"In[43]:="],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -346,539 +347,71 @@ Cell[BoxData[
    ",", "75", ",", "83", ",", "90", ",", "94", ",", "97", ",", "99", ",", 
    "89", ",", "117", ",", "114", ",", "103", ",", "112", ",", "114", ",", 
    "115", ",", "114", ",", "115", ",", "323", ",", "73", ",", "115", ",", 
-   "113", ",", "156", ",", "86", ",", "239", ",", "73", ",", "98"}], 
+   "113", ",", "156", ",", "86", ",", "239", ",", "73", ",", "98", ",", "81", 
+   ",", "87", ",", "61", ",", "116", ",", "98", ",", "135", ",", "116", ",", 
+   "143", ",", "122", ",", "112", ",", "63", ",", "117", ",", "128", ",", 
+   "68", ",", "74", ",", "76", ",", "77", ",", "78", ",", "79"}], 
   "}"}]], "Output",
  CellChangeTimes->{3.90967344405813*^9, 3.9096743666082325`*^9, 
-  3.909724120474269*^9},
- CellLabel->"Out[10]="]
+  3.909724120474269*^9, 3.9097265169284563`*^9},
+ CellLabel->"Out[43]="]
 }, Open  ]],
-
-Cell[CellGroupData[{
-
-Cell[BoxData[
- RowBox[{"?", "BinCounts"}]], "Input",
- CellChangeTimes->{{3.909675264628109*^9, 3.909675268742878*^9}},
- CellLabel->"In[12]:="],
-
-Cell[BoxData[
- InterpretationBox[
-  StyleBox[
-   FrameBox[
-    DynamicModuleBox[{System`InformationDump`open$$ = False, 
-     System`InformationDump`mouseOver$$ = False}, 
-     PaneSelectorBox[{True->
-      TagBox[GridBox[{
-         {
-          ItemBox[
-           PaneBox[
-            StyleBox["\<\" Symbol\"\>", "InformationTitleText",
-             StripOnInput->False,
-             BaseStyle -> None],
-            FrameMargins->{{4, 0}, {-1, 1}}],
-           BaseStyle->"InformationTitleBackground",
-           StripOnInput->False], 
-          ItemBox[
-           PaneBox[
-            TooltipBox[
-             ButtonBox[
-              PaneSelectorBox[{False->
-               
-               DynamicBox[FEPrivate`FrontEndResource[
-                "FEBitmaps", "InformationHelpIcon"]], True->
-               
-               DynamicBox[FEPrivate`FrontEndResource[
-                "FEBitmaps", "InformationHelpIconHot"]]}, Dynamic[
-                CurrentValue["MouseOver"]]],
-              Appearance->None,
-              BaseStyle->"Link",
-              ButtonData->"paclet:ref/BinCounts",
-              ButtonNote->"paclet:ref/BinCounts"],
-             "\"paclet:ref/BinCounts\""],
-            FrameMargins->{{0, 4}, {0, 2}}],
-           BaseStyle->"InformationTitleBackground",
-           StripOnInput->False]},
-         {
-          ItemBox[
-           PaneBox[
-            
-            StyleBox["\<\"\\!\\(\\*RowBox[{\\\"BinCounts\\\", \\\"[\\\", \
-RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"1\\\", \\\"TR\\\"]], \\\",\\\", SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\
-\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\"}], \\\"]\\\"}]\\) counts the number \
-of elements \\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"i\\\", \\\"TI\\\"]]\\) whose values lie in successive integer \
-bins.\\n\\!\\(\\*RowBox[{\\\"BinCounts\\\", \\\"[\\\", \
-RowBox[{RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"1\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"2\\\", \
-\\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\
-\"}], \\\",\\\", StyleBox[\\\"dx\\\", \\\"TI\\\"]}], \\\"]\\\"}]\\) counts \
-the number of elements \\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"i\\\", \\\"TI\\\"]]\\) whose values lie in successive bins of \
-width \\!\\(\\*StyleBox[\\\"dx\\\", \
-\\\"TI\\\"]\\).\\n\\!\\(\\*RowBox[{\\\"BinCounts\\\", \\\"[\\\", \
-RowBox[{RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"1\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"2\\\", \
-\\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\
-\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"min\\\", \\\"TI\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"max\\\", \
-\\\"TI\\\"]], \\\",\\\", StyleBox[\\\"dx\\\", \\\"TI\\\"]}], \\\"}\\\"}]}], \
-\\\"]\\\"}]\\) counts the number of \\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"i\\\", \\\"TI\\\"]]\\) in successive bins of width \
-\\!\\(\\*StyleBox[\\\"dx\\\", \\\"TI\\\"]\\) from \
-\\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"min\\\", \
-\\\"TI\\\"]]\\) to \\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"max\\\", \\\"TI\\\"]]\\). \\n\\!\\(\\*RowBox[{\\\"BinCounts\\\", \
-\\\"[\\\", RowBox[{RowBox[{\\\"{\\\", \
-RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"1\\\", \
-\\\"TR\\\"]], \\\",\\\", SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\
-\"TR\\\"]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{\\\"{\\\", \
-RowBox[{SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], StyleBox[\\\"1\\\", \
-\\\"TR\\\"]], \\\",\\\", SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], \
-StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\
-\"TR\\\"]}], \\\"}\\\"}], \\\"}\\\"}]}], \\\"]\\\"}]\\) counts the number of \
-\\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"i\\\", \\\
-\"TI\\\"]]\\) in the intervals \\!\\(\\*RowBox[{RowBox[{\\\"[\\\", \
-RowBox[{SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], StyleBox[\\\"1\\\", \
-\\\"TR\\\"]], \\\",\\\", SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], \
-StyleBox[\\\"2\\\", \\\"TR\\\"]]}]}], \\\")\\\"}]\\), \
-\\!\\(\\*RowBox[{RowBox[{\\\"[\\\", RowBox[{SubscriptBox[StyleBox[\\\"b\\\", \
-\\\"TI\\\"], StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], StyleBox[\\\"3\\\", \
-\\\"TR\\\"]]}]}], \\\")\\\"}]\\), \[Ellipsis]. \
-\\n\\!\\(\\*RowBox[{\\\"BinCounts\\\", \\\"[\\\", RowBox[{RowBox[{\\\"{\\\", \
-RowBox[{RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"1\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"y\\\", \\\"TI\\\"], StyleBox[\\\"1\\\", \
-\\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\
-\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"y\\\", \\\"TI\\\"], StyleBox[\\\"2\\\", \
-\\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\
-\"}], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\"}], \\\
-\",\\\", StyleBox[\\\"xbins\\\", \\\"TI\\\"], \\\",\\\", StyleBox[\\\"ybins\\\
-\", \\\"TI\\\"], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \
-\\\"]\\\"}]\\) gives an array of counts where the first index corresponds to \
-\\!\\(\\*StyleBox[\\\"x\\\", \\\"TI\\\"]\\) bins, the second to \
-\\!\\(\\*StyleBox[\\\"y\\\", \\\"TI\\\"]\\), and so on. \"\>", 
-             "InformationUsageText",
-             StripOnInput->False,
-             LineSpacing->{1.5, 1.5, 3.}],
-            FrameMargins->{{10, 10}, {8, 10}}],
-           BaseStyle->"InformationUsageSubtitleBackground",
-           StripOnInput->False], 
-          ItemBox["\<\"\"\>",
-           BaseStyle->"InformationUsageSubtitleBackground",
-           StripOnInput->False]},
-         {
-          PaneBox[GridBox[{
-             {
-              
-              DynamicModuleBox[{System`InformationDump`open$$ = {
-               False, False, False, False, False, False}}, 
-               StyleBox[GridBox[{
-                  {
-                   TagBox[
-                    TooltipBox[
-                    StyleBox["\<\" Documentation\"\>", "InformationRowLabel",
-                    StripOnInput->False],
-                    "\"Documentation\"",
-                    TooltipStyle->"TextStyling"],
-                    Annotation[#, "Documentation", "Tooltip"]& ], 
-                   TemplateBox[{
-                    
-                    TemplateBox[{
-                    "\"Local \[RightGuillemet]\"", "paclet:ref/BinCounts", 
-                    "paclet:ref/BinCounts", "Link", {
-                    RGBColor[0.9686274509803922, 0.4666666666666667, 0.]}, 
-                    BaseStyle -> {
-                    RGBColor[0.0784313725490196, 0.1568627450980392, 0.6]}}, 
-                    "HyperlinkTemplate"], "\"  \"", 
-                    StyleBox[
-                    "\"|\"", "InformationRowLabel", StripOnInput -> False], 
-                    "\"  \"", 
-                    TemplateBox[{"\"Web \[RightGuillemet]\"", {
-                    URL[
-                    "http://reference.wolfram.com/language/ref/BinCounts.\
-html"], None}, "http://reference.wolfram.com/language/ref/BinCounts.html", 
-                    "Hyperlink", {
-                    RGBColor[0.9686274509803922, 0.4666666666666667, 0.]}, 
-                    BaseStyle -> {
-                    RGBColor[0.0784313725490196, 0.1568627450980392, 0.6]}}, 
-                    "HyperlinkTemplate"]},
-                    "RowDefault"]},
-                  {
-                   TagBox[
-                    TooltipBox[
-                    StyleBox["\<\" Attributes\"\>", "InformationRowLabel",
-                    StripOnInput->False],
-                    "\"Attributes\"",
-                    TooltipStyle->"TextStyling"],
-                    Annotation[#, "Attributes", "Tooltip"]& ], 
-                   RowBox[{"{", 
-                    RowBox[{"Protected", ",", "ReadProtected"}], "}"}]},
-                  {
-                   TagBox[
-                    TooltipBox[
-                    StyleBox["\<\" Full Name\"\>", "InformationRowLabel",
-                    StripOnInput->False],
-                    "\"FullName\"",
-                    TooltipStyle->"TextStyling"],
-                    
-                    Annotation[#, "FullName", 
-                    "Tooltip"]& ], "\<\"System`BinCounts\"\>"}
-                 },
-                 AutoDelete->False,
-                 GridBoxAlignment->{"Columns" -> {Right, Left}},
-                 GridBoxDividers->None,
-                 GridBoxItemSize->{"Columns" -> {Automatic, Automatic}},
-                 GridBoxSpacings->{"Columns" -> {
-                    Offset[0.27999999999999997`], {
-                    Offset[0.5599999999999999]}, 
-                    Offset[0.27999999999999997`]}, "Rows" -> {
-                    Offset[0.2], {
-                    Offset[0.8]}, 
-                    Offset[0.2]}}], "DialogStyle",
-                StripOnInput->False],
-               DynamicModuleValues:>{}]}
-            },
-            DefaultBaseStyle->"Column",
-            GridBoxAlignment->{"Columns" -> {{Left}}},
-            GridBoxDividers->{"Columns" -> {{False}}, "Rows" -> {{False}}},
-            
-            GridBoxItemSize->{
-             "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}},
-            GridBoxSpacings->{"Columns" -> {
-                Offset[0.27999999999999997`], {
-                 Offset[0.5599999999999999]}, 
-                Offset[0.27999999999999997`]}, "Rows" -> {
-                Offset[0.2], {
-                 Offset[3.6]}, 
-                Offset[0.2]}}],
-           FrameMargins->{{6, 6}, {6, 3}}], ""},
-         {
-          ItemBox[
-           TagBox[
-            ButtonBox[
-             PaneSelectorBox[{False->
-              
-              DynamicBox[FEPrivate`FrontEndResource[
-               "FEBitmaps", "UpPointerOpener"]], True->
-              
-              DynamicBox[FEPrivate`FrontEndResource[
-               "FEBitmaps", "UpPointerOpenerHot"]]}, Dynamic[
-              System`InformationDump`mouseOver$$]],
-             Alignment->Left,
-             Appearance->{"Default" -> None},
-             
-             ButtonFunction:>FEPrivate`Set[
-              System`InformationDump`open$$, False],
-             Evaluator->Automatic,
-             FrameMargins->{{9, 0}, {0, 0}},
-             ImageMargins->0,
-             ImageSize->Full,
-             Method->"Preemptive"],
-            
-            EventHandlerTag[{
-             "MouseEntered" :> 
-              FEPrivate`Set[System`InformationDump`mouseOver$$, True], 
-              "MouseExited" :> 
-              FEPrivate`Set[System`InformationDump`mouseOver$$, False], 
-              Method -> "Preemptive", PassEventsDown -> Automatic, 
-              PassEventsUp -> True}]],
-           BaseStyle->"InformationTitleBackground",
-           StripOnInput->False], "\[SpanFromLeft]"}
-        },
-        AutoDelete->False,
-        FrameStyle->Directive[
-          GrayLevel[0.8], 
-          Thickness[Tiny]],
-        GridBoxAlignment->{"Columns" -> {Left, Right}, "Rows" -> {{Center}}},
-        GridBoxDividers->{
-         "Columns" -> {{None}}, "Rows" -> {False, {True}, False}},
-        GridBoxItemSize->{
-         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
-       "Grid"], False->
-      TagBox[GridBox[{
-         {
-          ItemBox[
-           PaneBox[
-            StyleBox["\<\" Symbol\"\>", "InformationTitleText",
-             StripOnInput->False],
-            FrameMargins->{{4, 0}, {-1, 1}}],
-           BaseStyle->"InformationTitleBackground",
-           StripOnInput->False], 
-          ItemBox[
-           PaneBox[
-            TooltipBox[
-             ButtonBox[
-              PaneSelectorBox[{False->
-               
-               DynamicBox[FEPrivate`FrontEndResource[
-                "FEBitmaps", "InformationHelpIcon"],
-                ImageSizeCache->{13., {4., 9.}}], True->
-               
-               DynamicBox[FEPrivate`FrontEndResource[
-                "FEBitmaps", "InformationHelpIconHot"],
-                ImageSizeCache->{13., {4., 9.}}]}, Dynamic[
-                CurrentValue["MouseOver"]]],
-              Appearance->None,
-              BaseStyle->"Link",
-              ButtonData->"paclet:ref/BinCounts",
-              ButtonNote->"paclet:ref/BinCounts"],
-             "\"paclet:ref/BinCounts\""],
-            FrameMargins->{{0, 4}, {0, 2}}],
-           BaseStyle->"InformationTitleBackground",
-           StripOnInput->False]},
-         {
-          ItemBox[
-           PaneBox[
-            
-            StyleBox["\<\"\\!\\(\\*RowBox[{\\\"BinCounts\\\", \\\"[\\\", \
-RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"1\\\", \\\"TR\\\"]], \\\",\\\", SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\
-\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\"}], \\\"]\\\"}]\\) counts the number \
-of elements \\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"i\\\", \\\"TI\\\"]]\\) whose values lie in successive integer \
-bins.\\n\\!\\(\\*RowBox[{\\\"BinCounts\\\", \\\"[\\\", \
-RowBox[{RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"1\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"2\\\", \
-\\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\
-\"}], \\\",\\\", StyleBox[\\\"dx\\\", \\\"TI\\\"]}], \\\"]\\\"}]\\) counts \
-the number of elements \\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"i\\\", \\\"TI\\\"]]\\) whose values lie in successive bins of \
-width \\!\\(\\*StyleBox[\\\"dx\\\", \
-\\\"TI\\\"]\\).\\n\\!\\(\\*RowBox[{\\\"BinCounts\\\", \\\"[\\\", \
-RowBox[{RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"1\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"2\\\", \
-\\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\
-\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"min\\\", \\\"TI\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"max\\\", \
-\\\"TI\\\"]], \\\",\\\", StyleBox[\\\"dx\\\", \\\"TI\\\"]}], \\\"}\\\"}]}], \
-\\\"]\\\"}]\\) counts the number of \\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"i\\\", \\\"TI\\\"]]\\) in successive bins of width \
-\\!\\(\\*StyleBox[\\\"dx\\\", \\\"TI\\\"]\\) from \
-\\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"min\\\", \
-\\\"TI\\\"]]\\) to \\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"max\\\", \\\"TI\\\"]]\\). \\n\\!\\(\\*RowBox[{\\\"BinCounts\\\", \
-\\\"[\\\", RowBox[{RowBox[{\\\"{\\\", \
-RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"1\\\", \
-\\\"TR\\\"]], \\\",\\\", SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], \
-StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\
-\"TR\\\"]}], \\\"}\\\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{\\\"{\\\", \
-RowBox[{SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], StyleBox[\\\"1\\\", \
-\\\"TR\\\"]], \\\",\\\", SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], \
-StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\
-\"TR\\\"]}], \\\"}\\\"}], \\\"}\\\"}]}], \\\"]\\\"}]\\) counts the number of \
-\\!\\(\\*SubscriptBox[StyleBox[\\\"x\\\", \\\"TI\\\"], StyleBox[\\\"i\\\", \\\
-\"TI\\\"]]\\) in the intervals \\!\\(\\*RowBox[{RowBox[{\\\"[\\\", \
-RowBox[{SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], StyleBox[\\\"1\\\", \
-\\\"TR\\\"]], \\\",\\\", SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], \
-StyleBox[\\\"2\\\", \\\"TR\\\"]]}]}], \\\")\\\"}]\\), \
-\\!\\(\\*RowBox[{RowBox[{\\\"[\\\", RowBox[{SubscriptBox[StyleBox[\\\"b\\\", \
-\\\"TI\\\"], StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"b\\\", \\\"TI\\\"], StyleBox[\\\"3\\\", \
-\\\"TR\\\"]]}]}], \\\")\\\"}]\\), \[Ellipsis]. \
-\\n\\!\\(\\*RowBox[{\\\"BinCounts\\\", \\\"[\\\", RowBox[{RowBox[{\\\"{\\\", \
-RowBox[{RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"1\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"y\\\", \\\"TI\\\"], StyleBox[\\\"1\\\", \
-\\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\
-\"}], \\\",\\\", RowBox[{\\\"{\\\", RowBox[{SubscriptBox[StyleBox[\\\"x\\\", \
-\\\"TI\\\"], StyleBox[\\\"2\\\", \\\"TR\\\"]], \\\",\\\", \
-SubscriptBox[StyleBox[\\\"y\\\", \\\"TI\\\"], StyleBox[\\\"2\\\", \
-\\\"TR\\\"]], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\
-\"}], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \\\"}\\\"}], \\\
-\",\\\", StyleBox[\\\"xbins\\\", \\\"TI\\\"], \\\",\\\", StyleBox[\\\"ybins\\\
-\", \\\"TI\\\"], \\\",\\\", StyleBox[\\\"\[Ellipsis]\\\", \\\"TR\\\"]}], \
-\\\"]\\\"}]\\) gives an array of counts where the first index corresponds to \
-\\!\\(\\*StyleBox[\\\"x\\\", \\\"TI\\\"]\\) bins, the second to \
-\\!\\(\\*StyleBox[\\\"y\\\", \\\"TI\\\"]\\), and so on. \"\>", 
-             "InformationUsageText",
-             StripOnInput->False,
-             LineSpacing->{1.5, 1.5, 3.}],
-            FrameMargins->{{10, 10}, {8, 10}}],
-           BaseStyle->"InformationUsageSubtitleBackground",
-           StripOnInput->False], 
-          ItemBox["\<\"\"\>",
-           BaseStyle->"InformationUsageSubtitleBackground",
-           StripOnInput->False]},
-         {
-          ItemBox[
-           TagBox[
-            ButtonBox[
-             PaneSelectorBox[{False->
-              
-              DynamicBox[FEPrivate`FrontEndResource[
-               "FEBitmaps", "DownPointerOpener"],
-               ImageSizeCache->{10., {3., 7.}}], True->
-              
-              DynamicBox[FEPrivate`FrontEndResource[
-               "FEBitmaps", "DownPointerOpenerHot"],
-               ImageSizeCache->{10., {3., 7.}}]}, Dynamic[
-              System`InformationDump`mouseOver$$]],
-             Alignment->Left,
-             Appearance->{"Default" -> None},
-             
-             ButtonFunction:>FEPrivate`Set[
-              System`InformationDump`open$$, True],
-             Evaluator->Automatic,
-             FrameMargins->{{9, 0}, {0, 0}},
-             ImageMargins->0,
-             ImageSize->Full,
-             Method->"Preemptive"],
-            
-            EventHandlerTag[{
-             "MouseEntered" :> 
-              FEPrivate`Set[System`InformationDump`mouseOver$$, True], 
-              "MouseExited" :> 
-              FEPrivate`Set[System`InformationDump`mouseOver$$, False], 
-              Method -> "Preemptive", PassEventsDown -> Automatic, 
-              PassEventsUp -> True}]],
-           BaseStyle->"InformationTitleBackground",
-           StripOnInput->False], "\[SpanFromLeft]"}
-        },
-        AutoDelete->False,
-        FrameStyle->Directive[
-          GrayLevel[0.8], 
-          Thickness[Tiny]],
-        GridBoxAlignment->{"Columns" -> {Left, Right}, "Rows" -> {{Center}}},
-        GridBoxDividers->{
-         "Columns" -> {{None}}, "Rows" -> {False, {True}, False}},
-        GridBoxItemSize->{
-         "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}],
-       "Grid"]}, Dynamic[System`InformationDump`open$$],
-      BaselinePosition->Baseline,
-      FrameMargins->0,
-      ImageSize->Automatic],
-     DynamicModuleValues:>{}],
-    BaseStyle->"InformationGridFrame",
-    StripOnInput->False], "InformationGridPlain",
-   StripOnInput->False],
-  InformationData[
-   Association[
-   "ObjectType" -> "Symbol", "Usage" -> 
-    "\!\(\*RowBox[{\"BinCounts\", \"[\", RowBox[{\"{\", \
-RowBox[{SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"1\", \"TR\"]], \
-\",\", SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"2\", \"TR\"]], \",\", \
-StyleBox[\"\[Ellipsis]\", \"TR\"]}], \"}\"}], \"]\"}]\) counts the number of \
-elements \!\(\*SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"i\", \"TI\"]]\
-\) whose values lie in successive integer bins.\n\!\(\*RowBox[{\"BinCounts\", \
-\"[\", RowBox[{RowBox[{\"{\", RowBox[{SubscriptBox[StyleBox[\"x\", \"TI\"], \
-StyleBox[\"1\", \"TR\"]], \",\", SubscriptBox[StyleBox[\"x\", \"TI\"], \
-StyleBox[\"2\", \"TR\"]], \",\", StyleBox[\"\[Ellipsis]\", \"TR\"]}], \
-\"}\"}], \",\", StyleBox[\"dx\", \"TI\"]}], \"]\"}]\) counts the number of \
-elements \!\(\*SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"i\", \"TI\"]]\
-\) whose values lie in successive bins of width \!\(\*StyleBox[\"dx\", \
-\"TI\"]\).\n\!\(\*RowBox[{\"BinCounts\", \"[\", RowBox[{RowBox[{\"{\", \
-RowBox[{SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"1\", \"TR\"]], \
-\",\", SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"2\", \"TR\"]], \",\", \
-StyleBox[\"\[Ellipsis]\", \"TR\"]}], \"}\"}], \",\", RowBox[{\"{\", \
-RowBox[{SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"min\", \"TI\"]], \",\
-\", SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"max\", \"TI\"]], \",\", \
-StyleBox[\"dx\", \"TI\"]}], \"}\"}]}], \"]\"}]\) counts the number of \
-\!\(\*SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"i\", \"TI\"]]\) in \
-successive bins of width \!\(\*StyleBox[\"dx\", \"TI\"]\) from \
-\!\(\*SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"min\", \"TI\"]]\) to \
-\!\(\*SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"max\", \"TI\"]]\). \n\
-\!\(\*RowBox[{\"BinCounts\", \"[\", RowBox[{RowBox[{\"{\", \
-RowBox[{SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"1\", \"TR\"]], \
-\",\", SubscriptBox[StyleBox[\"x\", \"TI\"], StyleBox[\"2\", \"TR\"]], \",\", \
-StyleBox[\"\[Ellipsis]\", \"TR\"]}], \"}\"}], \",\", RowBox[{\"{\", \
-RowBox[{\"{\", RowBox[{SubscriptBox[StyleBox[\"b\", \"TI\"], StyleBox[\"1\", \
-\"TR\"]], \",\", SubscriptBox[StyleBox[\"b\", \"TI\"], StyleBox[\"2\", \
-\"TR\"]], \",\", StyleBox[\"\[Ellipsis]\", \"TR\"]}], \"}\"}], \"}\"}]}], \"]\
-\"}]\) counts the number of \!\(\*SubscriptBox[StyleBox[\"x\", \"TI\"], \
-StyleBox[\"i\", \"TI\"]]\) in the intervals \!\(\*RowBox[{RowBox[{\"[\", \
-RowBox[{SubscriptBox[StyleBox[\"b\", \"TI\"], StyleBox[\"1\", \"TR\"]], \
-\",\", SubscriptBox[StyleBox[\"b\", \"TI\"], StyleBox[\"2\", \"TR\"]]}]}], \
-\")\"}]\), \!\(\*RowBox[{RowBox[{\"[\", RowBox[{SubscriptBox[StyleBox[\"b\", \
-\"TI\"], StyleBox[\"2\", \"TR\"]], \",\", SubscriptBox[StyleBox[\"b\", \
-\"TI\"], StyleBox[\"3\", \"TR\"]]}]}], \")\"}]\), \[Ellipsis]. \n\
-\!\(\*RowBox[{\"BinCounts\", \"[\", RowBox[{RowBox[{\"{\", \
-RowBox[{RowBox[{\"{\", RowBox[{SubscriptBox[StyleBox[\"x\", \"TI\"], \
-StyleBox[\"1\", \"TR\"]], \",\", SubscriptBox[StyleBox[\"y\", \"TI\"], \
-StyleBox[\"1\", \"TR\"]], \",\", StyleBox[\"\[Ellipsis]\", \"TR\"]}], \
-\"}\"}], \",\", RowBox[{\"{\", RowBox[{SubscriptBox[StyleBox[\"x\", \"TI\"], \
-StyleBox[\"2\", \"TR\"]], \",\", SubscriptBox[StyleBox[\"y\", \"TI\"], \
-StyleBox[\"2\", \"TR\"]], \",\", StyleBox[\"\[Ellipsis]\", \"TR\"]}], \
-\"}\"}], \",\", StyleBox[\"\[Ellipsis]\", \"TR\"]}], \"}\"}], \",\", \
-StyleBox[\"xbins\", \"TI\"], \",\", StyleBox[\"ybins\", \"TI\"], \",\", \
-StyleBox[\"\[Ellipsis]\", \"TR\"]}], \"]\"}]\) gives an array of counts where \
-the first index corresponds to \!\(\*StyleBox[\"x\", \"TI\"]\) bins, the \
-second to \!\(\*StyleBox[\"y\", \"TI\"]\), and so on. ", "Documentation" -> 
-    Association[
-     "Local" -> "paclet:ref/BinCounts", "Web" -> 
-      "http://reference.wolfram.com/language/ref/BinCounts.html"], 
-    "OwnValues" -> None, "UpValues" -> None, "DownValues" -> None, 
-    "SubValues" -> None, "DefaultValues" -> None, "NValues" -> None, 
-    "FormatValues" -> None, "Options" -> None, 
-    "Attributes" -> {Protected, ReadProtected}, "FullName" -> 
-    "System`BinCounts"], False]]], "Output",
- CellChangeTimes->{{3.9096752660645027`*^9, 3.909675269392318*^9}},
- CellLabel->"Out[12]="]
-}, Open  ]],
-
-Cell[BoxData["voltageTimes"], "Input",
- CellLabel->"In[12]:="],
 
 Cell[CellGroupData[{
 
 Cell[BoxData[
  RowBox[{"ListPlot", "[", 
   RowBox[{
-   RowBox[{"MovingAverage", "[", 
-    RowBox[{
-     RowBox[{"BinCounts", "[", 
-      RowBox[{"voltageTimes", ",", 
-       RowBox[{"{", 
-        RowBox[{"0", ",", 
-         RowBox[{"Max", "[", "voltageTimes", "]"}], ",", 
-         RowBox[{"4", " ", "60"}]}], "}"}]}], "]"}], ",", "10"}], "]"}], ",", 
-   
+   RowBox[{"BinCounts", "[", 
+    RowBox[{"voltageTimes", ",", 
+     RowBox[{"{", 
+      RowBox[{"0", ",", 
+       RowBox[{"Max", "[", "voltageTimes", "]"}], ",", 
+       RowBox[{"4", " ", "60"}]}], "}"}]}], "]"}], ",", 
    RowBox[{"Joined", "\[Rule]", "True"}]}], "]"}]], "Input",
  CellChangeTimes->{{3.909675258536501*^9, 3.909675263088312*^9}, {
-  3.90968013029885*^9, 3.9096801744106236`*^9}, {3.9097241356376123`*^9, 
-  3.909724157905903*^9}},
- CellLabel->"In[17]:="],
+   3.90968013029885*^9, 3.9096801744106236`*^9}, {3.9097241356376123`*^9, 
+   3.909724157905903*^9}, 3.9097265457143717`*^9},
+ CellLabel->"In[46]:="],
 
 Cell[BoxData[
  GraphicsBox[{{}, {{}, {}, 
     {RGBColor[0.368417, 0.506779, 0.709798], PointSize[0.007333333333333334], 
-     AbsoluteThickness[1.6], LineBox[CompressedData["
-1:eJxdlkmLHVUUx2+ihjigwcQhGrW6DTGKSJtOnLVvEjNPr+cxbb3Xw3s9vPf6
-I9yvoav6Dq7c3a2gK1fuCoSA4CKiCKKIdOp3Gs6/NpdfneF/7rlD1UhnOLVx
-OIRw5FAI+2PzPJz48Yf950zkRfzm6/3nLfhoHH/0mP0Yo9lPxCZ+FH6ZsWA8
-RfyovB9hHI2bjx7j0+ib35kDv2Y8i//r8DuS7130XoPfg9+AxyT/+7D5n4NP
-wuPEvwCfR/8EfAG2fB/gb/V8KHofST8+lvl/Qj/Pwp/CY/BnzZjOwZ83+U9e
-gL840G3GiSb/g3E4oneePLGp51s4XETP7BcP5tmMl8hHPekS720dLjNf6k+X
-yXca+5eMzD8JhyvUZ/Yr5LP+XPX9Sldlfa95Ttdkfa779UnXeW/5b1Av/umG
-rN9Nny/dlPW75etNt3j/JuNt9OlHui32O+hb/B3fj3AX5vylu7Jf7sFvYze2
-89pi5FzFltTT8vq55fsRJv3846TvX5r05ydPkv8l/Kawc57iFHb8k3CekvM4
-7TlOU88rxE9TL5zFP8xg556KM7yH0wz+x4k3u917s9T3HPGzvH+e+Fk/v2x2
-uxfnRF84zeFn9c8xv1O8n8cfjvPUY/txHr9R4udl/yxQHxwXZL8v+Ps1L8j9
-uOjriYvEv0j8otS/SH2v8n7Jc1zy65WWJH5J9Jf9/ozLfj5p2c83L/v9HVY8
-xxX8OX9pxZ/fvEKc7f/70v/7sn/Nzn7Ixs8Qv4reEeKN/5to4lfxe9hwXqWe
-7xoOX3mOwkk4G39PfEm9PzVcGP9BvhL9x5uxLKnvKeZnzHmoSv99zKVfz9ry
-2fe67fdb0fbfw9jGj/UozW7rY3b8q7bcV5K/bvv1Ch36wX1UdLDzPY8d/Fi/
-suPPezJ+Gn2Lp1/Z+N+mn3XH9zeseS7W6Odf9H+N+v5uuBRO4l8JZ/Gv13w9
-Yd3vt0I4rnv/cp16/0Ff7JVwlny12MOG52JD5i9cCieL/xN94Wz8G/ob9ONX
-9Dc9F8JxE70H6AunTZ+/kvgsXIt/6HouhGPXx5dd0e+yHr+gL/Zs8T+j342N
-bo1+z8cXPW+PYi97vp7Uk/kLZ+G6J/t/C73QjMUW9scajlv+PJXmf7QZ05a/
-jyrhbP7ct7XZn+X9NiP3V7Ht7XGb+T6J/jb1mL7Fw5X5P4G+2am/Fg47nosd
-9A+jL/ZSOAlXEp93qOcQ+sJh13OxK/piL3f9+qRd+sH6VcJZ8tXCoe+56Hu9
-2Pf5yr58H/v+Pqr6cv8J133ZfwM5/wO/3+OAOjkPpXASrgZy/iz/7+gPfD1h
-6O/nYij371DmP5T+D/35qIay/8ReD6nX/j/2GNn/x/b8/0phdv7nxvb8/3U0
-O9za8/9npfmPxP8BI0Qf1g==
-      "]]}}, {{}, {}}},
+     AbsoluteThickness[1.6], 
+     LineBox[{{1., 10.}, {2., 8.}, {3., 9.}, {3.725, 23.5}}], 
+     LineBox[CompressedData["
+1:eJxTTMoPSmViYGCQBmIQbQwGQg4MINBgDqEZRKC0MZSWgNIf7CG0DJRvAKUV
+oLQSGq2CRnNAaTUorQOlNdDM13JApWHqYPboobkT5g6YOYZo9hqh2YvuLxM0
+9aZQGgbM0ORh4QRzrwWaey3R1FtBaZj/rdHMt0Hj20L5Ag75Bq52r9ugfGD8
+AAAPFh3G
+      "]], 
+     LineBox[{{30.472972972972972`, 23.5}, {31., 4.}, {32., 7.}, {33., 9.}, {
+      34., 9.}, {34.38157894736842, 23.5}}], 
+     LineBox[{{36.78333333333333, 23.5}, {37., 17.}, {37.72222222222222, 
+      23.5}}], LineBox[CompressedData["
+1:eJxdkU0KwjAYRAdP4cJFFSku3Lst+G/VqkcQ3HTTK+Q8egmP1lTeCEmgPB7T
+L5OQ6bN7vEaSivgN/LzjateVhhVWEBeuDZyT22dwm+WZawdLcvsY7mFBbvf8
+AU7I7e4/Zv12+nRK+4Ld8zUUeZ3+rzNckNuX8JLtb+c+uqZ9we77Nel5Q5Pl
+t3S+svs8dvq/dvff//O/9y7x+N49ZP0vnw==
+      "]], LineBox[CompressedData["
+1:eJxd171OVkEQxvGJlSWFhYXFSowxxhgaY+leAuIHiqgriKKocAl7CRZewF6C
+l7CJlhZ2tNvYU1kLnuf/JvtsQia/zMyZd8+7hwPX9463Di5FxK/zn4v488f5
+2n+Y42LV+4pybCyx47uKW4pnD/6HbK5Yq5vjkfXjq5qPb2m+OR4r3lhixjfV
+b/mONS+e2HysVfFl9eNrik8V1zUfa17FSf2YtW3zt+d8xZrXsebFM5tvruaO
+bys+V7yjfsz3h7l/mPk7Nn9nrq9Yq2Pu/wtZ+8uYfkw/Zv7uvJ+8O+cr5v6b
+46V9fqzzXrHOU7f6eGX95mrumPV6djZXczdHmZ0w58nyxVzNzdzNwxxv5nnJ
+nPH6EgvWeatY30czd6znfVh/7M31CWtetnzBVzQf67w1q+9Y53Ng/T6IfUWt
+hNm/uazqNd/c7Hrd8sPy8Xa+fsL6fBmrv1i+Wn9b1Wu+9Q9zHCiuLTFh9m8u
+mP1bvtn1uuWHOd7NTljXzysvq1h9NTdzNw+7XryfnTD7Nxdztf6Ged9Yflh/
+HJJfYjqc67O5mKu5mTtm/5aPD3M+Ye6/5Yu5Wn2zfF/llzXM8VHm/GE9vxnr
+eS9WXy3fLN8x5x/z/B/NTkdzfTYXc8Wa1+x63eqHOT7NTpjnH3P/Mfu3/mbu
+5mGOzzbfnLE+T7F8tXzDfP9WP7A+f3yx+eaM2b+5mtuqf1ndPKw+jud8Mmdz
+wcw3N3PHuj8Ds/+TOb9mTuYNzP2x/Ka5WP3JysuqWO/nr3h9iQ3r/fod8/cU
+1vv8N+b3jV3/DG/kP/e+nW7+lc//X/kHHEs/Ig==
+      "]], 
+     LineBox[{{272.4791666666667, 23.5}, {273., 11.}, {274., 9.}, {275., 
+      10.}, {276., 9.}, {277., 3.}, {278., 15.}, {279., 6.}, {280., 14.}, {
+      281., 14.}, {282., 10.}, {283., 12.}}]}}, {{}, {}}},
   AspectRatio->NCache[GoldenRatio^(-1), 0.6180339887498948],
   Axes->{True, True},
   AxesLabel->{None, None},
@@ -902,7 +435,7 @@ O9za8/9npfmPxP8BI0Qf1g==
          Part[#, 1]], 
         Identity[
          Part[#, 2]]}& )}},
-  PlotRange->{{0., 262.}, {0, 23.}},
+  PlotRange->{{0., 283.}, {0, 23.5}},
   PlotRangeClipping->True,
   PlotRangePadding->{{
      Scaled[0.02], 
@@ -912,14 +445,15 @@ O9za8/9npfmPxP8BI0Qf1g==
   Ticks->{Automatic, Automatic}]], "Output",
  CellChangeTimes->{
   3.909675247910105*^9, {3.9096801474013567`*^9, 3.9096801747705355`*^9}, {
-   3.909724123548439*^9, 3.9097241580950856`*^9}},
- CellLabel->"Out[17]="]
+   3.909724123548439*^9, 3.9097241580950856`*^9}, {3.9097265245877695`*^9, 
+   3.90972654663949*^9}},
+ CellLabel->"Out[46]="]
 }, Open  ]]
 },
 WindowSize->{1525.2, 820.8},
 WindowMargins->{{0, Automatic}, {Automatic, 0}},
 WindowStatusArea->"analyzer-dashboard.nb last backed up to \
-analyzer-dashboard.nb~ on Thu 23 Nov 2023 at 11:28:33 AM",
+analyzer-dashboard.nb~ on Thu 23 Nov 2023 at 12:08:27 PM",
 FrontEndVersion->"12.3 for Microsoft Windows (64-bit) (July 9, 2021)",
 StyleDefinitions->"Default.nb"
 ]
@@ -935,38 +469,33 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[580, 22, 420, 10, 70, "Input",ExpressionUUID->"99ca4b56-ed46-4782-b18e-987b229cf732",
+Cell[580, 22, 419, 10, 70, "Input",ExpressionUUID->"6b234eea-570a-4b91-8e0b-e5322151e809",
  InitializationCell->True],
 Cell[CellGroupData[{
-Cell[1025, 36, 333, 8, 70, "PrintTemporary",ExpressionUUID->"6e88d340-d5f4-46b9-856b-022eb5c8a821"],
-Cell[1361, 46, 379, 8, 70, "PrintTemporary",ExpressionUUID->"2e16b175-a16d-4a6e-ac72-ba3eb3ac60f1"]
+Cell[1024, 36, 330, 8, 70, "PrintTemporary",ExpressionUUID->"75e5dc29-06ca-43cf-84ed-b02783437143"],
+Cell[1357, 46, 380, 8, 70, "PrintTemporary",ExpressionUUID->"afae66b0-79ed-4843-8447-13893006fabe"]
 }, Open  ]]
 }, Open  ]],
-Cell[1767, 58, 1303, 34, 70, "Input",ExpressionUUID->"ef3c063e-24c2-46b9-baff-f44ea32078f0",
+Cell[1764, 58, 1304, 34, 70, "Input",ExpressionUUID->"479bc5fd-a2d6-4883-8096-209c83eaf3d4",
  InitializationCell->True],
-Cell[3073, 94, 1185, 30, 70, "Input",ExpressionUUID->"ea3fa4bc-72cd-4abd-83b4-cd3f5a47ebe8",
+Cell[3071, 94, 1186, 30, 70, "Input",ExpressionUUID->"1aaeffe9-45bc-40f5-8916-c44ed4b01137",
  InitializationCell->True],
-Cell[4261, 126, 3235, 83, 70, "Input",ExpressionUUID->"529be418-eb68-4802-b815-a416000951b4",
+Cell[4260, 126, 3236, 83, 70, "Input",ExpressionUUID->"0de8ecd1-d715-41b8-ab41-8ca130170dbe",
  InitializationCell->True],
-Cell[7499, 211, 497, 13, 70, "Input",ExpressionUUID->"7bc1126f-fe3b-40fc-bac1-eecee22fe44a"],
+Cell[7499, 211, 498, 13, 70, "Input",ExpressionUUID->"d8a5e918-fa15-4bb3-9dfb-03b14c9f3095"],
 Cell[CellGroupData[{
-Cell[8021, 228, 283, 7, 70, "Input",ExpressionUUID->"f6e820ed-8ee8-4d67-89d6-ecf61dc42001"],
-Cell[8307, 237, 710, 18, 70, "Output",ExpressionUUID->"013d80b8-d553-491a-aa22-b335ff81e1a4"]
+Cell[8022, 228, 284, 7, 70, "Input",ExpressionUUID->"e455161e-a551-41cb-8ee1-737ce975d68f"],
+Cell[8309, 237, 736, 19, 70, "Output",ExpressionUUID->"3cbabe10-0ac1-4cc9-846a-9c722c949879"]
 }, Open  ]],
-Cell[9032, 258, 335, 6, 70, "Input",ExpressionUUID->"cfa4627c-5a4b-47d1-9d26-4a0151d169d8"],
-Cell[9370, 266, 617, 15, 70, "Input",ExpressionUUID->"da77ae66-20c9-42ef-8386-739791c23642"],
+Cell[9060, 259, 336, 6, 70, "Input",ExpressionUUID->"4422b695-0840-4bb5-89aa-d257d33fa5ce"],
+Cell[9399, 267, 618, 15, 70, "Input",ExpressionUUID->"e86f0627-f141-41c1-a9a5-c28953b87b8f"],
 Cell[CellGroupData[{
-Cell[10012, 285, 269, 7, 70, "Input",ExpressionUUID->"e0980d25-aa87-43b1-a21a-7b31e30e9e30"],
-Cell[10284, 294, 4157, 58, 70, "Output",ExpressionUUID->"f8ffaec3-9747-4944-a854-28bec9cbd496"]
+Cell[10042, 286, 269, 7, 70, "Input",ExpressionUUID->"2eb195e0-d3ff-4515-bac6-651d8b08f9dd"],
+Cell[10314, 295, 4410, 61, 70, "Output",ExpressionUUID->"e45c356d-447b-48c4-b10d-5401aa3b8fa4"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[14478, 357, 142, 3, 70, "Input",ExpressionUUID->"1e06998b-84de-4294-aac0-da1acbc79c90"],
-Cell[14623, 362, 24285, 464, 70, "Output",ExpressionUUID->"a3b3ab02-a687-4ea8-9b7b-8c5e8e6829a8"]
-}, Open  ]],
-Cell[38923, 829, 62, 1, 70, "Input",ExpressionUUID->"33aadeb0-105a-4674-a6b3-e6beb8ce6e4d"],
-Cell[CellGroupData[{
-Cell[39010, 834, 607, 16, 70, "Input",ExpressionUUID->"bea9723a-114a-4d62-a2b6-494af6641bc5"],
-Cell[39620, 852, 2789, 63, 70, "Output",ExpressionUUID->"d0afce97-ea2e-4d1d-a391-9a1b13d0b68a"]
+Cell[14761, 361, 550, 13, 70, "Input",ExpressionUUID->"3be4fea6-0888-426e-ba10-aedf6339b113"],
+Cell[15314, 376, 3215, 73, 70, "Output",ExpressionUUID->"e257367f-6330-4e76-bd69-7cf1ae6f7f17"]
 }, Open  ]]
 }
 ]
