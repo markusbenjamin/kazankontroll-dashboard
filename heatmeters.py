@@ -30,4 +30,5 @@ if __name__ == "__main__":
     parser.add_argument('frequency', type=float, help='Capture frequency in seconds')
 
     args = parser.parse_args()
-    capture_images(args.duration, args.frequency)
+    if 6 <= datetime.now().hour < 24:
+        capture_images(args.duration, args.frequency)
