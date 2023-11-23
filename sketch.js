@@ -393,7 +393,7 @@ function drawInfoBox() {
 
   var x = width * 0.185
   var y = height * 0.75
-  var w = width * 0.275
+  var w = width * 0.3
   var h = height * 0.375
   var fontSize = width * 0.014
 
