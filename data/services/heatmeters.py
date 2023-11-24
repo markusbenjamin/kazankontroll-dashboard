@@ -3,6 +3,7 @@ import os
 import argparse
 from datetime import datetime
 import subprocess
+from PIL import Image, ImageEnhance, ImageFilter, ImageDraw
 
 script_path = os.path.abspath(__file__)
 
@@ -32,8 +33,27 @@ def capture_images(capture_duration, capture_frequency):
         subprocess.run(['fswebcam', '-r', '1280x720', '--no-banner', image_filename])
         print(f'Captured image {image_filename}.')
 
+        crop_cycles(image_filename)
+
         # Wait for the next capture
         time.sleep(capture_frequency)
+
+def crop_cycles(img_path):
+    crop_rectangles = [
+        (182,385,215,401),
+        (185,536,218,552),
+        (184,685,218,702),
+        (176,234,210,249)
+    ]
+
+    with Image.open(img_path) as img:
+        for cycle in range(1,5):
+            try:
+                img.crop(crop_rectangles[cycle-1]).save(f"{img_path[0:-4]}_{cycle}.jpg")
+                print(f"\tCycle {cycle} successfully cropped.")
+            except Exception as e:
+                print(f"\tCouldn't crop cycle {cycle} due to {e}.")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Capture images from a webcam.')
