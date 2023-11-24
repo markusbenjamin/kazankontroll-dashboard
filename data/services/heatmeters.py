@@ -40,10 +40,10 @@ def capture_images(capture_duration, capture_frequency):
 
 def crop_cycles(img_path):
     crop_rectangles = [
-        (182,385,215,401),
-        (185,536,218,552),
-        (184,685,218,702),
-        (176,234,210,249)
+        (181,384,216,402),
+        (184,535,219,553),
+        (183,684,219,703),
+        (175,233,211,250)
     ]
 
     with Image.open(img_path) as img:
