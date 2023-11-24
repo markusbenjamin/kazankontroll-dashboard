@@ -47,6 +47,7 @@ def crop_cycles(img_path):
     ]
 
     with Image.open(img_path) as img:
+        img = img.transpose(Image.ROTATE_90)
         for cycle in range(1,5):
             try:
                 img.crop(crop_rectangles[cycle-1]).save(f"{img_path[0:-4]}_{cycle}.jpg")
