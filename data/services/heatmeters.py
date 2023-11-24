@@ -4,11 +4,22 @@ import argparse
 from datetime import datetime
 import subprocess
 
+script_path = os.path.abspath(__file__)
+
+# Get the directory of the current script
+script_dir = os.path.dirname(script_path)
+
+# Navigate to the project root from the current script directory (go two levels up)
+project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+
+# Construct the path to the data/raw directory
+data_raw_path = os.path.join(project_root, 'data', 'raw')
+
 # Function to capture images for a set duration
 def capture_images(capture_duration, capture_frequency):
     start_time = time.time()
     current_date = time.strftime("%Y_%m_%d")
-    save_path = f'data/raw/heatmeter_images/{current_date}/'
+    save_path = f'{data_raw_path}/heatmeter_images/{current_date}/'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
