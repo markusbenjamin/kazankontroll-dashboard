@@ -33,7 +33,7 @@ def capture_images(capture_duration, capture_frequency):
         subprocess.run(['fswebcam', '-r', '1280x720', '--no-banner', image_filename])
         print(f'Captured image {image_filename}.')
 
-        # crop_cycles(image_filename)
+        crop_cycles(image_filename)
 
         # Wait for the next capture
         time.sleep(capture_frequency)
