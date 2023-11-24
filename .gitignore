@@ -1,5 +1,5 @@
 # Ignore data/raw directory
-data/raw/
+# data/raw/
 
 # Ignore analysis directory
 analysis/
