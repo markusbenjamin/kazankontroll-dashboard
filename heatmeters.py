@@ -8,7 +8,7 @@ import subprocess
 def capture_images(capture_duration, capture_frequency):
     start_time = time.time()
     current_date = time.strftime("%Y_%m_%d")
-    save_path = f'heatmeter_images/{current_date}/'
+    save_path = f'data/raw/heatmeter_images/{current_date}/'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
