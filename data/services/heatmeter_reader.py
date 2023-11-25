@@ -332,8 +332,7 @@ def do_ocr_on_cycles(cycle_crops):
  
 
 if __name__ == "__main__":
-    #image_filename = capture_image()
-    image_filename = "img.jpg"
+    image_filename = capture_image()
 
     cycle_crops = crop_cycles(image_filename)
 
