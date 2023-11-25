@@ -7,6 +7,12 @@ from scipy.ndimage import zoom
 from datetime import datetime
 import csv
 
+
+script_path = os.path.abspath(__file__)
+script_dir = os.path.dirname(script_path)
+project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+data_path = os.path.join(project_root, 'data')
+
 def slice_into_chars(img):
     # Calculate the width and height of each piece
     width, height = img.size
@@ -359,16 +365,22 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.
         resized_archetype_vectors_2D.append(zoom(archetype_vector_2D, (unknown_dimensions[0] / archetype_dimensions[0], unknown_dimensions[1] / archetype_dimensions[1])))
     
     activations = []
+    counter = 0
+    iter_num = 10*len(list(np.arange(h_shift_min, h_shift_max+h_shift_step, h_shift_step)))*len(list(np.arange(v_shift_min, v_shift_max+v_shift_step, v_shift_step)))*len(list(np.arange(zoom_min, zoom_max+zoom_step, zoom_step)))
     for h_shift in np.arange(h_shift_min,h_shift_max+h_shift_step,h_shift_step):
         for v_shift in np.arange(v_shift_min,v_shift_max+v_shift_step,v_shift_step):
             for zoom_level in np.arange(zoom_min,zoom_max+zoom_step,zoom_step):
-                segment_pixels = np.where(shift_array(zoom_array(copy.deepcopy(resized_archetype_vectors_2D[8]), zoom_level),h_shift,v_shift).flatten() == 0)[0]
                 activation = {}
                 for num in np.arange(0,10,1):
                     archetype_vector = 1 - (shift_array(zoom_array(copy.deepcopy(resized_archetype_vectors_2D[num]), zoom_level),h_shift,v_shift).flatten())/255
                     unknown_vector = 1 - unknown_vector_2D.flatten()/255
                     activation[num] = np.dot(archetype_vector,unknown_vector)/np.mean([np.sum(archetype_vector),np.sum(unknown_vector)])
+                    counter += 1
+                    progress = round(100*counter/iter_num,2)
+                    print(f"\r{progress}%, num: {num}, activation: {round(activation[num], 6)}   ", end="\n")
                 activations.append(activation)
+                exit()
+
 
     def activation_checks(activation_as_array):
         gradient = abs(np.diff(np.sort(activation_as_array)))
@@ -387,6 +399,8 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.
         prediction = max(predictions, key=predictions.count)
     else:
         prediction = -1
+
+    print(f"\t--> {prediction}")
 
     return prediction
 
@@ -407,7 +421,6 @@ if __name__ == "__main__":
                 cycle_readouts = []
                 for cycle in range(1,5):
                     cycle_readout = ''
-                    #cycle_crops[cycle-1].save(f"cycle_{cycle}_{image_name}")
                     for char in range(1,5):
                         unknown_vector_2D = np.array(chars[cycle-1][char-1])
                         prediction = seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.03, total_da_threshold = 0.18)
