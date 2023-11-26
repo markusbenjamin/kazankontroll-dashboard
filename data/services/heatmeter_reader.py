@@ -13,7 +13,7 @@ data_path = os.path.join(project_root, 'data')
 
 def capture_image():
     current_date = time.strftime("%Y-%m-%d")
-    save_path = f'{data_path}/raw/heatmeter_images/{current_date}/'
+    save_path = f'{data_path}/raw/{current_date}/heatmeter_images/'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 

@@ -20,7 +20,9 @@ GPIO.setup(pulse_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Pull-up resistor ena
 def signal_detected(arg):
     daystamp = datetime.now().strftime('%Y-%m-%d')
     save_path = f'{data_path}/raw/{daystamp}/'
-    with open(f"{save_path}/gas_pulse_times.txt", "a") as file:
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    with open(f"{save_path}gas_pulse_times.txt", "a") as file:
         # Write the current time to the file
         file.write(f"{datetime.now()}\n")
         print(f"Pulse detected at {datetime.now()}") 
