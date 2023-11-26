@@ -5,6 +5,7 @@ import subprocess
 import copy
 from PIL import Image, ImageEnhance, ImageFilter
 import csv
+import random
 
 script_path = os.path.abspath(__file__)
 script_dir = os.path.dirname(script_path)
@@ -12,6 +13,7 @@ project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
 data_path = os.path.join(project_root, 'data')
 
 def capture_image():
+    time.sleep(random.randint(1, 20))
     current_date = time.strftime("%Y-%m-%d")
     save_path = f'{data_path}/raw/{current_date}/heatmeter_images/'
     if not os.path.exists(save_path):
