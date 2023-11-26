@@ -331,10 +331,11 @@ def do_ocr_on_cycles(cycle_crops):
         cycle_readouts.append(cycle_readout)
         print(f"Readout for cycle {cycle}: {cycle_readout}.")
     
-    return f"{datetime.now().strftime('%Y-%m-%d %H:%M')},{cycle_readouts[0]},{cycle_readouts[1]},{cycle_readouts[2]},{cycle_readouts[3]}"
+    return f"{cycle_readouts[0]},{cycle_readouts[1]},{cycle_readouts[2]},{cycle_readouts[3]}"
  
 
 if __name__ == "__main__":
+    hour_minute_stamp = datetime.now().strftime("%H%M")
     image_filename = capture_image()
 
     try:
@@ -347,7 +348,7 @@ if __name__ == "__main__":
             with Image.open(f'{data_path}/services/ocr_archetypes/archetype_{n}.png') as img:
                 archetype_images.append(img.convert('L'))
 
-        full_readout = do_ocr_on_cycles(cycle_crops)
+        full_readout = hour_minute_stamp+do_ocr_on_cycles(cycle_crops)
         print(f"Full readout: {full_readout}.")
 
         daystamp = datetime.now().strftime('%Y-%m-%d')
