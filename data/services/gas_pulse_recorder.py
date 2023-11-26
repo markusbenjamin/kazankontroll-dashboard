@@ -5,15 +5,9 @@ import os
 
 # Get the absolute path of the current script
 script_path = os.path.abspath(__file__)
-
-# Get the directory of the current script
 script_dir = os.path.dirname(script_path)
-
-# Navigate to the project root from the current script directory (go two levels up)
 project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
-
-# Construct the path to the data/raw directory
-data_raw_path = os.path.join(project_root, 'data', 'raw')
+data_path = os.path.join(project_root, 'data')
 
 # Define the GPIO pin number
 pulse_pin = 17
@@ -24,7 +18,9 @@ GPIO.setup(pulse_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Pull-up resistor ena
 
 # Define the callback function to run when a signal is detected
 def signal_detected(arg):
-    with open(f"{data_raw_path}/gas_pulse_times.txt", "a") as file:
+    daystamp = datetime.now().strftime('%Y-%m-%d')
+    save_path = f'{data_path}/raw/{daystamp}/'
+    with open(f"{save_path}/gas_pulse_times.txt", "a") as file:
         # Write the current time to the file
         file.write(f"{datetime.now()}\n")
         print(f"Pulse detected at {datetime.now()}") 

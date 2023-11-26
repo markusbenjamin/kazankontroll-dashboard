@@ -348,7 +348,7 @@ if __name__ == "__main__":
         print(f"Full readout: {full_readout}.")
 
         daystamp = datetime.now().strftime('%Y-%m-%d')
-        save_path = f'{data_path}/formatted/{daystamp}/'
+        save_path = f'{data_path}/raw/{daystamp}/'
 
         if not os.path.exists(save_path):
             os.makedirs(save_path)
@@ -358,22 +358,3 @@ if __name__ == "__main__":
             writer.writerow(full_readout.split(','))
     except Exception as e:
         print(f"Couldn't extract cycle readings due to {e}.")
-    #cycle_crops = crop_cycles(image_filename)
-#
-    #archetype_images = []
-    #for n in range(0,10,1):
-    #    with Image.open(f'ocr_archetypes/archetype_{n}.png') as img:
-    #        archetype_images.append(img.convert('L'))
-#
-    #full_readout = do_ocr_on_cycles(cycle_crops)
-    #print(f"Full readout: {full_readout}.")
-#
-    #daystamp = datetime.now().strftime('%Y-%m-%d')
-    #save_path = f'{data_path}/formatted/{daystamp}/'
-#
-    #if not os.path.exists(save_path):
-    #    os.makedirs(save_path)
-#
-    #with open(f'{save_path}/heatmeter_readouts.csv', 'a', newline='') as file:
-    #    writer = csv.writer(file)
-    #    writer.writerow(full_readout.split(','))
