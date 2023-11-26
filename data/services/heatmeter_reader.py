@@ -18,7 +18,7 @@ def capture_image():
         os.makedirs(save_path)
 
     now = datetime.now()
-    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = now.strftime("%H%M%S")
     image_filename = f'{save_path}{timestamp}.jpg'
 
     # Capture an image using fswebcam
@@ -222,10 +222,10 @@ def seven_segment_ocr(unknown_image, archetype_images, cycle, char, da1_threshol
                     activation[num] = dot_product(archetype_vector, unknown_vector) / ((sum(archetype_vector) + sum(unknown_vector)) / 2)
     
                     counter += 1
-                    progress = round(20*counter/iter_num)
-                    progress_bar = "|" + "-"*progress+" "*(20-progress)+"|"
+                    #progress = round(20*counter/iter_num)
+                    #progress_bar = "|" + "-"*progress+" "*(20-progress)+"|"
 
-                    print(f"\rCycle {cycle} char {char}: {progress_bar}", end="")
+                    #print(f"\rCycle {cycle} char {char}: {progress_bar}", end="")
 
                 activations.append(activation)
  
@@ -240,7 +240,7 @@ def seven_segment_ocr(unknown_image, archetype_images, cycle, char, da1_threshol
 
     prediction = max(predictions, key=predictions.count) if predictions else 'n'
 
-    print(f"\t--> {prediction}")
+    print(f"Cycle {cycle} char {char}: {prediction}")
 
     return prediction 
 
@@ -334,22 +334,27 @@ def do_ocr_on_cycles(cycle_crops):
 if __name__ == "__main__":
     image_filename = capture_image()
 
-    cycle_crops = crop_cycles(image_filename)
+    try:
+        cycle_crops = crop_cycles(image_filename)
 
-    archetype_images = []
-    for n in range(0,10,1):
-        with Image.open(f'ocr_archetypes/archetype_{n}.png') as img:
-            archetype_images.append(img.convert('L'))
+        os.remove(image_filename)
 
-    full_readout = do_ocr_on_cycles(cycle_crops)
-    print(f"Full readout: {full_readout}.")
+        archetype_images = []
+        for n in range(0,10,1):
+            with Image.open(f'{data_path}/services/ocr_archetypes/archetype_{n}.png') as img:
+                archetype_images.append(img.convert('L'))
 
-    daystamp = datetime.now().strftime('%Y-%m-%d')
-    save_path = f'{data_path}/formatted/{daystamp}/'
+        full_readout = do_ocr_on_cycles(cycle_crops)
+        print(f"Full readout: {full_readout}.")
 
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
+        daystamp = datetime.now().strftime('%Y-%m-%d')
+        save_path = f'{data_path}/formatted/{daystamp}/'
 
-    with open(f'{save_path}/heatmeter_readouts.csv', 'a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(full_readout.split(','))
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        with open(f'{save_path}/heatmeter_readouts.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(full_readout.split(','))
+    except Exception as e:
+        print(f"Couldn't extract cycle readings due to {e}.")
