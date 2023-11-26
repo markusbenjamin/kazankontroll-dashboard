@@ -33,7 +33,7 @@ def extract_and_save_measured_temps(log_lines):
         room = list(line["3"].keys())[0]
         temp = list(line["3"].values())[0]
         entry = f'{hms_stamp},{room},{temp}'
-        print(entry)
+        #print(entry)
 
         save_path = os.path.join(data_raw_path, ymd_stamp)
         
@@ -65,7 +65,7 @@ def extract_and_save_set_temps(log_lines):
             buff_high = line["3"]["buff high"]
             
         entry = f'{hms_stamp},{room},{temp},{buff_low},{buff_high}'
-        print(entry)
+        #print(entry)
 
         save_path = os.path.join(data_raw_path, ymd_stamp)
         
@@ -89,7 +89,7 @@ def extract_and_save_external_temp(log_lines):
         hms_stamp = datetime.strptime(line["4"],"%Y-%m-%d %H:%M:%S").strftime("%H:%M:%S")
         temp = line["3"]
         entry = f'{hms_stamp},{temp}'
-        print(entry)
+        #print(entry)
 
         save_path = os.path.join(data_raw_path, ymd_stamp)
         
@@ -114,7 +114,7 @@ def extract_and_save_pump_states(log_lines):
         pump = list(line["3"].keys())[0]
         state = list(line["3"].values())[0]
         entry = f'{hms_stamp},{pump},{state}'
-        print(entry)
+        #print(entry)
 
         save_path = os.path.join(data_raw_path, ymd_stamp)
         
@@ -138,7 +138,7 @@ def extract_and_save_albatros_state(log_lines):
         hms_stamp = datetime.strptime(line["4"],"%Y-%m-%d %H:%M:%S").strftime("%H:%M:%S")
         state = line["3"]
         entry = f'{hms_stamp},{state}'
-        print(entry)
+        #print(entry)
 
         save_path = os.path.join(data_raw_path, ymd_stamp)
         
@@ -164,9 +164,13 @@ def find_problematic_line(file_path):
                 return f"Error in line {i}: {line.strip()}"
 
 if __name__ == "__main__":
-    daily_log_lines = load_daily_log(logfile_name = 'log')
-    extract_and_save_measured_temps(daily_log_lines)
-    extract_and_save_set_temps(daily_log_lines)
-    extract_and_save_external_temp(daily_log_lines)
-    extract_and_save_pump_states(daily_log_lines)
-    extract_and_save_albatros_state(daily_log_lines)
+    try:
+        daily_log_lines = load_daily_log(logfile_name = 'log')
+        extract_and_save_measured_temps(daily_log_lines)
+        extract_and_save_set_temps(daily_log_lines)
+        extract_and_save_external_temp(daily_log_lines)
+        extract_and_save_pump_states(daily_log_lines)
+        extract_and_save_albatros_state(daily_log_lines)
+        print(f"Successfully parsed logs.")
+    except Exception as e:
+        print(f"Couldn't parse logs due to {e}.")
