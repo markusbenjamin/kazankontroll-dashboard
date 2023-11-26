@@ -18,13 +18,16 @@ def capture_image():
         os.makedirs(save_path)
 
     now = datetime.now()
-    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = now.strftime("%H%M")
     image_filename = f'{save_path}{timestamp}.jpg'
 
     # Capture an image using fswebcam
-    subprocess.run(['fswebcam', '-r', '1280x720', '--no-banner', image_filename])
-    print(f'Captured image {image_filename}.')
-    return image_filename
+    try:
+        subprocess.run(['fswebcam', '-r', '1280x720', '--no-banner', image_filename])
+        print(f'Captured image {image_filename}.')
+        return image_filename
+    except Exception as e:
+        print(f"Couldn't capture image {image_filename} due to {e}.")
 
 def crop_cycles(img_path):
     crop_rectangles = [
@@ -222,10 +225,10 @@ def seven_segment_ocr(unknown_image, archetype_images, cycle, char, da1_threshol
                     activation[num] = dot_product(archetype_vector, unknown_vector) / ((sum(archetype_vector) + sum(unknown_vector)) / 2)
     
                     counter += 1
-                    progress = round(20*counter/iter_num)
-                    progress_bar = "|" + "-"*progress+" "*(20-progress)+"|"
+                    #progress = round(20*counter/iter_num)
+                    #progress_bar = "|" + "-"*progress+" "*(20-progress)+"|"
 
-                    print(f"\rCycle {cycle} char {char}: {progress_bar}", end="")
+                    #print(f"\rCycle {cycle} char {char}: {progress_bar}", end="")
 
                 activations.append(activation)
  
@@ -240,7 +243,7 @@ def seven_segment_ocr(unknown_image, archetype_images, cycle, char, da1_threshol
 
     prediction = max(predictions, key=predictions.count) if predictions else 'n'
 
-    print(f"\t--> {prediction}")
+    print(f"Cycle {cycle} char {char}: {prediction}")
 
     return prediction 
 
