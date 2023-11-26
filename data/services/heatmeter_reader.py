@@ -348,7 +348,7 @@ if __name__ == "__main__":
             with Image.open(f'{data_path}/services/ocr_archetypes/archetype_{n}.png') as img:
                 archetype_images.append(img.convert('L'))
 
-        full_readout = hour_minute_stamp+do_ocr_on_cycles(cycle_crops)
+        full_readout = hour_minute_stamp+","+do_ocr_on_cycles(cycle_crops)
         print(f"Full readout: {full_readout}.")
 
         daystamp = datetime.now().strftime('%Y-%m-%d')
