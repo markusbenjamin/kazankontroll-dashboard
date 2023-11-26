@@ -376,10 +376,10 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.
                     unknown_vector = 1 - unknown_vector_2D.flatten()/255
                     activation[num] = np.dot(archetype_vector,unknown_vector)/np.mean([np.sum(archetype_vector),np.sum(unknown_vector)])
                     counter += 1
-                    progress = round(100*counter/iter_num,2)
-                    print(f"\r{progress}%, num: {num}, activation: {round(activation[num], 6)}   ", end="\n")
+                    progress = round(20*counter/iter_num)
+                    progress_bar = "|"+"-"*progress+" "*(20-progress)+"|"
+                    print(f"\r{progress_bar}", end="")
                 activations.append(activation)
-                exit()
 
 
     def activation_checks(activation_as_array):
@@ -405,12 +405,12 @@ def seven_segment_ocr(unknown_vector_2D,archetype_vectors_2D, da1_threshold = 0.
     return prediction
 
 if __name__ == "__main__":
-    folder_path = 'heatmeter_images/2023_11_24'
+    folder_path = 'unprocessed heatmeter images'
     image_names = [file for file in os.listdir(folder_path) if file.lower().endswith('.jpg')]
 
     archetype_vectors_2D = []
     for n in np.arange(0,10,1):
-        with Image.open(f'ocr_archetypes/archetype_{n}.png') as img:
+        with Image.open(f'archetypes/archetype_{n}.png') as img:
             archetype_vectors_2D.append(np.array(img.convert('L')))
 
     for image_name in image_names:

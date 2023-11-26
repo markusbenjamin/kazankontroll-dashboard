@@ -3,3 +3,6 @@
 
 # Ignore analysis directory
 analysis/
+
+# Ignore dev directory
+dev/
