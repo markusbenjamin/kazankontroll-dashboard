@@ -28,26 +28,27 @@ def extract_and_save_measured_temps(log_lines):
     filtered_lines = filter_log_lines(log_lines,"2","temp measurement")
     line_count = 0
     for line in filtered_lines:
-        ymd_stamp = datetime.strptime(line["4"],"%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d")
-        hms_stamp = datetime.strptime(line["4"],"%Y-%m-%d %H:%M:%S").strftime("%H:%M:%S")
-        room = list(line["3"].keys())[0]
-        temp = list(line["3"].values())[0]
-        entry = f'{hms_stamp},{room},{temp}'
-        #print(entry)
+        if "sensor" not in line["3"].keys():
+            ymd_stamp = datetime.strptime(line["4"],"%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d")
+            hms_stamp = datetime.strptime(line["4"],"%Y-%m-%d %H:%M:%S").strftime("%H:%M:%S")
+            room = list(line["3"].keys())[0]
+            temp = list(line["3"].values())[0]
+            entry = f'{hms_stamp},{room},{temp}'
+            #print(entry)
 
-        save_path = os.path.join(data_raw_path, ymd_stamp)
-        
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
+            save_path = os.path.join(data_raw_path, ymd_stamp)
+            
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
 
-        if line_count == 0:
-            open(f'{save_path}/measured_temps.csv', 'w', newline='')
+            if line_count == 0:
+                open(f'{save_path}/measured_temps.csv', 'w', newline='')
 
-        with open(f'{save_path}/measured_temps.csv', 'a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(entry.split(','))
-        
-        line_count += 1
+            with open(f'{save_path}/measured_temps.csv', 'a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow(entry.split(','))
+            
+            line_count += 1
 
 def extract_and_save_set_temps(log_lines):
     filtered_lines = filter_log_lines(log_lines,"2","set temp")

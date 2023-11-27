@@ -1,7 +1,7 @@
 import bisect
 import csv
 import copy
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import matplotlib.pyplot as plt
 
@@ -227,34 +227,259 @@ def construct_and_save_formatted_external_temp_data(daystamp = datetime.now().st
             writer.writerow(entry.split(','))
         line_count += 1
 
+def process_and_save_gas_pulse_data(daystamp = datetime.now().strftime("%Y-%m-%d"), minute_step = 5, time_offset = 0):
+    gas_impulse_times_raw = []
+    with open(data_raw_path + "/" + daystamp + "/gas_pulse_times.txt", 'r') as file:
+        for line in file:
+            seconds_since_midnight = 60*60*int(line.split(":")[0]) + 60*int(line.split(":")[1]) + int(line.strip().split(":")[2]) + time_offset
+            gas_impulse_times_raw.append(seconds_since_midnight)
+    
+    gas_impulse_double_readings_filtered = []
+    for n in range(1,len(gas_impulse_times_raw)):
+        if 60 < gas_impulse_times_raw[n] - gas_impulse_times_raw[n-1]:
+            gas_impulse_double_readings_filtered.append(gas_impulse_times_raw[n]/60)
+
+    gas_impulse_count_window = 15
+    gas_pulses_count = []
+    gas_pulses_total = 0
+    for time in range(0, 24*60 - gas_impulse_count_window, gas_impulse_count_window):
+        count = len(select(gas_impulse_double_readings_filtered, lambda x: time - gas_impulse_count_window < x <= time))
+        gas_pulses_total += count
+        gas_pulses_count.append([time,count])
+    gas_stock = round(gas_pulses_total * 0.1, 4)
+
+    gas_smooth_window = 2*60
+    gas_flow_smooth = []
+    for time in range(0, 24*60):
+        flow = mean(transpose(select(gas_pulses_count,lambda x: time - gas_smooth_window < x[0] <= time))[1])*0.1
+        gas_flow_smooth.append([time,flow])
+
+    line_count = 0
+    for minute in range(0,24*60,minute_step):
+        preceding, succeeding = find_closest_in_nested(gas_flow_smooth,minute,0)
+        if preceding != 'n' and succeeding != 'n':
+            preceding_time = preceding[0]
+            preceding_flow = preceding[1]
+            succeeding_time = succeeding[0]
+            succeeding_flow = succeeding[1]
+            time = minute
+            flow = round((preceding_flow+succeeding_flow)/2, 4)
+        elif preceding != 'n':
+            preceding_time = preceding[0]
+            preceding_flow = preceding[1]
+            time = minute
+            flow = round(preceding_flow, 4)
+        else:
+            time = minute
+            flow = 'n'
+        
+        entry = f'{time},{flow}'
+        
+        save_path = data_formatted_path+"/"+daystamp+"/"
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        if line_count == 0:
+            open(f'{save_path}/gas_flow.csv', 'w', newline='')
+            file = open(f'{save_path}/gas_stock.csv', 'w', newline='')
+            writer = csv.writer(file)
+            writer.writerow([gas_stock])
+
+        with open(f'{save_path}/gas_flow.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(entry.split(','))
+        line_count += 1
+
+def process_and_save_heatmeter_readings(daystamp = datetime.now().strftime("%Y-%m-%d"), minute_step = 5, time_offset = 0):
+    prev_daystamp = (datetime.strptime(daystamp,"%Y-%m-%d") + timedelta(days=-1)).strftime("%Y-%m-%d")
+    try:
+        ground_truth = []
+        with open(data_formatted_path + "/" + prev_daystamp + "/heat_stock.csv", 'r') as file:
+            for line in file:
+                entries = list(map(float,line.strip().split(",")))
+                ground_truth = entries[1:]
+    except Exception as e:
+        print(f"Couldn't read in ground truth due to {e}")
+
+    heatmeter_valid_readouts = [[],[],[],[]]
+    ground_truth_dist_filter = 500
+    with open(data_raw_path + "/" + daystamp + "/heatmeter_readouts.csv", 'r') as file:
+        for line in file:
+            entries = line.split(",")
+            minutes_since_midnight = 60*int(entries[0].split(":")[0]) + int(entries[0].split(":")[1]) + time_offset
+            for cycle in range(4):
+                cycle_readout = entries[cycle + 1]
+                if 'n' not in cycle_readout and int(cycle_readout) - ground_truth[cycle] < ground_truth_dist_filter:
+                    heatmeter_valid_readouts[cycle].append([minutes_since_midnight,int(cycle_readout)])
+    
+    heatmeter_power_filtered_readouts = [[],[],[],[]]
+    power_filter = 2
+    for cycle in range(4):
+        for n in range(1,len(heatmeter_valid_readouts[cycle])):
+            prev_readout = heatmeter_valid_readouts[cycle][n-1]
+            this_readout = heatmeter_valid_readouts[cycle][n]
+            if prev_readout[0] != this_readout[0] or prev_readout[1] != this_readout[1]:
+                if prev_readout[0] != this_readout[0]:
+                    power = (this_readout[1] - prev_readout[1]) / (this_readout[0] - prev_readout[0])
+                    if 0 <= power < power_filter:
+                        heatmeter_power_filtered_readouts[cycle].append(this_readout)
+
+
+    heat_stock_interpolated = []
+    line_count = 0
+    for minute in range(minute_step,24*60,minute_step):
+        cycle_entries = ['n','n','n','n']
+        for cycle in range(4):
+            preceding, succeeding = find_closest_in_nested(heatmeter_power_filtered_readouts[cycle], minute ,0)
+            if preceding != 'n' and succeeding != 'n':
+                preceding_time = preceding[0]
+                preceding_reading = preceding[1]
+                succeeding_time = succeeding[0]
+                succeeding_reading = succeeding[1]
+                interpolating_factor = (minute - preceding_time)/(succeeding_time - preceding_time)
+                cycle_entries[cycle] = round(preceding_reading*(1-interpolating_factor) + succeeding_reading*interpolating_factor,3)
+            elif preceding != 'n':
+                preceding_time = preceding[0]
+                preceding_reading = preceding[1]
+                cycle_entries[cycle] = round(preceding_reading,3)
+            else:
+                cycle_entries[cycle] = round(ground_truth[cycle],3)
+            
+        heat_stock_interpolated.append([minute,cycle_entries[0],cycle_entries[1],cycle_entries[2],cycle_entries[3]])
+        entry = f"{minute},{cycle_entries[0]},{cycle_entries[1]},{cycle_entries[2]},{cycle_entries[3]}"
+        
+        save_path = data_formatted_path+"/"+daystamp+"/"
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        if line_count == 0:
+            open(f'{save_path}/heat_stock.csv', 'w', newline='')
+
+        with open(f'{save_path}/heat_stock.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(entry.split(','))
+        line_count += 1
+
+    
+    heat_power_raw = [[],[],[],[]]
+    time_step = 1
+    for minute in range(0, 24*60 - time_step, time_step):
+        for cycle in range(4):
+            preceding, succeeding = find_closest_in_nested(heat_stock_interpolated, minute ,0)
+            if preceding != 'n' and succeeding != 'n':
+                preceding_time = preceding[0]
+                preceding_stock = preceding[cycle + 1]
+                succeeding_time = succeeding[0]
+                succeeding_stock = succeeding[cycle + 1]
+
+                time = (preceding_time + succeeding_time) / 2
+                power = (succeeding_stock - preceding_stock) / (succeeding_time - preceding_time)
+
+                heat_power_raw[cycle].append([time, power])
+    
+    power_smooth_window = 60
+    heat_power_smooth = [[],[],[],[]]
+    for minute in range(0, 24*60 - time_step, time_step):
+        for cycle in range(4):
+            power_smoothed = list(map(mean,transpose(select(heat_power_raw[cycle], lambda x: minute - power_smooth_window < x[0] <= minute))))
+            if power_smoothed:
+                heat_power_smooth[cycle].append([minute, power_smoothed[1]])
+
+    heat_power_interpolated = []
+    line_count = 0
+    for minute in range(minute_step,24*60,minute_step):
+        cycle_entries = ['n','n','n','n']
+        for cycle in range(4):
+            preceding, succeeding = find_closest_in_nested(heat_power_smooth[cycle], minute ,0)
+            if preceding != 'n' and succeeding != 'n':
+                preceding_time = preceding[0]
+                preceding_power = preceding[1]
+                succeeding_time = succeeding[0]
+                succeeding_power = succeeding[1]
+                interpolating_factor = (minute - preceding_time)/(succeeding_time - preceding_time)
+                cycle_entries[cycle] = round(preceding_power*(1-interpolating_factor) + succeeding_power*interpolating_factor,5)
+            elif preceding != 'n':
+                preceding_time = preceding[0]
+                preceding_power = preceding[1]
+                cycle_entries[cycle] = round(preceding_power,5)
+            else:
+                cycle_entries[cycle] = 0
+            
+        heat_power_interpolated.append([minute,cycle_entries[0],cycle_entries[1],cycle_entries[2],cycle_entries[3]])
+        entry = f"{minute},{cycle_entries[0]},{cycle_entries[1]},{cycle_entries[2]},{cycle_entries[3]}"
+        
+        save_path = data_formatted_path+"/"+daystamp+"/"
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        if line_count == 0:
+            open(f'{save_path}/heat_flow.csv', 'w', newline='')
+
+        with open(f'{save_path}/heat_flow.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(entry.split(','))
+        line_count += 1 
+
+def plot(data, scatter = True, join = False):
+    data = transpose(data)
+    fig, ax = plt.subplots()
+    if scatter:
+        ax.scatter(data[0], data[1])
+    if join:
+        ax.plot(data[0], data[1])
+    plt.show()
+
 if __name__ == "__main__":
     script_path = os.path.abspath(__file__)
     script_dir = os.path.dirname(script_path)
     root_root = os.path.abspath(os.path.join(script_dir, '..', '..','..'))
     data_raw_path = os.path.join(root_root, 'kazankontroll-dashboard','data/raw')
     data_formatted_path = os.path.join(root_root, 'kazankontroll-dashboard','data/formatted')
-    daystamp_spec = '2023-11-26'
     minute_step_spec = 5
 
-    try:
-        albatros_state = load_albatros_data(daystamp = '2023-11-25', time_offset = -24*60)+ load_albatros_data(daystamp = '2023-11-26')
-        pump_states = [
-            load_pump_data(daystamp = '2023-11-25', time_offset = -24*60),
-            load_pump_data(daystamp = '2023-11-26')
-        ]
-        construct_and_save_formatted_heating_state(daystamp = daystamp_spec, minute_step = minute_step_spec)
-       
-        measured_temps = [
-            load_room_measured_temps_data(daystamp = '2023-11-25', time_offset = -24*60), #DEV: kell majd megfelelő daystampot generálni, ha már élesben fut serviceként
-            load_room_measured_temps_data(daystamp = '2023-11-26')
-        ]
-        set_temps = [
-            load_room_set_temps_data(daystamp = '2023-11-25', time_offset = -24*60),
-            load_room_set_temps_data(daystamp = '2023-11-25')
-        ]
-        construct_and_save_formatted_room_temps_data(daystamp = daystamp_spec, minute_step = minute_step_spec)
+    daystamp_spec = datetime.now().strftime("%Y-%m-%d")
+    prev_daystamp = (datetime.strptime(daystamp_spec,"%Y-%m-%d") + timedelta(days=-1)).strftime("%Y-%m-%d")
 
-        external_temp = load_external_temp_data(daystamp = daystamp_spec)
-        construct_and_save_formatted_external_temp_data(daystamp = daystamp_spec, minute_step = minute_step_spec)
+    try:
+        try:
+            albatros_state = load_albatros_data(daystamp = prev_daystamp, time_offset = -24*60)+ load_albatros_data(daystamp = daystamp_spec)
+            pump_states = [
+                load_pump_data(daystamp = prev_daystamp, time_offset = -24*60),
+                load_pump_data(daystamp = daystamp_spec)
+            ]
+            construct_and_save_formatted_heating_state(daystamp = daystamp_spec, minute_step = minute_step_spec)
+        except Exception as e:
+            print(f"Couldn't format heating data due to {e}.")
+        
+        try:
+            measured_temps = [
+                load_room_measured_temps_data(daystamp = prev_daystamp, time_offset = -24*60),
+                load_room_measured_temps_data(daystamp = daystamp_spec)
+            ]
+            set_temps = [
+                load_room_set_temps_data(daystamp = prev_daystamp, time_offset = -24*60),
+                load_room_set_temps_data(daystamp = daystamp_spec)
+            ]
+            construct_and_save_formatted_room_temps_data(daystamp = daystamp_spec, minute_step = minute_step_spec)
+        except Exception as e:
+            print(f"Couldn't format room data due to {e}.")
+
+        try:
+            external_temp = load_external_temp_data(daystamp = daystamp_spec)
+            construct_and_save_formatted_external_temp_data(daystamp = daystamp_spec, minute_step = minute_step_spec)
+        except Exception as e:
+            print(f"Couldn't format external temp due to {e}.")
+        
+        try:
+            process_and_save_gas_pulse_data(daystamp = daystamp_spec)
+        except Exception as e:
+            print(f"Couldn't format gas data due to {e}.")
+
+        try:    
+            process_and_save_heatmeter_readings(daystamp = daystamp_spec)
+        except Exception as e:
+            print(f"Couldn't format heat data due to {e}.")
+            
+        print(f"Successfully formatted data.")
     except Exception as e:
         print(f"Couldn't format data due to {e}.")
