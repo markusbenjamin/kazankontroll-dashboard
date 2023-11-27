@@ -4,6 +4,7 @@ import copy
 from datetime import datetime, timedelta
 import os
 import matplotlib.pyplot as plt
+import subprocess
 
 def find_closest_in_nested(sorted_list, target, compare_index = 0):
     """Finds the closest values around the target in a sorted nested list."""
@@ -429,6 +430,24 @@ def plot(data, scatter = True, join = False):
         ax.plot(data[0], data[1])
     plt.show()
 
+def push_to_repo(commit_message, to_add):
+    print(f"Start push to repo: {commit_message}.")
+    try:
+        subprocess.check_call(["git", "pull"])
+        for item in to_add:
+            subprocess.check_call(["git", "add", item])
+        subprocess.check_call(["git", "commit", "-m", commit_message])
+        subprocess.check_call(["git", "push"])
+        print(f"\tOperation {commit_message} completed successfully.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"\tAn error occurred during git operations: {e}. Return code: {e.returncode}, Output: {e.output}")
+
+    except Exception as e:
+        print(f"Unexpected system error: {sys.exc_info()[0]} during {commit_message}.")
+    
+    print(f"Push to repo: {commit_message} finished.\n")
+
 if __name__ == "__main__":
     script_path = os.path.abspath(__file__)
     script_dir = os.path.dirname(script_path)
@@ -483,3 +502,5 @@ if __name__ == "__main__":
         print(f"Successfully formatted data.")
     except Exception as e:
         print(f"Couldn't format data due to {e}.")
+
+    push_to_repo('Data push', ['data/raw/', 'data/formatted/'])
