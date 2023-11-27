@@ -10,8 +10,6 @@ var dataSetLoaded
 var raspiConsole, raspiImage
 var radioCommList = []
 
-//comment2
-
 function preload() {
   raspiImage = loadImage('raspi_logo.png');
 }
@@ -135,22 +133,10 @@ var roomToDraw = 0 //DEV
 function draw() {
   try {
     background(229 / 255, 222 / 255, 202 / 255)
-    drawStateVisualization()
-    drawInfoBox()
+    //drawStateVisualization()
+    //drawInfoBox()
 
-    /*var prevRoom = roomToDraw //DEV
-    roomToDraw = round(map(mouseX, 0, width, 1, 7)) //DEV
-    if (prevRoom != roomToDraw) { //DEV
-      dataSetLoaded = false //DEV
-    } //DEV
-    textSize(30) //DEV
-    noStroke() //DEV
-    fill(0) //DEV
-    roomToDraw = 4 //DEV
-    text(roomToDraw, width * 0.5, height * 0.15) //DEV
-
-    drawTempData(roomToDraw, '2023.11.09', '2023.11.09')*/
-    manageToolTip()
+    //manageToolTip()
   } catch (error) {
     console.log(error.message);
   }
@@ -201,11 +187,6 @@ function drawTempData(room, fromDate, toDate) {
   stroke(1, 0, 0)
   strokeWeight(3)
   beginShape()
-
-  //Sonoff szobáknak: simítás aztán nem-lineáris interpoláció
-  //Tuya szobáknak: nem-lineáris interpoláció
-  //legyen több szobás adatstruktúra
-  //adat betöltése és előkészítése csak egyszer a nézet megnyitásakor
 
   for (let i = 0; i < tempData.length; i++) {
     // Define symmetric time window around current data point

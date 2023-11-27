@@ -127,8 +127,8 @@ def construct_and_save_formatted_heating_state(daystamp = datetime.now().strftim
 def construct_and_save_formatted_room_temps_data(daystamp = datetime.now().strftime("%Y-%m-%d"), minute_step = 5):
     for room in range(9):
         line_count = 0
-        two_days_temp = measured_temps[0][room-1] + measured_temps[1][room-1]
-        two_days_set = set_temps[0][room-1] + set_temps[1][room-1]
+        two_days_temp = measured_temps[0][room] + measured_temps[1][room]
+        two_days_set = set_temps[0][room] + set_temps[1][room]
         
         two_days_temp_repeated_readings_filtered = []
         for n in range(1,len(two_days_temp)):
@@ -457,8 +457,24 @@ if __name__ == "__main__":
     minute_step_spec = 5
 
     daystamp_spec = datetime.now().strftime("%Y-%m-%d")
-    prev_daystamp = (datetime.strptime(daystamp_spec,"%Y-%m-%d") + timedelta(days=-1)).strftime("%Y-%m-%d")
+    
+    for day in range(21):
+        print((datetime.strptime("2023-11-07","%Y-%m-%d") + timedelta(days=day)).strftime("%Y-%m-%d"))
+        daystamp_spec = (datetime.strptime("2023-11-07","%Y-%m-%d") + timedelta(days=day)).strftime("%Y-%m-%d")
 
+        prev_daystamp = (datetime.strptime(daystamp_spec,"%Y-%m-%d") + timedelta(days=-1)).strftime("%Y-%m-%d")
+
+        measured_temps = [
+            load_room_measured_temps_data(daystamp = prev_daystamp, time_offset = -24*60),
+            load_room_measured_temps_data(daystamp = daystamp_spec)
+        ]
+        set_temps = [
+            load_room_set_temps_data(daystamp = prev_daystamp, time_offset = -24*60),
+            load_room_set_temps_data(daystamp = daystamp_spec)
+        ]
+        construct_and_save_formatted_room_temps_data(daystamp = daystamp_spec, minute_step = minute_step_spec)
+
+    exit()
     try:
         try:
             albatros_state = load_albatros_data(daystamp = prev_daystamp, time_offset = -24*60)+ load_albatros_data(daystamp = daystamp_spec)
@@ -503,4 +519,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Couldn't format data due to {e}.")
 
-    push_to_repo('Data push', [data_raw_path, data_formatted_path])
+    #push_to_repo('Data push', [data_raw_path, data_formatted_path])
