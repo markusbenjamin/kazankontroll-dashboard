@@ -3,7 +3,7 @@ import csv
 import copy
 from datetime import datetime, timedelta
 import os
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import subprocess
 
 def find_closest_in_nested(sorted_list, target, compare_index = 0):
@@ -421,14 +421,14 @@ def process_and_save_heatmeter_readings(daystamp = datetime.now().strftime("%Y-%
             writer.writerow(entry.split(','))
         line_count += 1 
 
-def plot(data, scatter = True, join = False):
-    data = transpose(data)
-    fig, ax = plt.subplots()
-    if scatter:
-        ax.scatter(data[0], data[1])
-    if join:
-        ax.plot(data[0], data[1])
-    plt.show()
+#def plot(data, scatter = True, join = False):
+#    data = transpose(data)
+#    fig, ax = plt.subplots()
+#    if scatter:
+#        ax.scatter(data[0], data[1])
+#    if join:
+#        ax.plot(data[0], data[1])
+#    plt.show()
 
 def push_to_repo(commit_message, to_add):
     print(f"Start push to repo: {commit_message}.")
@@ -503,4 +503,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Couldn't format data due to {e}.")
 
-    push_to_repo('Data push', ['data/raw/', 'data/formatted/'])
+    push_to_repo('Data push', [data_raw_path, data_formatted_path])
