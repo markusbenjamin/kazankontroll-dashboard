@@ -303,14 +303,14 @@ def process_and_save_heatmeter_readings(daystamp = datetime.now().strftime("%Y-%
         print(f"Couldn't read in ground truth due to {e}")
 
     heatmeter_valid_readouts = [[],[],[],[]]
-    ground_truth_dist_filter = 500
+    ground_truth_dist_filter = 100
     with open(data_raw_path + "/" + daystamp + "/heatmeter_readouts.csv", 'r') as file:
         for line in file:
             entries = line.split(",")
             minutes_since_midnight = 60*int(entries[0].split(":")[0]) + int(entries[0].split(":")[1]) + time_offset
             for cycle in range(4):
                 cycle_readout = entries[cycle + 1]
-                if 'n' not in cycle_readout and int(cycle_readout) - ground_truth[cycle] < ground_truth_dist_filter:
+                if 'n' not in cycle_readout and 0 < int(cycle_readout) - ground_truth[cycle] < ground_truth_dist_filter:
                     heatmeter_valid_readouts[cycle].append([minutes_since_midnight,int(cycle_readout)])
     
     heatmeter_power_filtered_readouts = [[],[],[],[]]
