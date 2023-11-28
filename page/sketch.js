@@ -133,10 +133,10 @@ var roomToDraw = 0 //DEV
 function draw() {
   try {
     background(229 / 255, 222 / 255, 202 / 255)
-    //drawStateVisualization()
-    //drawInfoBox()
+    drawStateVisualization()
+    drawInfoBox()
 
-    //manageToolTip()
+    manageToolTip()
   } catch (error) {
     console.log(error.message);
   }
