@@ -314,7 +314,7 @@ def process_and_save_heatmeter_readings(daystamp = datetime.now().strftime("%Y-%
                     heatmeter_valid_readouts[cycle].append([minutes_since_midnight,int(cycle_readout)])
     
     heatmeter_power_filtered_readouts = [[],[],[],[]]
-    power_filter = 2
+    power_filter = 10
     for cycle in range(4):
         for n in range(1,len(heatmeter_valid_readouts[cycle])):
             prev_readout = heatmeter_valid_readouts[cycle][n-1]
@@ -455,6 +455,10 @@ if __name__ == "__main__":
     data_raw_path = os.path.join(root_root, 'kazankontroll-dashboard','data/raw')
     data_formatted_path = os.path.join(root_root, 'kazankontroll-dashboard','data/formatted')
     minute_step_spec = 5
+
+
+    #process_and_save_heatmeter_readings(daystamp = "2023-11-28")
+    #exit()
 
     daystamp_spec = datetime.now().strftime("%Y-%m-%d")
     prev_daystamp = (datetime.strptime(daystamp_spec,"%Y-%m-%d") + timedelta(days=-1)).strftime("%Y-%m-%d")
