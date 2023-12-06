@@ -126,7 +126,7 @@ def construct_and_save_formatted_heating_state(daystamp = datetime.now().strftim
         line_count += 1
 
 def construct_and_save_formatted_room_temps_data(daystamp = datetime.now().strftime("%Y-%m-%d"), minute_step = 5):
-    for room in range(9):
+    for room in range(10):
         line_count = 0
         two_days_temp = measured_temps[0][room] + measured_temps[1][room]
         two_days_set = set_temps[0][room] + set_temps[1][room]
@@ -453,9 +453,9 @@ def process_and_save_heatmeter_readings(daystamp = datetime.now().strftime("%Y-%
 #        dataset = transpose(dataset)
 #        fig, ax = plt.subplots()
 #        if scatter:
-            ax.scatter(dataset[0], dataset[1])
+#            ax.scatter(dataset[0], dataset[1])
 #        if join:
-            ax.plot(dataset[0], dataset[1])
+#            ax.plot(dataset[0], dataset[1])
 #    plt.show()
 
 def push_to_repo(commit_message, to_add):
@@ -492,7 +492,7 @@ if __name__ == "__main__":
     #    data_to_plot.append(transpose([transpose(heat_stock_interpolated)[0],transpose(heat_stock_interpolated)[cycle]]))
     #    plot(data_to_plot, scatter = False, join = True)
 
-    if True:
+    if False:
         start_day = datetime(2023, 11, 29)
         end_day = datetime(2023, 11, 29)
         day = start_day

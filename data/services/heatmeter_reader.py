@@ -383,15 +383,16 @@ def energy_to_state(energy):
 def do_bayesian_inference_reading(inference_time):
     print(f"Start inference for {inference_time.strftime('%m-%d %H:%M')}.")
     # Find latest prior
-    belief_file_path = os.path.join(data_path,"raw\\",inference_time.strftime("%Y-%m-%d"))
+    belief_file_path = os.path.join(data_path,"raw/",inference_time.strftime("%Y-%m-%d"))
     last_belief_day = inference_time
-    while not os.path.exists(f"{belief_file_path}\\heatmeter_belief_state.csv"):
-        belief_file_path = os.path.join(data_path,"raw\\",last_belief_day.strftime("%Y-%m-%d"))
+    while not os.path.exists(f"{belief_file_path}/heatmeter_belief_state.csv"):
+        print(belief_file_path)
+        belief_file_path = os.path.join(data_path,"raw/",last_belief_day.strftime("%Y-%m-%d"))
         last_belief_day = (inference_time + timedelta(days = -1))
 
     # Load latest prior
     data_newer_than_latest_prior = [False,False,False,False]
-    with open(f"{belief_file_path}\\heatmeter_belief_state.csv", 'rb') as file:
+    with open(f"{belief_file_path}/heatmeter_belief_state.csv", 'rb') as file:
         file.seek(0, os.SEEK_END)  # Go to the end of the file
         filesize = file.tell()
         file.seek(max(filesize-1024, 0))  # Go to the end of file, then back 1024 bytes, or to the start
@@ -418,9 +419,9 @@ def do_bayesian_inference_reading(inference_time):
     # Look for ground truth input for today and yesterday
     ground_truth_days = [inference_time + timedelta(days = -1),inference_time]
     for day in ground_truth_days:
-        ground_truth_file_path = os.path.join(data_path,"raw\\", day.strftime("%Y-%m-%d"))
-        if os.path.exists(f"{ground_truth_file_path}\\heatmeter_ground_truth.csv"):
-            with open(f"{ground_truth_file_path}\\heatmeter_ground_truth.csv",'r') as ground_truth_file:
+        ground_truth_file_path = os.path.join(data_path,"raw/", day.strftime("%Y-%m-%d"))
+        if os.path.exists(f"{ground_truth_file_path}/heatmeter_ground_truth.csv"):
+            with open(f"{ground_truth_file_path}/heatmeter_ground_truth.csv",'r') as ground_truth_file:
                 for line in ground_truth_file.readlines():
                     cycle_parts = line.split(';')
 
@@ -463,7 +464,7 @@ def do_bayesian_inference_reading(inference_time):
                 minute = inference_time.minute
                 if len(str(minute)) == 1:
                     minute = "0"+str(minute)
-                cycle_crop_path = os.path.join(data_path,"raw\\",inference_time.strftime("%Y-%m-%d"),'heatmeter_images\\',f'{hour}{minute}_{cycle}.png')
+                cycle_crop_path = os.path.join(data_path,"raw/",inference_time.strftime("%Y-%m-%d"),'heatmeter_images/',f'{hour}{minute}_{cycle}.png')
                 with Image.open(cycle_crop_path) as img:
                     if img.mode != 'RGB':
                         img = img.convert('RGB')
@@ -527,7 +528,7 @@ def do_bayesian_inference_reading(inference_time):
                     pump_state_changes = []
                     last_state_for_pump = -1 # To only load changes in state
                     while (load_day + timedelta(days = -1)).day != inference_time.day:
-                        with open(os.path.join(data_path,"raw\\", load_day.strftime("%Y-%m-%d"),'pump_states.csv'), 'r') as file:
+                        with open(os.path.join(data_path,"raw/", load_day.strftime("%Y-%m-%d"),'pump_states.csv'), 'r') as file:
                             for line in file.readlines():
                                 pump_statechange_time = datetime.strptime(f'{load_day.strftime("%Y-%m-%d ") }{line.strip().split(",")[0]}',"%Y-%m-%d %H:%M:%S")
                                 pump = int(line.strip().split(",")[1])
@@ -600,7 +601,7 @@ def do_bayesian_inference_reading(inference_time):
             for cycle in range(1,5):
                 belief_state_string += f"{';' if cycle != 1 else ''}{timed_priors[cycle - 1][0].strftime('%Y%m%d%H%M')},{timed_priors[cycle - 1][1]}"
 
-            belief_file_path = os.path.join(data_path,"raw\\",inference_time.strftime("%Y-%m-%d"))
+            belief_file_path = os.path.join(data_path,"raw",inference_time.strftime("%Y-%m-%d"))
 
             if not os.path.exists(belief_file_path):
                 os.makedirs(belief_file_path)
