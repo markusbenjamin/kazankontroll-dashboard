@@ -524,19 +524,22 @@ def do_bayesian_inference_reading(inference_time):
 
                     # Calculate elapsed heating time for cycle
                     elapsed_heating_time = 0
-                    load_day = timed_priors[cycle - 1][0]
+                    load_day = timed_priors[cycle - 1][0] + timedelta(days=-1)
                     pump_state_changes = []
                     last_state_for_pump = -1 # To only load changes in state
                     while (load_day + timedelta(days = -1)).day != inference_time.day:
-                        with open(os.path.join(data_path,"raw/", load_day.strftime("%Y-%m-%d"),'pump_states.csv'), 'r') as file:
-                            for line in file.readlines():
-                                pump_statechange_time = datetime.strptime(f'{load_day.strftime("%Y-%m-%d ") }{line.strip().split(",")[0]}',"%Y-%m-%d %H:%M:%S")
-                                pump = int(line.strip().split(",")[1])
-                                state = int(line.strip().split(",")[2])
-                                if cycle == pump and pump_statechange_time < inference_time and last_state_for_pump != state:
-                                    pump_state_changes.append([pump_statechange_time, state])
-                                    last_state_for_pump = state
-                            load_day = (load_day + timedelta(days = 1))
+                        try:
+                            with open(os.path.join(data_path,"raw/", load_day.strftime("%Y-%m-%d"),'pump_states.csv'), 'r') as file:
+                                for line in file.readlines():
+                                    pump_statechange_time = datetime.strptime(f'{load_day.strftime("%Y-%m-%d ") }{line.strip().split(",")[0]}',"%Y-%m-%d %H:%M:%S")
+                                    pump = int(line.strip().split(",")[1])
+                                    state = int(line.strip().split(",")[2])
+                                    if cycle == pump and pump_statechange_time < inference_time and last_state_for_pump != state:
+                                        pump_state_changes.append([pump_statechange_time, state])
+                                        last_state_for_pump = state
+                        except:
+                            pass
+                        load_day = (load_day + timedelta(days = 1))
 
                     for n in range(len(pump_state_changes)):
                         if pump_state_changes[n][1] == 1:
