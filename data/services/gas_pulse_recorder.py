@@ -24,7 +24,7 @@ def signal_detected(arg):
         os.makedirs(save_path)
     with open(f"{save_path}gas_pulse_times.txt", "a") as file:
         # Write the current time to the file
-        file.write(f"{datetime.now().strftime('%H:%M:%S')}\n")
+        file.write(f"{datetime.now().strftime('%H:%M:%S.%f')}\n")
         print(f"Pulse detected at {datetime.now()}") 
 
 # Add a falling edge detection on the pulse_pin, with a debounce time

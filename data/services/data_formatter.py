@@ -235,11 +235,11 @@ def process_and_save_gas_pulse_data(daystamp = datetime.now().strftime("%Y-%m-%d
     prev_daystamp = (datetime.strptime(daystamp,"%Y-%m-%d") + timedelta(days = -1)).strftime("%Y-%m-%d")
     with open(data_raw_path + "/" + prev_daystamp + "/gas_pulse_times.txt", 'r') as file:
         for line in file:
-            seconds_since_midnight = 60*60*int(line.split(":")[0]) + 60*int(line.split(":")[1]) + int(line.strip().split(":")[2]) - 60*60*24
+            seconds_since_midnight = 60*60*int(line.split(":")[0]) + 60*int(line.split(":")[1]) + round(float(line.strip().split(":")[2])) - 60*60*24
             gas_impulse_times_raw.append(seconds_since_midnight)
     with open(data_raw_path + "/" + daystamp + "/gas_pulse_times.txt", 'r') as file:
         for line in file:
-            seconds_since_midnight = 60*60*int(line.split(":")[0]) + 60*int(line.split(":")[1]) + int(line.strip().split(":")[2])
+            seconds_since_midnight = 60*60*int(line.split(":")[0]) + 60*int(line.split(":")[1]) + round(float(line.strip().split(":")[2]))
             gas_impulse_times_raw.append(seconds_since_midnight)
     
     gas_impulse_double_readings_filtered = []
