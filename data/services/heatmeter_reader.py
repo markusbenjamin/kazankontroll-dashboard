@@ -430,7 +430,7 @@ def do_bayesian_inference_reading(inference_time):
                                 datetime.strptime(cycle_parts[cycle - 1].split(',', maxsplit=1)[0],"%Y%m%d%H%M"),
                                 ast.literal_eval(cycle_parts[cycle - 1].split(',', maxsplit=1)[1])
                             ]
-                        if timed_priors[cycle - 1][0] < timed_ground_truth[0] < inference_time:
+                        if  timed_ground_truth[1] != {} and timed_priors[cycle - 1][0] < timed_ground_truth[0] < inference_time:
                             timed_priors[cycle - 1] = timed_ground_truth
                             print(f"Relevant ground truth found for cycle {cycle}: {timed_ground_truth}.")
 
