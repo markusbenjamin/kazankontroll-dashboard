@@ -28,7 +28,7 @@ def signal_detected(arg):
         print(f"Pulse detected at {datetime.now()}") 
 
 # Add a falling edge detection on the pulse_pin, with a debounce time
-GPIO.add_event_detect(pulse_pin, GPIO.FALLING, callback=signal_detected, bouncetime=60000)
+GPIO.add_event_detect(pulse_pin, GPIO.FALLING, callback=signal_detected, bouncetime=10000)
 
 try:
     # Main program loop
