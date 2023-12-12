@@ -16,7 +16,7 @@ function preload() {
 
 function setup() {
   let canvas = createCanvas(windowWidth, windowHeight)
-  sketchAspectRatio = 2.125
+  sketchAspectRatio = 1.9
   enforceAspectRatio(sketchAspectRatio)
   canvas.parent('canvas-container')
   noFill()
