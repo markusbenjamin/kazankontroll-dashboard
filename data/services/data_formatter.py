@@ -492,9 +492,9 @@ if __name__ == "__main__":
     #    data_to_plot.append(transpose([transpose(heat_stock_interpolated)[0],transpose(heat_stock_interpolated)[cycle]]))
     #    plot(data_to_plot, scatter = False, join = True)
 
-    if False:
-        start_day = datetime(2023, 11, 29)
-        end_day = datetime(2023, 11, 29)
+    if True:
+        start_day = datetime(2023, 12, 11)
+        end_day = datetime(2023, 12, 11)
         day = start_day
         while day <= end_day:
             print(day.strftime("%m-%d"))
