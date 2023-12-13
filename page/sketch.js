@@ -796,8 +796,8 @@ function drawRasPiWiring() {
 
   stroke(0.5)
   strokeWeight(1)
-  fill(0.95)
-  rect(width * 0.5, 1.21 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.025, height * 0.026)
+  fill(0.95,1,1)
+  rect(width * 0.5, 1.195 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.025, height * 0.026)
 }
 
 var raspiX, raspiY
