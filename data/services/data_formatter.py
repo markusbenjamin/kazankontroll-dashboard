@@ -244,7 +244,7 @@ def process_and_save_gas_pulse_data(daystamp = datetime.now().strftime("%Y-%m-%d
     
     gas_impulse_double_readings_filtered = []
     for n in range(1,len(gas_impulse_times_raw)):
-        if 60 < gas_impulse_times_raw[n] - gas_impulse_times_raw[n-1]:
+        if 5 <= gas_impulse_times_raw[n] - gas_impulse_times_raw[n-1]:
             gas_impulse_double_readings_filtered.append(gas_impulse_times_raw[n]/60)
 
     gas_pulse_count = []

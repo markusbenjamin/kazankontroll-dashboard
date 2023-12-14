@@ -1,3 +1,5 @@
+# Simple Python script to detect the state of a relay connected to a Raspberry Pi GPIO pin
+
 import RPi.GPIO as GPIO
 import time
 from datetime import datetime
@@ -9,15 +11,46 @@ script_dir = os.path.dirname(script_path)
 project_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
 data_path = os.path.join(project_root, 'data')
 
-# Define the GPIO pin number
-pulse_pin = 17
+# Set up GPIO using BCM numbering
+GPIO.setmode(GPIO.BCM)
 
-# Setup the GPIO pin
-GPIO.setmode(GPIO.BCM)  # Use the Broadcom pin numbering
-GPIO.setup(pulse_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)  # Pull-up resistor enabled
+# Define the GPIO pin number connected to the relay circuit
+relay_pin = 17  # Replace with your actual GPIO pin number
 
-# Define the callback function to run when a signal is detected
-def signal_detected(arg):
+# Set up the GPIO pin as an input with a pull-down resistor
+GPIO.setup(relay_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+prev_state = -1
+
+def record_relay_state():
+    try:
+        while True:
+            # Read the state of the relay
+            state = GPIO.input(relay_pin)
+            write_relay_state(state)
+            # Print "CLOSED" if the circuit is closed, "OPEN" otherwise
+            print("CLOSED" if state else "OPEN")
+
+            if state == True and prev_state == False:
+                write_pulse_time()
+
+            # Wait for a short period before reading the state again
+            time.sleep(5)
+
+    except KeyboardInterrupt:
+        # Clean up GPIO on CTRL+C exit
+        GPIO.cleanup()
+
+def write_relay_state(state):
+    daystamp = datetime.now().strftime('%Y-%m-%d')
+    save_path = f'{data_path}/raw/{daystamp}/'
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    with open(f"{save_path}gas_relay_state.txt", "a") as file:
+        # Write the current time to the file
+        file.write(f"{datetime.now().strftime('%H:%M:%S.%f')},{0 if state else 1}\n")
+
+def write_pulse_time():
     daystamp = datetime.now().strftime('%Y-%m-%d')
     save_path = f'{data_path}/raw/{daystamp}/'
     if not os.path.exists(save_path):
@@ -25,19 +58,7 @@ def signal_detected(arg):
     with open(f"{save_path}gas_pulse_times.txt", "a") as file:
         # Write the current time to the file
         file.write(f"{datetime.now().strftime('%H:%M:%S.%f')}\n")
-        print(f"Pulse detected at {datetime.now()}") 
 
-# Add a falling edge detection on the pulse_pin, with a debounce time
-GPIO.add_event_detect(pulse_pin, GPIO.FALLING, callback=signal_detected, bouncetime=10000)
 
-try:
-    # Main program loop
-    while True:
-        time.sleep(2.5)  # Sleep for 1 second to reduce CPU usage
-
-except KeyboardInterrupt:
-    # Clean up GPIO on CTRL+C exit
-    GPIO.cleanup()
-
-# Clean up GPIO on normal exit
-GPIO.cleanup()
+if __name__ == "__main__":
+    record_relay_state()
