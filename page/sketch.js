@@ -6,9 +6,12 @@ var sketchAspectRatio
 var toolTip
 var noOfControlledRooms
 var masterOverrides
-var dataSetLoaded
 var raspiConsole, raspiImage
 var radioCommList = []
+let activeDataFiles = []
+var formattedDataDir
+var baseDataFileList
+let loadedData = {}
 
 function preload() {
   raspiImage = loadImage('raspi_logo.png');
@@ -50,7 +53,30 @@ function setup() {
     storeRasPiConsole(data)
   })
 
-  dataSetLoaded = false
+  baseDataFileList = [
+    "external_temp",
+    "gas_flow",
+    "gas_stock",
+    "heat_flow",
+    "heat_stock",
+    "room_1_temps",
+    "room_2_temps",
+    "room_3_temps",
+    "room_4_temps",
+    "room_5_temps",
+    "room_6_temps",
+    "room_7_temps",
+    "room_8_temps",
+    "room_9_temps"
+  ]
+
+  for (const fileName of baseDataFileList) {
+    for (const date of getDatesList(20, 0)) {
+      addActiveDataFile(date, fileName)
+    }
+  }
+
+  loadActiveDataFiles()
 }
 
 var roomTempMax
@@ -133,6 +159,7 @@ var roomToDraw = 0 //DEV
 function draw() {
   try {
     background(229 / 255, 222 / 255, 202 / 255)
+    //drawData()
     drawStateVisualization()
     drawInfoBox()
 
@@ -151,115 +178,214 @@ function drawRadioWaves() {
   }
 }
 
-var tempData //DEV
-function drawTempData(room, fromDate, toDate) {
-  // var tempData //DEV
-  if (dataSetLoaded == false) {
-    loadTempDataForDays(room, fromDate, toDate).then(result => { tempData = result })
-    dataSetLoaded = true
+//#region Data
+function getFormattedDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-indexed
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function getDatesList(startDaysAgo, endDaysAgo) {
+  const datesList = [];
+  const today = new Date();
+
+  for (let day = startDaysAgo; day >= endDaysAgo; day--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - day);
+    datesList.push(getFormattedDate(date));
   }
 
-  var startDate = tempData[0][0]
-  var endDate = tempData[tempData.length - 2][0]
-  var totalMinutes = calculateTimeDifferenceInMinutes(startDate, endDate)
-  var minMaxTemp = minMax((transposeArray(tempData))[1].map(parseFloat).filter(value => !Number.isNaN(value)))
+  return datesList;
+}
 
-  noFill()
-  stroke(0)
-  strokeWeight(5)
-  beginShape()
-  for (let i = 0; i < tempData.length; i++) {
-    point(
-      map(calculateTimeDifferenceInMinutes(startDate, tempData[i][0]), 0, totalMinutes, width * 0.25, width * 0.75),
-      height - map(tempData[i][1], minMaxTemp[0], minMaxTemp[1], height * 0.1, height * 0.9)
-    )
+function generateFormattedDataFileURL(date, dataFileName) {
+  formattedDataDir = "https://raw.githubusercontent.com/markusbenjamin/kazankontroll-dashboard/main/data/formatted/"
+  return formattedDataDir + "/" + date + "/" + dataFileName + ".csv"
+}
+
+function loadActiveDataFiles() {
+  for (file of activeDataFiles) {
+    checkForNewData(file)
   }
-  endShape()
+}
 
-  var timeWindow = round(map(mouseY, 0, height, 2, 24)) * 5
-  timeWindow = 60
-  textSize(30) //DEV
-  noStroke() //DEV
-  fill(0) //DEV
-  text(frameRate(), width * 0.5, height * 0.05) //DEV
+setInterval(checkFiles, 5 * 60 * 1000);
 
-  noFill()
-  stroke(1, 0, 0)
-  strokeWeight(3)
-  beginShape()
+function checkFiles() {
+  activeDataFiles.forEach(file => {
+    checkForNewData(file);
+  });
+}
 
-  for (let i = 0; i < tempData.length; i++) {
-    // Define symmetric time window around current data point
-    let windowData = tempData.filter((_, j) =>
-      Math.abs(calculateTimeDifferenceInMinutes(tempData[i][0], tempData[j][0])) <= timeWindow / 2
-    );
+function checkForNewData(file) {
+  fetch(file.url)
+    .then(response => response.text())
+    .then(data => {
+      parseData(data, file.date, file.name)
+      file.lastChecked = new Date().getTime();
+    })
+    .catch(error => console.error('Error fetching data for file:', file.url, error));
+}
 
-    let weightedSum = 0;
-    let totalWeight = 0;
-    let currentTimestamp = tempData[i][0];
+// Function to dynamically add a new file to the list
+function addActiveDataFile(dataDate, fileName) {
+  activeDataFiles.push({ url: generateFormattedDataFileURL(dataDate, fileName), lastChecked: null, date: dataDate, name: fileName });
+}
 
-    // Apply weights and calculate weighted sum and total weight
-    for (let [timestamp, value] of windowData) {
-      const weight = timeWindow / 2 - Math.abs(calculateTimeDifferenceInMinutes(currentTimestamp, timestamp));
-      weightedSum += parseFloat(value) * weight;
-      totalWeight += weight;
+// Function to remove a file from the list
+function removeActiveDataFile(dataDate = null, fileName = null) {
+  activeDataFiles.forEach(file => {
+    let shouldDelete = false;
+
+    // Check conditions and mark for deletion
+    if (dataDate && fileName) {
+      shouldDelete = file.date === dataDate && file.name === fileName;
+    } else if (dataDate) {
+      shouldDelete = file.date === dataDate;
+    } else if (fileName) {
+      shouldDelete = file.name === fileName;
     }
 
-    // Calculate average and ensure at least some data was in the window
-    const average = (totalWeight > 0) ? (weightedSum / totalWeight) : parseFloat(tempData[i][1]);
-    vertex(
-      map(calculateTimeDifferenceInMinutes(startDate, tempData[i][0]), 0, totalMinutes, width * 0.25, width * 0.75),
-      height - map(average, minMaxTemp[0], minMaxTemp[1], height * 0.1, height * 0.9)
+    // Delete data if marked
+    if (shouldDelete) {
+      deleteData(file.date, file.name);
+    }
+  });
+
+  // Now filter the activeDataFiles
+  activeDataFiles = activeDataFiles.filter(file => {
+    if (dataDate && fileName) {
+      return !(file.date === dataDate && file.name === fileName);
+    } else if (dataDate) {
+      return file.date !== dataDate;
+    } else if (fileName) {
+      return file.name !== fileName;
+    }
+    return true;
+  });
+}
+
+function deleteData(date, filename) {
+  if (loadedData[date] && loadedData[date][filename]) {
+    delete loadedData[date][filename];
+
+    // Optional: Clean up the date key if it's empty
+    if (Object.keys(loadedData[date]).length === 0) {
+      delete loadedData[date];
+    }
+  }
+}
+
+function parseCSVToTable(csvData) {
+  let table = new p5.Table();
+
+  // Split the CSV data into rows
+  let rows = csvData.split('\n');
+
+  // Determine the number of columns from the first row
+  let numberOfColumns = rows[0].split(',').length;
+
+  // Add columns to the table
+  for (let i = 0; i < numberOfColumns; i++) {
+    table.addColumn('column' + i);
+  }
+
+  // Add the data to the table
+  rows.forEach(row => {
+    let cells = row.split(',');
+    let tableRow = table.addRow();
+    cells.forEach((cell, index) => {
+      let cleanedCell = cell.trim();
+
+      // Replace 'n' with null, convert other values to float, and check for NaN
+      let value;
+      if (cleanedCell === 'n') {
+        value = null;
+      } else {
+        let parsedValue = parseFloat(cleanedCell);
+        value = isNaN(parsedValue) ? null : parsedValue;
+      }
+
+      tableRow.set('column' + index, value); // Use 'set' to accommodate null values
+    });
+  });
+
+  return table;
+}
+
+function parseData(data, date, filename) {
+  let parsedData = parseCSVToTable(data);
+
+  // Create the date key if it doesn't exist
+  if (!loadedData[date]) {
+    loadedData[date] = {};
+  }
+
+  // Add the parsed data under the specific date and filename
+  loadedData[date][filename] = parsedData;
+}
+
+
+function drawData() {
+  var count = 0
+  for (const date of getDatesList(14, 0)) {
+    drawPlot(
+      loadedData[date]['external_temp'].getArray(), 0, 1, width * 0.5, height * 0.5, width * 0.5, height * 0.5,
+      {
+        background: false,
+        strokeCol: color(0, 0, 0, count / 10),
+        yRange: [0, 10]
+      }
     )
+    count++
   }
-
-  endShape()
 }
 
-async function loadTempDataForDays(room, startDate, endDate) {
-  var daysInRange = getDaysInRange(parseTimestampWithYearToDict(startDate), parseTimestampWithYearToDict(endDate))
 
-  var paths = []
-  for (const dataDay of daysInRange) {
-    paths.push("measured_temps/" + [dataDay['year'], dataDay['month'], dataDay['day']].map(zeroPaddedString).join('_') + "/room_" + room + ".csv")
+function drawPlot(data, xCol, yCol, x, y, w, h, userOptions) {
+  var options = {
+    background: true,
+    strokeCol: color(0),
+    strokeWeight: 2,
+    joined: true,
+    points: false,
+    paddingX: 0.1,
+    paddingY: 0.1,
+    xRange: [minNum(transposeArray(data)[xCol]), maxNum(transposeArray(data)[xCol])],
+    yRange: [minNum(transposeArray(data)[yCol]), maxNum(transposeArray(data)[yCol])]
   }
 
-  for (const path of paths) {
-    console.log(paths.length)
+  options = { ...options, ...userOptions };
+
+  stroke(options['strokeCol'])
+  strokeWeight(options['strokeWeight'])
+
+  if (options['background']) {
+    fill(1)
+    rect(x, y, w, h)
+    noFill()
   }
 
-  var tempData = await loadAndConcatenateCSVs(paths)
-  tempData.filter(element => element.length == 2)
-  return tempData
-}
-
-const loadCSV = async (path) => {
-  const response = await fetch(path);
-  const text = await response.text();
-  // Assuming CSV content is separated by newlines and commas
-  return text.split('\r\n').map(line => line.split(','));
-};
-
-// Function to load all CSV files and concatenate their lines
-const loadAndConcatenateCSVs = async (filePaths) => {
-  const allLines = [];
-
-  for (const path of filePaths) {
-    const lines = await loadCSV(path);
-    allLines.push(...lines);
+  if (options['joined']) {
+    beginShape()
   }
-
-  return allLines
+  for (const point of data) {
+    var pointX = map(point[xCol], options['xRange'][0], options['xRange'][1], x - w / 2 + w * options['paddingX'] / 2, x + w / 2 - w * options['paddingX'] / 2)
+    var pointY = map(point[yCol], options['yRange'][0], options['yRange'][1], y + h / 2 - h * options['paddingY'] / 2, y - h / 2 + h * options['paddingY'] / 2)
+    if (options['joined']) {
+      vertex(pointX, pointY)
+    }
+    if (options['points']) {
+      ellipse(pointX, pointY, 10, 10)
+    }
+  }
+  if (options['joined']) {
+    endShape()
+  }
 }
-
-function parseTimestampWithYearToDict(timestamp) {
-  let year = parseInt(timestamp.substring(0, 4), 10);
-  let month = parseInt(timestamp.substring(5, 7), 10);
-  let day = parseInt(timestamp.substring(8, 10), 10);
-  let hour = parseInt(timestamp.substring(11, 13), 10);
-  let minute = parseInt(timestamp.substring(14, 16), 10);
-  return { 'year': year, 'month': month, 'day': day, 'hour': hour, 'minute': minute };
-}
+//#endregion
 
 function zeroPaddedString(timeValue) {
   return timeValue < 10 ? '0' + timeValue : timeValue
@@ -441,19 +567,21 @@ function setDrawingParameters() {
 
 function drawCycles() {
   for (const cycle of [1, 2, 3, 4]) {
+    roomNumAddition = cycle == 3 ? 1.25 : 0
+
     var cycleState = pumpStatuses[cycle] * albatrosStatus * externalTempAllow
     var cycleColor = color(cycleState, 0, 1 - cycleState)
 
     stroke(cycleColor)
     strokeWeight(pipeThickness)
-    line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * map(cycleToRoom[cycle].length - 1 + roomXPositionOffset, 0, cycleToRoom[cycle].length, 0.1, cyclePipeLength)), height * cycleYPos[cycle])
+    line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * map(cycleToRoom[cycle].length - 1 + roomXPositionOffset, 0, cycleToRoom[cycle].length + roomNumAddition, 0.1, cyclePipeLength)), height * cycleYPos[cycle])
     stroke(albatrosStatus, 0, 1 - albatrosStatus)
     line(width * 0.5, height * cycleYPos[cycle], width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle])
     drawPump(width * (0.5 + cycleXDir[cycle] * pumpXPositionOffset), height * cycleYPos[cycle], pumpStatuses[cycle], cycle)
 
     for (var roomOnCycle = 0; roomOnCycle < cycleToRoom[cycle].length; roomOnCycle++) {
       var roomNumber = cycleToRoom[cycle][roomOnCycle]
-      var roomX = width * (0.5 + cycleXDir[cycle] * map(roomOnCycle + roomXPositionOffset, 0, cycleToRoom[cycle].length, 0.1, cyclePipeLength))
+      var roomX = width * (0.5 + cycleXDir[cycle] * map(roomOnCycle + roomXPositionOffset, 0, cycleToRoom[cycle].length + roomNumAddition, 0.1, cyclePipeLength))
       var roomSetting = roomSettings[roomNumber]
       var roomStatus = roomStatuses[roomNumber]
       var roomSettingNormalized = map(roomSetting, roomTempMin, roomTempMax, 0, 1)
@@ -549,16 +677,16 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
       if (temp % 1 == 0) {
         strokeWeight(2)
         stroke(0, 0.45)
-        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x - w*0.1, y + map(temp, roomTempMin, roomTempMax, 0, h))
+        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x - w * 0.1, y + map(temp, roomTempMin, roomTempMax, 0, h))
         noStroke()
-        fill(0,0.65)
+        fill(0, 0.65)
         textSize(width * 0.008)
         text(roomTempMax - temp + roomTempMin, x + w / 4, y + map(temp, roomTempMin, roomTempMax, 0, h))
       }
       else {
         strokeWeight(1)
         stroke(0, 0.5)
-        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x - w*0.2, y + map(temp, roomTempMin, roomTempMax, 0, h))
+        line(x - w / 2, y + map(temp, roomTempMin, roomTempMax, 0, h), x - w * 0.2, y + map(temp, roomTempMin, roomTempMax, 0, h))
         noStroke()
         fill(0, 0.5)
         textSize(width * 0.0075)
@@ -768,18 +896,18 @@ function drawRasPiWiring() {
   noFill();
 
   stroke(0.9);
-  strokeWeight(width*0.0035)
+  strokeWeight(width * 0.0035)
   bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
   stroke(252 / 255, 178 / 255, 40 / 255);
-  strokeWeight(width*0.003)
+  strokeWeight(width * 0.003)
   bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
   if (albatrosStatus == 0) {
     noStroke()
     fill(0.5)
-    tiltedRect(x1*0.98, y1*1.02, width*0.005, width*0.001,TWO_PI*(-0.058))
+    tiltedRect(x1 * 0.98, y1 * 1.02, width * 0.005, width * 0.001, TWO_PI * (-0.058))
     fill(0)
-    tiltedRect(x1*0.99, y1*1.01, width*0.0065, width*0.0025,TWO_PI*(-0.058))
-  } 
+    tiltedRect(x1 * 0.99, y1 * 1.01, width * 0.0065, width * 0.0025, TWO_PI * (-0.058))
+  }
 
   x1 = width * 0.5, y1 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.22
   x2 = width * 0.5, y2 = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.54
@@ -788,15 +916,15 @@ function drawRasPiWiring() {
 
   noFill()
   stroke(0.9);
-  strokeWeight(width*0.0035)
+  strokeWeight(width * 0.0035)
   bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2);
   stroke(23 / 255, 255 / 255, 236 / 255)
-  strokeWeight(width*0.003)
+  strokeWeight(width * 0.003)
   bezier(x1, y1, cx1, cy1, cx2, cy2, x2, y2)
 
   stroke(0.5)
   strokeWeight(1)
-  fill(0.95,1,1)
+  fill(0.95, 1, 1)
   rect(width * 0.5, 1.195 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.025, height * 0.026)
 }
 
@@ -878,6 +1006,11 @@ function drawPipingAndBoiler() {
 function drawPump(x, y, state, cycle) {
   var w = width * 0.0045;
   var l = width * 0.035;
+  var heatmeterX = width * 0.5 - Math.sign(width * 0.5 - x) * width * 0.032
+  var heatmeterY = y + height * 0.1125
+  var heatmeterW = l * 0.85
+  var heatmeterH = w * 2.75
+  var drawHeatmeter = transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[1] != undefined
 
   var discrepancy = false
   var coolOff = false
@@ -916,6 +1049,17 @@ function drawPump(x, y, state, cycle) {
     noStroke()
     fill(1, 0, 0, 0.25)
     ellipse(x, y, l * 0.75, l * 0.75)
+  }
+
+  //Draw heatmeter wires
+  if (drawHeatmeter) {
+    var heatmeterProbeX = heatmeterX + (Math.sign(width * 0.5 - x) == 1 ? width * 0.01 : -width * 0.01)
+    stroke(0)
+    strokeWeight(2.5)
+    noFill()
+    drawCord(heatmeterX, heatmeterY, heatmeterProbeX, y, -Math.sign(width * 0.5 - x))
+    fill(0)
+    rect(heatmeterProbeX, y, pipeThickness * 0.5, pipeThickness * 1.75, 2)
   }
 
   var innerShade = 0
@@ -958,6 +1102,38 @@ function drawPump(x, y, state, cycle) {
   stroke(1)
   fill(1)
   ellipse(x, y, width * 0.01 * 0.25, width * 0.01 * 0.25)
+
+  //Draw heatmeters
+  if (drawHeatmeter) {
+    stroke(1)
+    strokeWeight(2)
+    fill(1)
+    rect(heatmeterX, heatmeterY, heatmeterW * 1.28, heatmeterH * 1.6, 3)
+    stroke(0)
+    strokeWeight(1)
+    fill(0.9)
+    rect(heatmeterX, heatmeterY, heatmeterW, heatmeterH)
+    noFill()
+    noStroke()
+    fill(0)
+    textSize(width * 0.012)
+    textAlign(RIGHT, CENTER)
+    var currentReadout = maxNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[cycle])
+    var dailyStart = minNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[cycle])
+    var seasonStarts = [2420, 133, 12, 2]
+    var dailyHeat = round(currentReadout - dailyStart)
+    text(str(dailyHeat), heatmeterX + heatmeterW / 2 * 0.925, heatmeterY + heatmeterH * 0.05)
+    textAlign(CENTER, CENTER)
+
+    if (mouseOver(heatmeterX, heatmeterY, heatmeterW * 1.2, heatmeterH * 1.2)) {
+      var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
+      toolTip.show(
+        who + ' körön leadott hő:\nSzezonban: ' + str(currentReadout - seasonStarts[cycle - 1]) + ' kWh\nMa: ' + str(dailyHeat) + ' kWh',
+        color(1), color(0), color(0), 4,
+        width * 0.012, LEFT
+      )
+    }
+  }
 
   if (prevPumpStatuses[cycle] != pumpStatuses[cycle]) {
     var label = 'pump' + cycle
@@ -1243,6 +1419,30 @@ function wrapLine(line, w) {
   }
 }
 
+function drawCord(x1, y1, x2, y2, swap) {
+  let steps = 100;
+  let amplitude = 10;
+  let frequency = TWO_PI / steps; // Complete one cycle over the path
+
+  beginShape();
+  curveVertex(x1, y1); // Start point
+
+  for (let i = 1; i < steps; i++) {
+    let x = lerp(x1, x2, i / steps);
+    let y = lerp(y1, y2, i / steps);
+    let twist = amplitude * sin(i * frequency);
+
+    if (i === 1 || i === steps - 1) {
+      twist = 0; // Ensures the twist is zero at the start and end
+    }
+
+    curveVertex(x + twist * swap, y + twist);
+  }
+
+  curveVertex(x2, y2); // End point
+  endShape();
+}
+
 class RadioCommunication {
   constructor(x1, y1, x2, y2, maxEmit, label) {
     this.x1 = x1 // Starting point x-coordinate
@@ -1304,4 +1504,21 @@ class RadioCommunication {
       }
     }
   }
+}
+
+function minNum(array) {
+  // Filter out non-numeric values
+  let numericValues = array.filter(value => typeof value === 'number' && !isNaN(value));
+
+  // Return the minimum value, or some default (like null) if the array is empty
+  return numericValues.length > 0 ? Math.min(...numericValues) : null;
+}
+
+
+function maxNum(array) {
+  // Filter out non-numeric values
+  let numericValues = array.filter(value => typeof value === 'number' && !isNaN(value));
+
+  // Return the maximum value, or some default (like null) if the array is empty
+  return numericValues.length > 0 ? Math.max(...numericValues) : null;
 }
