@@ -20,8 +20,6 @@ relay_pin = 17  # Replace with your actual GPIO pin number
 # Set up the GPIO pin as an input with a pull-down resistor
 GPIO.setup(relay_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-prev_state = -1
-
 def record_relay_state():
     try:
         while True:
@@ -35,6 +33,7 @@ def record_relay_state():
                 write_pulse_time()
 
             # Wait for a short period before reading the state again
+            prev_state = state
             time.sleep(5)
 
     except KeyboardInterrupt:
@@ -48,7 +47,7 @@ def write_relay_state(state):
         os.makedirs(save_path)
     with open(f"{save_path}gas_relay_state.txt", "a") as file:
         # Write the current time to the file
-        file.write(f"{datetime.now().strftime('%H:%M:%S.%f')},{0 if state else 1}\n")
+        file.write(f"{datetime.now().strftime('%H:%M:%S.%f')},{1 if state else 0}\n")
 
 def write_pulse_time():
     daystamp = datetime.now().strftime('%Y-%m-%d')
