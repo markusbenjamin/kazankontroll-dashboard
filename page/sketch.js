@@ -554,7 +554,7 @@ function drawStateVisualization() {
 
 function setDrawingParameters() {
   roomTempMax = 25
-  roomTempMin = 12
+  roomTempMin = 10
   pipeThickness = sqrt(width * height) * 0.0075
   cyclePipeLength = 0.55
   pumpXPositionOffset = 0.04
