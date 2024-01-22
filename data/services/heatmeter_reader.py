@@ -41,9 +41,9 @@ def capture_image():
 def crop_cycles_and_save(img_path):
     crop_rectangles = [
         (185,384,221,404),
-        (190,535,224,554),
+        (190,535,226,554),
         (191,684,226,703),
-        (179,233,215,252)
+        (180,233,216,252)
     ]
 
     cycle_crops = []
