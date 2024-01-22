@@ -1127,8 +1127,9 @@ function drawPump(x, y, state, cycle) {
 
     if (mouseOver(heatmeterX, heatmeterY, heatmeterW * 1.2, heatmeterH * 1.2)) {
       var who = ['1-es', '2-es', '3-mas', '4-es'][cycle - 1]
+      var offset = [10000, 0, 0, 0][cycle - 1]
       toolTip.show(
-        who + ' körön leadott hő:\nSzezonban: ' + str(currentReadout - seasonStarts[cycle - 1]) + ' kWh\nMa: ' + str(dailyHeat) + ' kWh',
+        who + ' körön leadott hő:\nSzezonban: ' + str(offset + currentReadout - seasonStarts[cycle - 1]) + ' kWh\nMa: ' + str(dailyHeat) + ' kWh',
         color(1), color(0), color(0), 4,
         width * 0.012, LEFT
       )
