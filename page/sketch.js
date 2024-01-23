@@ -328,7 +328,7 @@ function parseData(data, date, filename) {
 }
 
 
-function drawData() {
+function drawDataBox() {
   var count = 0
   for (const date of getDatesList(14, 0)) {
     drawPlot(
@@ -551,6 +551,7 @@ function drawStateVisualization() {
   drawRasPiWiring()
   drawRasPi()
   drawRadioWaves()
+  //drawDataBox()
 }
 
 function setDrawingParameters() {
@@ -957,57 +958,57 @@ function drawRasPi() {
 }
 
 function drawGasMeterAndPiping() {
-  var x = width * 0.0975
-  var y = height * 0.1
-  var w = width * 0.07
-  var h = w * 2 / 3
+  if (loadedData[getDatesList(0, 0)[0]]['gas_stock'] != undefined && 1 < loadedData[getDatesList(0, 0)[0]]['gas_stock'].getArray().length) {
+    var x = width * 0.0975
+    var y = height * 0.1
+    var w = width * 0.07
+    var h = w * 2 / 3
 
-  stroke(0.4)
-  strokeWeight(pipeThickness * 0.65)
-  var pipeDown = width * 0.4925
-  var pipeRight = height * 0.035
-  line(0, pipeRight, x - w * 0.25, pipeRight)
-  line(x - w * 0.25, pipeRight, x - w * 0.25, y)
-  line(x + w * 0.25, pipeRight, x + w * 0.25, y)
-  line(x + w * 0.25, pipeRight, pipeDown, pipeRight)
-  line(pipeDown, pipeRight, pipeDown, height * 0.35)
-  strokeWeight(pipeThickness * 1.25)
-  stroke(0.65)
-  line(x - w * 0.25, pipeRight * 1.55, x - w * 0.25, y)
-  line(x + w * 0.25, pipeRight * 1.55, x + w * 0.25, y)
+    stroke(0.4)
+    strokeWeight(pipeThickness * 0.65)
+    var pipeDown = width * 0.4925
+    var pipeRight = height * 0.035
+    line(0, pipeRight, x - w * 0.25, pipeRight)
+    line(x - w * 0.25, pipeRight, x - w * 0.25, y)
+    line(x + w * 0.25, pipeRight, x + w * 0.25, y)
+    line(x + w * 0.25, pipeRight, pipeDown, pipeRight)
+    line(pipeDown, pipeRight, pipeDown, height * 0.35)
+    strokeWeight(pipeThickness * 1.25)
+    stroke(0.65)
+    line(x - w * 0.25, pipeRight * 1.55, x - w * 0.25, y)
+    line(x + w * 0.25, pipeRight * 1.55, x + w * 0.25, y)
 
-  noStroke()
-  fill(0.65)
-  rect(x, y, w, h, 10)
-  fill(0.9)
-  stroke(0)
-  strokeWeight(1)
-  rect(x, y, w * 0.5, h * 0.45, 5)
-  fill(0)
-  noStroke()
-  textSize(width * 0.015)
-  textAlign(CENTER, CENTER)
-  var burntVolume = round(maxNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['gas_stock'].getArray())[1]))
-  text(str(burntVolume), x, y)
-  textAlign(CENTER, CENTER)
-  var energyContent = round(burntVolume*1000*34/3600)
-  var price = burntVolume*11*35 + burntVolume*30
+    noStroke()
+    fill(0.65)
+    rect(x, y, w, h, 10)
+    fill(0.9)
+    stroke(0)
+    strokeWeight(1)
+    rect(x, y, w * 0.5, h * 0.45, 5)
+    fill(0)
+    noStroke()
+    textSize(width * 0.015)
+    textAlign(CENTER, CENTER)
+    var burntVolume = round(maxNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['gas_stock'].getArray())[1]))
+    text(str(burntVolume), x, y)
+    textAlign(CENTER, CENTER)
 
-  var totalDeliveredHeat = 0
-  for(var cycle = 1; cycle<5; cycle++){
-    var currentReadout = maxNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[cycle])
-    var dailyStart = minNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[cycle])
-    totalDeliveredHeat += round(currentReadout - dailyStart)
-  }
+    var energyContent = round(burntVolume * 1000 * 34 / 3600)
+    var price = burntVolume * 11 * 35 + burntVolume * 30
 
-  var efficiency = round(100*totalDeliveredHeat/energyContent)
+    var message = [
+      'Ma elégett gáz: ' + str(burntVolume) + ' m³',
+      'Energiatartalom: ' + str(energyContent) + ' kWh',
+      'Becsült ár: ' + str(price) + ' Ft'
+    ]
 
-  if (mouseOver(x, y, w * 1.2, h * 1.2)) {
-    toolTip.show(
-      'Ma elégett gáz: '+str(burntVolume)+ ' m³\nEnergiatartalom: '+str(energyContent)+' kWh\nBecsült ár: '+str(price) + ' Ft\nHatékonyság: '+str(efficiency)+'%',
-      color(1), color(0), color(0), 4,
-      width * 0.013, LEFT
-    )
+    if (mouseOver(x, y, w * 1.2, h * 1.2)) {
+      toolTip.show(
+        message.join('\n'),
+        color(1), color(0), color(0), 4,
+        width * 0.013, LEFT
+      )
+    }
   }
 }
 
@@ -1024,10 +1025,28 @@ function drawPipingAndBoiler() {
     }
   }
 
+  var gasDataAvailable = loadedData[getDatesList(0, 0)[0]]['gas_stock'] != undefined && 1 < loadedData[getDatesList(0, 0)[0]]['gas_stock'].getArray().length
+  var heatDataAvailable = transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[1] != undefined
+  var totalDeliveredHeat = 0
+  var efficiency = 0
+  if (gasDataAvailable && heatDataAvailable) {
+    var burntVolume = round(maxNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['gas_stock'].getArray())[1]))
+    var energyContent = round(burntVolume * 1000 * 34 / 3600)
+    totalDeliveredHeat = 0
+    for (var cycle = 1; cycle < 5; cycle++) {
+      var currentReadout = maxNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[cycle])
+      var dailyStart = minNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[cycle])
+      totalDeliveredHeat += round(currentReadout - dailyStart)
+    }
+    efficiency = round(100 * totalDeliveredHeat / energyContent)
+  }
+
+
   if (mouseOver(x, y, w, h)) {
     var how = masterOnDetected ? 'manuálisan' : (decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
     var to = decisions['albatros']['decision'] > 0 ? 'be' : 'ki'
-    toolTip.show('Kazánok ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')', color(1), color(0), color(0), 4, width * 0.0125, CENTER)
+    var performanceInfo = 'Mai hőmennyiség: '+str(totalDeliveredHeat)+' kWh\nHatékonyság: '+str(efficiency)+'%'
+    toolTip.show('Kazánok ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')'+ (gasDataAvailable && heatDataAvailable ? '\n\n'+performanceInfo: ''), color(1), color(0), color(0), 4, width * 0.0125, CENTER)
   }
 
   stroke(albatrosStatus, 0, 1 - albatrosStatus)
