@@ -500,15 +500,15 @@ function drawInfoBox() {
 
   var lastEventTimestamp = (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3]
 
-  var x = width * 0.185
-  var y = height * 0.75
-  var w = width * 0.3
-  var h = height * 0.375
+  var x = width * 0.0975
+  var y = height * 0.3
+  var w = width * 0.18
+  var h = height * 0.25
   var fontSize = width * 0.014
 
   var messagesPre1 = [
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma miatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ') + ".") : "Határérték feletti kinti hőmérséklet miatt nincs fűtés.")//,
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér:\n" + wantHeatingList.join(', ')) : "Határérték feletti kinti hőmérséklet miatt nincs fűtés.")//,
     //externalTempAllow == 1 && wantHeatingCount > 0 ?
     //  (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(', ') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
     //"Utolsó esemény: " + latestMessage['message'].substring(0, latestMessage['message'].length - 1) + " (" + lastEventTimestamp + ")."
@@ -545,6 +545,7 @@ function drawStateVisualization() {
   wantHeatingCount = 0
   wantHeatingList = []
   setDrawingParameters()
+  drawGasMeterAndPiping()
   drawCycles()
   drawPipingAndBoiler()
   drawRasPiWiring()
@@ -952,6 +953,61 @@ function drawRasPi() {
 
   if (mouseOver(x, y, w, h)) {
     toolTip.show(raspiConsole.slice(max(raspiConsole.length - 40, 0), raspiConsole.length).map(element => element.replace(/[\n]/g, '')).map(line => wrapLine(line, width * 0.7)).join("\n"), color(0), color(0), color(1), 1, width * 0.0075, LEFT)
+  }
+}
+
+function drawGasMeterAndPiping() {
+  var x = width * 0.0975
+  var y = height * 0.1
+  var w = width * 0.07
+  var h = w * 2 / 3
+
+  stroke(0.4)
+  strokeWeight(pipeThickness * 0.65)
+  var pipeDown = width * 0.4925
+  var pipeRight = height * 0.035
+  line(0, pipeRight, x - w * 0.25, pipeRight)
+  line(x - w * 0.25, pipeRight, x - w * 0.25, y)
+  line(x + w * 0.25, pipeRight, x + w * 0.25, y)
+  line(x + w * 0.25, pipeRight, pipeDown, pipeRight)
+  line(pipeDown, pipeRight, pipeDown, height * 0.35)
+  strokeWeight(pipeThickness * 1.25)
+  stroke(0.65)
+  line(x - w * 0.25, pipeRight * 1.55, x - w * 0.25, y)
+  line(x + w * 0.25, pipeRight * 1.55, x + w * 0.25, y)
+
+  noStroke()
+  fill(0.65)
+  rect(x, y, w, h, 10)
+  fill(0.9)
+  stroke(0)
+  strokeWeight(1)
+  rect(x, y, w * 0.5, h * 0.45, 5)
+  fill(0)
+  noStroke()
+  textSize(width * 0.015)
+  textAlign(CENTER, CENTER)
+  var burntVolume = round(maxNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['gas_stock'].getArray())[1]))
+  text(str(burntVolume), x, y)
+  textAlign(CENTER, CENTER)
+  var energyContent = round(burntVolume*1000*34/3600)
+  var price = burntVolume*11*35 + burntVolume*30
+
+  var totalDeliveredHeat = 0
+  for(var cycle = 1; cycle<5; cycle++){
+    var currentReadout = maxNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[cycle])
+    var dailyStart = minNum(transposeArray(loadedData[getDatesList(0, 0)[0]]['heat_stock'].getArray())[cycle])
+    totalDeliveredHeat += round(currentReadout - dailyStart)
+  }
+
+  var efficiency = round(100*totalDeliveredHeat/energyContent)
+
+  if (mouseOver(x, y, w * 1.2, h * 1.2)) {
+    toolTip.show(
+      'Ma elégett gáz: '+str(burntVolume)+ ' m³\nEnergiatartalom: '+str(energyContent)+' kWh\nBecsült ár: '+str(price) + ' Ft\nHatékonyság: '+str(efficiency)+'%',
+      color(1), color(0), color(0), 4,
+      width * 0.013, LEFT
+    )
   }
 }
 
