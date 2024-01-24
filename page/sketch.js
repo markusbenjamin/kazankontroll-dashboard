@@ -4,6 +4,9 @@ var configAsTable, configAsDict
 var roomNames, bufferZones
 var sketchAspectRatio
 var toolTip
+var dataToPlot
+var dataToPlotLocked
+var roomToPlotNumber
 var noOfControlledRooms
 var masterOverrides
 var raspiConsole, raspiImage
@@ -31,6 +34,8 @@ function setup() {
   imageMode(CENTER)
   textFont('Consolas')
   toolTip = new ToolTipBox()
+  dataToPlot = 'external_temp'
+  dataToPlotLocked = false
 
   updateConfig()
 
@@ -67,7 +72,8 @@ function setup() {
     "room_6_temps",
     "room_7_temps",
     "room_8_temps",
-    "room_9_temps"
+    "room_9_temps",
+    "room_10_temps"
   ]
 
   for (const fileName of baseDataFileList) {
@@ -159,15 +165,18 @@ var roomToDraw = 0 //DEV
 function draw() {
   try {
     background(229 / 255, 222 / 255, 202 / 255)
-    //drawData()
     drawStateVisualization()
     drawInfoBox()
+    drawDataBox()
 
     manageToolTip()
+    dataToPlot = 'external_temp'
   } catch (error) {
-    console.log(error.message);
+    console.log(error.message)
+    console.log(error.stack)
   }
 }
+
 
 function drawRadioWaves() {
   for (var i = radioCommList.length - 1; i >= 0; i--) {
@@ -329,38 +338,155 @@ function parseData(data, date, filename) {
 
 
 function drawDataBox() {
-  var count = 0
-  for (const date of getDatesList(14, 0)) {
-    drawPlot(
-      loadedData[date]['external_temp'].getArray(), 0, 1, width * 0.5, height * 0.5, width * 0.5, height * 0.5,
-      {
-        background: false,
-        strokeCol: color(0, 0, 0, count / 10),
-        yRange: [0, 10]
-      }
-    )
-    count++
+  var dataBoxX = width * 0.17
+  var dataBoxY = height * 0.725
+  var dataBoxW = width * 0.33
+  var dataBoxH = height * 0.4725
+
+  switch (dataToPlot) {
+    case 'gas_flow':
+      drawPlot(
+        loadedData[getDatesList(0, 0)]['gas_flow'].getArray(), 0, 1,
+        dataBoxX, dataBoxY, dataBoxW, dataBoxH,
+        {
+          background: true,
+          strokeCol: color(0.5, 0, 1),
+          strokeWeight: 3,
+          plotLabel: 'Mai gázfogyasztás (m³)',
+          joined: true,
+          paddingV: 0.25,
+          paddingH: 0.15,
+          vOffset: 0.0125,
+          hOffset: 0.01,
+          xRangeExtend: [0, 0],
+          yRangeExtend: [0, 0.05],
+          ticks: [
+            transposeArray([
+              range(0 * 60, 24 * 60, 120),
+              range(0, 24, 2)
+            ]),
+            transposeArray([
+              range(0, 0.4, 0.2),
+              range(0, 0.4, 0.2)
+            ])
+          ],
+          gridLines: [
+            range(0, 24 * 60, 60),
+            range(0, 0.4, 0.1)
+          ]
+        }
+      )
+      break;
+    case 'room_temp_na':
+      drawPlot(
+        [[0, 0], [1, 1]], 0, 1,
+        dataBoxX, dataBoxY, dataBoxW, dataBoxH,
+        {
+          background: true,
+          strokeCol: color(1, 0),
+          message: 'Nem érhető el hőmérsékleti adat.'
+        }
+      )
+      break;
+    case 'room_temp':
+      drawPlot(
+        loadedData[getDatesList(0, 0)]['room_' + str(roomToPlotNumber) + '_temps'].getArray(), 0, 1,
+        dataBoxX, dataBoxY, dataBoxW, dataBoxH,
+        {
+          background: true,
+          strokeCol: color(0.5, 0, 1),
+          strokeWeight: 3,
+          plotLabel: 'Mai hőmérsékleti görbe: ' + roomToPlotName,
+          joined: false,
+          points: true,
+          paddingV: 0.25,
+          paddingH: 0.13,
+          vOffset: 0.0125,
+          hOffset: 0.01,
+          xRangeExtend: [0, 0],
+          yRangeExtend: [-1, 1],
+          ticks: [
+            transposeArray([
+              range(0 * 60, 24 * 60, 120),
+              range(0, 24, 2)
+            ]),
+            transposeArray([
+              range(10, 30, 1),
+              range(10, 30, 1)
+            ])
+          ],
+          gridLines: [
+            range(0, 24 * 60, 60),
+            range(10, 30, 1)
+          ]
+        }
+      )
+      break;
+    default:
+      drawPlot(
+        loadedData[getDatesList(0, 0)]['external_temp'].getArray(), 0, 1,
+        dataBoxX, dataBoxY, dataBoxW, dataBoxH,
+        {
+          background: true,
+          strokeCol: color(0.5, 0, 1),
+          strokeWeight: 3,
+          plotLabel: 'Mai külső hőmérséklet',
+          paddingV: 0.25,
+          paddingH: 0.13,
+          vOffset: 0.0125,
+          hOffset: 0.01,
+          xRangeExtend: [0, 0],
+          yRangeExtend: [-1, 1],
+          ticks: [
+            transposeArray([
+              range(0 * 60, 24 * 60, 120),
+              range(0, 24, 2)
+            ]),
+            transposeArray([
+              range(-20, 20, 2),
+              range(-20, 20, 2)
+            ])
+          ],
+          gridLines: [
+            range(0, 24 * 60, 60),
+            range(-20, 20, 1)
+          ]
+        }
+      )
   }
+
 }
 
-
 function drawPlot(data, xCol, yCol, x, y, w, h, userOptions) {
-  var options = {
+  var defaultOptions = {
+    boundingCol: color(0.75),
+    boundingWeight: 1,
     background: true,
     strokeCol: color(0),
     strokeWeight: 2,
     joined: true,
     points: false,
-    paddingX: 0.1,
-    paddingY: 0.1,
+    dottedEnd: true,
+    axes: [true, true, false],
+    paddingH: 0.1,
+    paddingV: 0.1,
+    hOffset: 0,
+    vOffset: 0,
+    xRangeExtend: [0, 0],
+    yRangeExtend: [0, 0],
     xRange: [minNum(transposeArray(data)[xCol]), maxNum(transposeArray(data)[xCol])],
-    yRange: [minNum(transposeArray(data)[yCol]), maxNum(transposeArray(data)[yCol])]
+    yRange: [minNum(transposeArray(data)[yCol]), maxNum(transposeArray(data)[yCol])],
+    axesOriginXY: [true, true], //set to true for axis origin at minimum value, pass value as argument for override
+    plotLabel: '',
+    ticks: [false, false],
+    gridLines: [false, false],
+    message: null
   }
 
-  options = { ...options, ...userOptions };
+  options = { ...defaultOptions, ...userOptions };
 
-  stroke(options['strokeCol'])
-  strokeWeight(options['strokeWeight'])
+  stroke(options['boundingCol'])
+  strokeWeight(options['boundingWeight'])
 
   if (options['background']) {
     fill(1)
@@ -368,21 +494,140 @@ function drawPlot(data, xCol, yCol, x, y, w, h, userOptions) {
     noFill()
   }
 
-  if (options['joined']) {
-    beginShape()
+  if (options['message'] != null) {
+    noStroke()
+    fill(0)
+    textSize(width * 0.015)
+    text(wrapLine(options['message'], w * 0.875), x, y)
+    noFill()
   }
-  for (const point of data) {
-    var pointX = map(point[xCol], options['xRange'][0], options['xRange'][1], x - w / 2 + w * options['paddingX'] / 2, x + w / 2 - w * options['paddingX'] / 2)
-    var pointY = map(point[yCol], options['yRange'][0], options['yRange'][1], y + h / 2 - h * options['paddingY'] / 2, y - h / 2 + h * options['paddingY'] / 2)
+  else {
+    function x2h(xVal) {
+      return map(xVal, options['xRange'][0] + options['xRangeExtend'][0], options['xRange'][1] + options['xRangeExtend'][1], x - w / 2 + w * options['hOffset'] + w * options['paddingH'] / 2, x + w / 2 + w * options['hOffset'] - w * options['paddingH'] / 2)
+    }
+
+    function y2v(yVal) {
+      return map(yVal, options['yRange'][0] + options['yRangeExtend'][0], options['yRange'][1] + options['yRangeExtend'][1], y + h / 2 + h * options['vOffset'] - h * options['paddingV'] / 2, y - h / 2 + h * options['vOffset'] + h * options['paddingV'] / 2)
+    }
+
+    var hRange = [
+      x2h(options['xRange'][0] + options['xRangeExtend'][0]),
+      x2h(options['xRange'][1] + options['xRangeExtend'][1])
+    ]
+    var vRange = [
+      y2v(options['yRange'][0] + options['yRangeExtend'][0]),
+      y2v(options['yRange'][1] + options['yRangeExtend'][1])
+    ]
+
+    var axesOriginHV = [
+      options['axesOriginXY'][0] == true ? x2h(options['xRange'][0] + options['xRangeExtend'][0]) : x2h(options['axesOriginXY'][0]),
+      options['axesOriginXY'][1] == true ? y2v(options['yRange'][0] + options['yRangeExtend'][0]) : y2v(options['axesOriginXY'][1])
+    ]
+
+    stroke(0)
+    strokeWeight(2)
+    if (options['axes'][0]) {
+      line(hRange[0], axesOriginHV[1], hRange[1], axesOriginHV[1])
+    }
+    if (options['axes'][1]) {
+      line(axesOriginHV[0], vRange[0], axesOriginHV[0], vRange[1])
+    }
+    noStroke()
+
+    if (options['ticks'][0] != false) {
+      for (const tick of options['ticks'][0]) {
+        if (hRange[0] <= x2h(tick[0]) && hRange[1] * 1.01 >= x2h(tick[0])) {
+          stroke(0)
+          line(x2h(tick[0]), axesOriginHV[1] - 2.5, x2h(tick[0]), axesOriginHV[1] + 2.5)
+          noStroke()
+          fill(0)
+          textSize(width * 0.012)
+          text(str(tick[1]), x2h(tick[0]), axesOriginHV[1] + 15)
+          noFill()
+        }
+      }
+    }
+    if (options['ticks'][1] != false) {
+      for (const tick of options['ticks'][1]) {
+        if (vRange[0] >= y2v(tick[0]) && vRange[1] * 0.99 <= y2v(tick[0])) {
+          stroke(0)
+          line(axesOriginHV[0] - 2.5, y2v(tick[0]), axesOriginHV[0] + 2.5, y2v(tick[0]))
+          noStroke()
+          fill(0)
+          textSize(width * 0.012)
+          text(str(tick[1]), axesOriginHV[0] - 20, y2v(tick[0]))
+          noFill()
+        }
+      }
+    }
+
+    if (options['gridLines'][0] != false) {
+      for (const gridLine of options['gridLines'][0]) {
+        if (hRange[0] <= x2h(gridLine) && hRange[1] * 1.01 >= x2h(gridLine)) {
+          stroke(0, 0.25)
+          strokeWeight(1)
+          line(x2h(gridLine), vRange[0], x2h(gridLine), vRange[1])
+          noStroke()
+        }
+      }
+    }
+    if (options['gridLines'][1] != false) {
+      for (const gridLine of options['gridLines'][1]) {
+        if (vRange[0] >= y2v(gridLine) && vRange[1] * 0.99 <= y2v(gridLine)) {
+          stroke(0, 0.25)
+          strokeWeight(1)
+          line(hRange[0], y2v(gridLine), hRange[1], y2v(gridLine))
+          noStroke()
+        }
+      }
+    }
+
+    noStroke()
+    fill(0)
+    textSize(width * 0.013)
+    textAlign(CENTER, CENTER)
+    if (options['plotLabel'] != '') {
+      text(options['plotLabel'], x, y - h * 0.45)
+    }
+    noFill()
+    textAlign(CENTER, CENTER)
+
+    stroke(options['strokeCol'])
+    strokeWeight(options['strokeWeight'])
+
     if (options['joined']) {
-      vertex(pointX, pointY)
+      beginShape()
     }
-    if (options['points']) {
-      ellipse(pointX, pointY, 10, 10)
+
+    var minutesSinceMidnight = hour() * 60 + minute()
+
+    for (const point of data) {
+      if (point[yCol] != null) {
+        var pointX = x2h(point[xCol])
+        var pointY = y2v(point[yCol])
+        if (point[xCol] < minutesSinceMidnight) {
+          if (options['joined']) {
+            vertex(pointX, pointY)
+          }
+          if (options['points']) {
+            ellipse(pointX, pointY, options['strokeWeight'] / 2, options['strokeWeight'] / 2)
+          }
+        }
+      }
     }
-  }
-  if (options['joined']) {
-    endShape()
+    if (options['joined']) {
+      endShape()
+    }
+    if (options['dottedEnd'] && options['points'] == false) {
+      fill(options['strokeCol'])
+      ellipse(
+        x2h(roundTo(minutesSinceMidnight, 5)),
+        y2v(transposeArray(data)[yCol][transposeArray(data)[xCol].indexOf(roundTo(minutesSinceMidnight, 5))]),
+        5,
+        5
+      )
+      noFill()
+    }
   }
 }
 //#endregion
@@ -501,7 +746,7 @@ function drawInfoBox() {
   var lastEventTimestamp = (parseTimestampToList(latestMessage['timestamp'])[2] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[2] + ":" + (parseTimestampToList(latestMessage['timestamp'])[3] < 10 ? "0" : "") + parseTimestampToList(latestMessage['timestamp'])[3]
 
   var x = width * 0.0975
-  var y = height * 0.3
+  var y = height * 0.317
   var w = width * 0.18
   var h = height * 0.25
   var fontSize = width * 0.014
@@ -551,7 +796,6 @@ function drawStateVisualization() {
   drawRasPiWiring()
   drawRasPi()
   drawRadioWaves()
-  //drawDataBox()
 }
 
 function setDrawingParameters() {
@@ -833,12 +1077,21 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
 
   if (mouseOver(x, y - h * 0.125, w * 2.5, h * 0.14) && roomMessage !== '') {
     toolTip.show(roomMessage, color(1), color(0), color(0), 4, width * 0.0125, CENTER)
+    if (roomNumber != 8 && loadedData[getDatesList(0, 0)]['room_' + str(roomNumber) + '_temps'].getArray() != undefined) {
+      dataToPlot = 'room_temp'
+      roomToPlotNumber = roomNumber
+      roomToPlotName = roomName
+    }
+    else {
+      dataToPlot = 'room_temp_na'
+      roomToPlotNumber = roomNumber
+      roomToPlotName = roomName
+    }
   }
 
   fill(0)
   textSize(width * 0.013)
   text(roomName + (roomNameDecoration == '' ? '' : ' ' + roomNameDecoration), x, y - h * 0.125)
-
 }
 
 function drawFlame(x, y, w, h, colOuter, colInner, outer) {
@@ -1008,6 +1261,7 @@ function drawGasMeterAndPiping() {
         color(1), color(0), color(0), 4,
         width * 0.013, LEFT
       )
+      dataToPlot = 'gas_flow'
     }
   }
 }
@@ -1045,8 +1299,8 @@ function drawPipingAndBoiler() {
   if (mouseOver(x, y, w, h)) {
     var how = masterOnDetected ? 'manuálisan' : (decisions['albatros']['reason'] === 'vote' ? 'normál\nüzemmenetben' : 'direktben')
     var to = decisions['albatros']['decision'] > 0 ? 'be' : 'ki'
-    var performanceInfo = 'Mai hőmennyiség: '+str(totalDeliveredHeat)+' kWh\nHatékonyság: '+str(efficiency)+'%'
-    toolTip.show('Kazánok ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')'+ (gasDataAvailable && heatDataAvailable ? '\n\n'+performanceInfo: ''), color(1), color(0), color(0), 4, width * 0.0125, CENTER)
+    var performanceInfo = 'Mai hőmennyiség: ' + str(totalDeliveredHeat) + ' kWh\nHatékonyság: ' + str(efficiency) + '%'
+    toolTip.show('Kazánok ' + how + '\n' + to + 'kapcsolva.\n(' + decisions['albatros']['timestamp'] + ')' + (gasDataAvailable && heatDataAvailable ? '\n\n' + performanceInfo : ''), color(1), color(0), color(0), 4, width * 0.0125, CENTER)
   }
 
   stroke(albatrosStatus, 0, 1 - albatrosStatus)
@@ -1240,6 +1494,10 @@ function mouseOver(centerX, centerY, w, h) {
   }
 }
 
+function mousePressed() {
+  dataToPlotLocked = !dataToPlotLocked
+}
+
 function topRect(x, y, w, h) {
   rectMode(CORNER)
   let adjustedX = x - w / 2;
@@ -1256,7 +1514,6 @@ function tiltedRect(x, y, w, h, angle) {
   rect(0, 0, w, h); // Draw the rectangle
   pop(); // Restore the original drawing state
 }
-
 
 function enforceAspectRatio(aspectRatio) {
   let newWidth, newHeight;
@@ -1301,6 +1558,18 @@ function processTableIntoDict(table) {
   }
 
   return csvDictionary
+}
+
+function roundTo(val, round) {
+  return Math.round(val / round) * round;
+}
+
+function range(start, end, step = 1) {
+  let arr = [];
+  for (let i = start; i <= end; i += step) {
+    arr.push(i);
+  }
+  return arr;
 }
 
 class ToolTipBox {
