@@ -605,9 +605,9 @@ function drawPlot(data, xCol, yCol, x, y, w, h, userOptions) {
       if (point[yCol] != null) {
         var pointX = x2h(point[xCol])
         var pointY = y2v(point[yCol])
-        if (point[xCol] < minutesSinceMidnight) {
+        if (point[xCol] <= minutesSinceMidnight) {
           if (options['joined']) {
-            vertex(pointX, pointY)
+            curveVertex(pointX, pointY)
           }
           if (options['points']) {
             ellipse(pointX, pointY, options['strokeWeight'] / 2, options['strokeWeight'] / 2)
@@ -621,8 +621,8 @@ function drawPlot(data, xCol, yCol, x, y, w, h, userOptions) {
     if (options['dottedEnd'] && options['points'] == false) {
       fill(options['strokeCol'])
       ellipse(
-        x2h(roundTo(minutesSinceMidnight, 5)),
-        y2v(transposeArray(data)[yCol][transposeArray(data)[xCol].indexOf(roundTo(minutesSinceMidnight, 5))]),
+        x2h(roundTo(minutesSinceMidnight, 5) - 5),
+        y2v(transposeArray(data)[yCol][transposeArray(data)[xCol].indexOf(roundTo(minutesSinceMidnight, 5) - 5)]),
         5,
         5
       )
