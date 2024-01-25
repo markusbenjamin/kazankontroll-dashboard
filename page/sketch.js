@@ -352,7 +352,7 @@ function drawDataBox() {
           background: true,
           strokeCol: color(0.5, 0, 1),
           strokeWeight: 3,
-          plotLabel: 'Mai gázfogyasztás (m³)',
+          plotLabel: 'Mai gázfogyás (m³)',
           joined: true,
           paddingV: 0.25,
           paddingH: 0.15,
