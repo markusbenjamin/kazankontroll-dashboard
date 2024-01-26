@@ -7,6 +7,7 @@ var toolTip
 var dataToPlot
 var dataToPlotLocked
 var roomToPlotNumber
+var cycleToPlotNumber
 var noOfControlledRooms
 var masterOverrides
 var raspiConsole, raspiImage
@@ -360,6 +361,7 @@ function drawDataBox() {
           hOffset: 0.01,
           xRangeExtend: [0, 0],
           yRangeExtend: [0, 0.05],
+          yRange: [0, 0.35],
           ticks: [
             transposeArray([
               range(0 * 60, 24 * 60, 120),
@@ -382,18 +384,44 @@ function drawDataBox() {
         [[0, 0], [1, 1]], 0, 1,
         dataBoxX, dataBoxY, dataBoxW, dataBoxH,
         {
-          background: true,
           strokeCol: color(1, 0),
           message: 'Nem érhető el hőmérsékleti adat.'
         }
       )
       break;
     case 'room_temp':
+      var minTemp = min([
+        minNum(transposeArray(loadedData[getDatesList(0, 0)]['room_' + str(roomToPlotNumber) + '_temps'].getArray())[1]),
+        minNum(transposeArray(loadedData[getDatesList(0, 0)]['room_' + str(roomToPlotNumber) + '_temps'].getArray())[2])
+      ])
+      var maxTemp = max([
+        maxNum(transposeArray(loadedData[getDatesList(0, 0)]['room_' + str(roomToPlotNumber) + '_temps'].getArray())[1]),
+        maxNum(transposeArray(loadedData[getDatesList(0, 0)]['room_' + str(roomToPlotNumber) + '_temps'].getArray())[2])
+      ])
+      drawPlot(
+        loadedData[getDatesList(0, 0)]['room_' + str(roomToPlotNumber) + '_temps'].getArray(), 0, 2,
+        dataBoxX, dataBoxY, dataBoxW, dataBoxH,
+        {
+          background: true,
+          strokeCol: color(1, 0, 0),
+          strokeWeight: 3,
+          joined: true,
+          points: false,
+          curved: false,
+          paddingV: 0.25,
+          paddingH: 0.13,
+          vOffset: 0.0125,
+          hOffset: 0.01,
+          xRangeExtend: [0, 0],
+          yRangeExtend: [-1, 1],
+          yRange: [minTemp, maxTemp]
+        }
+      )
       drawPlot(
         loadedData[getDatesList(0, 0)]['room_' + str(roomToPlotNumber) + '_temps'].getArray(), 0, 1,
         dataBoxX, dataBoxY, dataBoxW, dataBoxH,
         {
-          background: true,
+          background: false,
           strokeCol: color(0.5, 0, 1),
           strokeWeight: 3,
           plotLabel: 'Mai hőmérsékleti görbe: ' + roomToPlotName,
@@ -405,6 +433,7 @@ function drawDataBox() {
           hOffset: 0.01,
           xRangeExtend: [0, 0],
           yRangeExtend: [-1, 1],
+          yRange: [minTemp, maxTemp],
           ticks: [
             transposeArray([
               range(0 * 60, 24 * 60, 120),
@@ -427,7 +456,6 @@ function drawDataBox() {
         loadedData[getDatesList(0, 0)]['external_temp'].getArray(), 0, 1,
         dataBoxX, dataBoxY, dataBoxW, dataBoxH,
         {
-          background: true,
           strokeCol: color(0.5, 0, 1),
           strokeWeight: 3,
           plotLabel: 'Mai külső hőmérséklet',
@@ -467,6 +495,7 @@ function drawPlot(data, xCol, yCol, x, y, w, h, userOptions) {
     joined: true,
     points: false,
     dottedEnd: true,
+    curved: true,
     axes: [true, true, false],
     paddingH: 0.1,
     paddingV: 0.1,
@@ -599,7 +628,7 @@ function drawPlot(data, xCol, yCol, x, y, w, h, userOptions) {
       beginShape()
     }
 
-    var minutesSinceMidnight = hour() * 60 + minute()
+    var minutesSinceMidnight = round(hour() * 60 + minute(), 5)
 
     for (const point of data) {
       if (point[yCol] != null) {
@@ -607,7 +636,7 @@ function drawPlot(data, xCol, yCol, x, y, w, h, userOptions) {
         var pointY = y2v(point[yCol])
         if (point[xCol] <= minutesSinceMidnight) {
           if (options['joined']) {
-            curveVertex(pointX, pointY)
+            options['curved'] ? curveVertex(pointX, pointY) : vertex(pointX, pointY)
           }
           if (options['points']) {
             ellipse(pointX, pointY, options['strokeWeight'] / 2, options['strokeWeight'] / 2)
@@ -620,11 +649,13 @@ function drawPlot(data, xCol, yCol, x, y, w, h, userOptions) {
     }
     if (options['dottedEnd'] && options['points'] == false) {
       fill(options['strokeCol'])
+      var breather = map(sin(map(round(millis()) % 1500, 0, 1500, 0, TWO_PI)), -1, 1, 1, 1.25)
+      var lastPos = findClosest(transposeArray(data)[xCol], minutesSinceMidnight)
       ellipse(
-        x2h(roundTo(minutesSinceMidnight, 5) - 5),
-        y2v(transposeArray(data)[yCol][transposeArray(data)[xCol].indexOf(roundTo(minutesSinceMidnight, 5) - 5)]),
-        5,
-        5
+        x2h(transposeArray(data)[xCol][lastPos]),
+        y2v(transposeArray(data)[yCol][lastPos]),
+        5 * breather,
+        5 * breather
       )
       noFill()
     }
@@ -753,7 +784,7 @@ function drawInfoBox() {
 
   var messagesPre1 = [
     kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma miatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér:\n" + wantHeatingList.join(', ')) : "Határérték feletti kinti hőmérséklet miatt nincs fűtés.")//,
+      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ')) : "Határérték feletti kinti hőmérséklet miatt nincs fűtés.")//,
     //externalTempAllow == 1 && wantHeatingCount > 0 ?
     //  (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(', ') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
     //"Utolsó esemény: " + latestMessage['message'].substring(0, latestMessage['message'].length - 1) + " (" + lastEventTimestamp + ")."
@@ -762,7 +793,7 @@ function drawInfoBox() {
 
   var messagesPre2 = []
   for (const line of messagesPre1) {
-    messagesPre2.push(wrapLine(line, w * 0.985))
+    messagesPre2.push(wrapLine(line, w * 0.8))
   }
 
   var messages = messagesPre2.join('\n\n')
@@ -1077,7 +1108,10 @@ function drawRoom(x, y, w, h, roomStatus, roomSetting, roomStatusNormalized, roo
 
   if (mouseOver(x, y - h * 0.125, w * 2.5, h * 0.14) && roomMessage !== '') {
     toolTip.show(roomMessage, color(1), color(0), color(0), 4, width * 0.0125, CENTER)
-    if (roomNumber != 8 && loadedData[getDatesList(0, 0)]['room_' + str(roomNumber) + '_temps'].getArray() != undefined) {
+    var roomTempData = loadedData[getDatesList(0, 0)]['room_' + str(roomNumber) + '_temps'].getArray()
+    var roomTempDataLoaded = loadedData[getDatesList(0, 0)]['room_' + str(roomNumber) + '_temps'].getArray() != undefined
+    var roomTempDataContainsNumbers = roomTempDataLoaded ? containsNumber(transposeArray(roomTempData)[1]) : false
+    if (roomNumber != 8 && roomTempDataLoaded && roomTempDataContainsNumbers) {
       dataToPlot = 'room_temp'
       roomToPlotNumber = roomNumber
       roomToPlotName = roomName
@@ -1867,3 +1901,24 @@ function maxNum(array) {
   // Return the maximum value, or some default (like null) if the array is empty
   return numericValues.length > 0 ? Math.max(...numericValues) : null;
 }
+
+function containsNumber(arr) {
+  return arr.some(function (element) {
+    return typeof element === 'number';
+  });
+}
+
+function findLastNumericPosition(arr) {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (typeof arr[i] === 'number') {
+      return i;
+    }
+  }
+  return -1; // Return -1 if no numeric element is found
+}
+
+function findClosest(arr, target) {
+  return arr.reduce((prev, curr, index) =>
+    Math.abs(curr - target) < Math.abs(arr[prev] - target) ? index : prev, 0);
+}
+
