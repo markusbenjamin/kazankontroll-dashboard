@@ -1,0 +1,2 @@
+- subtract gas baseline
+- cycle corrections (2.: jan 18-19, 3.: beginning of jan)
