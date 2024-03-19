@@ -10,7 +10,7 @@ var roomToPlotNumber
 var cycleToPlotNumber
 var noOfControlledRooms
 var masterOverrides
-var raspiConsole, raspiImage
+var raspiConsole, raspiImage, lastUpdateFromRaspi
 var radioCommList = []
 let activeDataFiles = []
 var formattedDataDir
@@ -55,6 +55,7 @@ function setup() {
   })
 
   raspiConsole = []
+  lastUpdateFromRaspi = null
   listenToFirebase('console/message', (data) => {
     storeRasPiConsole(data)
   })
@@ -782,23 +783,35 @@ function drawInfoBox() {
   var h = height * 0.25
   var fontSize = width * 0.014
 
-  var messagesPre1 = [
-    kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma miatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
-      (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ')) : "Határérték feletti kinti hőmérséklet miatt nincs fűtés.")//,
-    //externalTempAllow == 1 && wantHeatingCount > 0 ?
-    //  (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(', ') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
-    //"Utolsó esemény: " + latestMessage['message'].substring(0, latestMessage['message'].length - 1) + " (" + lastEventTimestamp + ")."
-  ].filter(element => element !== '')
+  var rasPiReachable = checkRaspiConnection(1, 10)
 
+  //var messagesPre1 = [
+  //  kisteremOverride || masterOnDetected ? (kisteremOverride ? "Jeltovábbítási probléma miatti felülvezérlés." : "Manuális felülvezérlés.") : (externalTempAllow == 1 ?
+  //    (wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ')) : "Határérték feletti kinti hőmérséklet miatt nincs fűtés.")//,
+  //  //externalTempAllow == 1 && wantHeatingCount > 0 ?
+  //  //  (problematicCount == 0 ? "Nincs problémás helyiség." : "Eltérések: " + problematicList.join(', ') + " (" + round(100 * problematicCount / noOfControlledRooms) + "%).") : "",
+  //  //"Utolsó esemény: " + latestMessage['message'].substring(0, latestMessage['message'].length - 1) + " (" + lastEventTimestamp + ")."
+  //].filter(element => element !== '')
+  //
+  //var messagesPre2 = []
+  //for (const line of messagesPre1) {
+  //  messagesPre2.push(wrapLine(line, w * 0.8))
+  //}
+  //
+  //var messages = messagesPre2.join('\n\n')
 
-  var messagesPre2 = []
-  for (const line of messagesPre1) {
-    messagesPre2.push(wrapLine(line, w * 0.8))
-  }
+  var message = wrapLine(
+    rasPiReachable ?
+    (
+      masterOnDetected == 1 ?
+      (
+        wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ')
+        ) : "Manuális felülvezérlés."
+    ) : "Nem éri el a vezérlés az internetet!",
+    w * 0.8
+  )
 
-  var messages = messagesPre2.join('\n\n')
-
-  h = max((countNewLines(messages) + 1) * fontSize, h)
+  h = max((countNewLines(message) + 1) * fontSize, h)
   stroke(0)
   strokeWeight(2)
   fill(1)
@@ -807,7 +820,7 @@ function drawInfoBox() {
   fill(0)
   noStroke()
   textSize(fontSize)
-  text(messages, x + width * 0.005, y)
+  text(message, x + width * 0.005, y)
 }
 
 function manageToolTip() {
@@ -1162,6 +1175,7 @@ function storeRasPiConsole(line) {
     raspiConsole.splice(0, 1)
   }
   raspiConsole.push(line)
+  lastUpdateFromRaspi = new Date().getTime()
 }
 
 function drawRasPiWiring() {
@@ -1217,9 +1231,32 @@ function drawRasPiWiring() {
   rect(width * 0.5, 1.195 * height * (cycleYPos[1] + cycleYPos[2]) / 2, width * 0.025, height * 0.026)
 }
 
+function checkRaspiConnection(time1, time2) {
+  var timesSinceRoomLastUpdate = roomLastUpdate.map(updateTime => {
+    const updateTimeString = `${year}.${updateTime.replace(' ', 'T')}:00`;
+    // Parse the date-time string to a Date object and get time in milliseconds
+    var updateTimeUnixEpoch = new Date(updateTimeUnixEpoch).getTime();
+    var now = new Date().getTime()
+    var elapsedTime = now - updateTimeUnixEpoch
+    return elapsedTime
+  });
+  var now = new Date().getTime()
+  if (
+    now - lastUpdateFromRaspi > time1 * 1000 ||
+    minNum(timesSinceRoomLastUpdate) > time2 * 1000
+  ) {
+    return false
+  }
+  else {
+    return true
+  }
+}
+
 var raspiX, raspiY
 
 function drawRasPi() {
+  var rasPiReachable = checkRaspiConnection(1, 10)
+
   raspiX = width * 0.5
   raspiY = height * (cycleYPos[1] + cycleYPos[2]) / 2 * 1.585
   var x = raspiX
@@ -1232,15 +1269,29 @@ function drawRasPi() {
   noStroke()
   rect(x - w / 2, y - h / 4, w * 0.175, h * 0.3)
 
+  var breathFreq = 2500
   fill(65 / 255, 255 / 255, 113 / 255)
+  if (rasPiReachable == false) {
+    fill(0.7, 0.7, 0.7)
+    breathFreq = 250
+  }
   strokeWeight(1)
   stroke(0)
   rect(x, y, w, h)
-  var breather = map(sin(map(round(millis()) % 2500, 0, 2500, 0, TWO_PI)), -1, 1, 0.785, 0.815)
+  var breather = map(sin(map(round(millis()) % breathFreq, 0, breathFreq, 0, TWO_PI)), -1, 1, 0.785, 0.815)
   image(raspiImage, x, y * 1.005, w * breather, w * breather);
 
   if (mouseOver(x, y, w, h)) {
-    toolTip.show(raspiConsole.slice(max(raspiConsole.length - 40, 0), raspiConsole.length).map(element => element.replace(/[\n]/g, '')).map(line => wrapLine(line, width * 0.7)).join("\n"), color(0), color(0), color(1), 1, width * 0.0075, LEFT)
+    if (rasPiReachable) {
+      toolTip.show(raspiConsole.slice(max(raspiConsole.length - 40, 0), raspiConsole.length).map(element => element.replace(/[\n]/g, '')).map(line => wrapLine(line, width * 0.7)).join("\n"), color(0), color(0), color(1), 1, width * 0.0075, LEFT)
+    }
+    else {
+      toolTip.show(
+        'Nem éri el a vezérlés az internetet!',
+        color(1), color(0), color(0), 4,
+        width * 0.012, LEFT
+      )
+    }
   }
 }
 
