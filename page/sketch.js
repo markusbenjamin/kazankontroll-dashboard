@@ -803,7 +803,7 @@ function drawInfoBox() {
   var message = wrapLine(
     rasPiReachable ?
     (
-      masterOnDetected == 1 ?
+      masterOnDetected == 0 ?
       (
         wantHeatingCount == 0 ? "Senki nem kér fűtést." : "Fűtést kér: " + wantHeatingList.join(', ')
         ) : "Manuális felülvezérlés."
