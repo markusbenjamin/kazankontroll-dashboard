@@ -1242,8 +1242,8 @@ function checkRaspiConnection(time1, time2) {
   });
   var now = new Date().getTime()
   if (
-    now - lastUpdateFromRaspi > time1 * 1000 ||
-    minNum(timesSinceRoomLastUpdate) > time2 * 1000
+    now - lastUpdateFromRaspi > time1 * 60 * 1000 ||
+    minNum(timesSinceRoomLastUpdate) > time2 * 60 * 1000
   ) {
     return false
   }
