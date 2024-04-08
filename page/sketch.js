@@ -472,13 +472,13 @@ function drawDataBox() {
               range(0, 24, 2)
             ]),
             transposeArray([
-              range(-20, 20, 2),
-              range(-20, 20, 2)
+              range(-20, 30, 2),
+              range(-20, 30, 2)
             ])
           ],
           gridLines: [
             range(0, 24 * 60, 60),
-            range(-20, 20, 1)
+            range(-20, 30, 1)
           ]
         }
       )
