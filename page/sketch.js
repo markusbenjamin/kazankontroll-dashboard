@@ -843,7 +843,7 @@ function drawStateVisualization() {
 }
 
 function setDrawingParameters() {
-  roomTempMax = 25
+  roomTempMax = 30
   roomTempMin = 10
   pipeThickness = sqrt(width * height) * 0.0075
   cyclePipeLength = 0.55
