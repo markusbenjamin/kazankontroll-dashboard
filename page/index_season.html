@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kazánkontroll Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+
+<body>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js';
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYgoiaK-Powo08GeCBkP3r1OOXXpUvQuQ",
+            authDomain: "kazankontroll-database.firebaseapp.com",
+            databaseURL: "https://kazankontroll-database-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "kazankontroll-database",
+            storageBucket: "kazankontroll-database.appspot.com",
+            messagingSenderId: "1019198013341",
+            appId: "1:1019198013341:web:621344dde73e7158113974"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        window.listenToFirebase = function (path, callback) {
+            const dataRef = ref(database, path);
+            onValue(dataRef, (snapshot) => {
+                const data = snapshot.val();
+                callback(data);
+            });
+        };
+
+        window.updateDataInFirebase = function (fullPath, value) {
+            // The last part of the full path will be the key you want to update
+            // and the parentPath will be the path to the parent object.
+            const lastSlashIndex = fullPath.lastIndexOf('/');
+            const parentPath = fullPath.substring(0, lastSlashIndex);
+            const key = fullPath.substring(lastSlashIndex + 1);
+
+            // Create a reference to the parent path
+            const parentRef = ref(database, parentPath);
+
+            // Create an updates object with the key and value
+            let updates = {};
+            updates[key] = value;
+
+            // Perform the update
+            update(parentRef, updates).then(() => {
+                console.log("Data updated successfully at " + fullPath);
+            }).catch((error) => {
+                console.error("Failed to update data at " + fullPath + ":", error);
+            });
+        };
+
+    </script>
+    <script>
+        // JavaScript to toggle overflow based on window size
+        function adjustOverflow() {
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Listen for resize events
+        window.addEventListener('resize', adjustOverflow);
+
+        // Set the initial state
+        window.onload = adjustOverflow;
+    </script>
+    <div id="canvas-container"></div>
+    <script src="sketch.js"></script>
+</body>
+
+</html>
