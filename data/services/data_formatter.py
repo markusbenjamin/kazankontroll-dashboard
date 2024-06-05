@@ -649,8 +649,8 @@ if __name__ == "__main__":
     #    plot(data_to_plot, scatter = False, join = True)
 
     if True:
-        start_day = datetime(2024, 3, 30)
-        end_day = datetime(2024, 3, 30)
+        start_day = datetime(2024, 1, 20)
+        end_day = datetime(2024, 1, 20)
         #end_day = datetime(2024, 2, 17)
         day = start_day
         while day <= end_day:
