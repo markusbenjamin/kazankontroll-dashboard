@@ -1,0 +1,8 @@
+"ovi","hőmérséklet beállított felett: 87%","hőmérséklet beállított alatt: 13%","fűtöttség egyezik állapottal: 46%","fűtünk amikor nem kéne: 53%","nem fűtünk, amikor kéne: 12%"
+"PK","hőmérséklet beállított felett: 94%","hőmérséklet beállított alatt: 6%","fűtöttség egyezik állapottal: 44%","fűtünk amikor nem kéne: 56%","nem fűtünk, amikor kéne: 8%"
+"SZGK","hőmérséklet beállított felett: 94%","hőmérséklet beállított alatt: 6%","fűtöttség egyezik állapottal: 27%","fűtünk amikor nem kéne: 71%","nem fűtünk, amikor kéne: 6%"
+"Gólyairoda","hőmérséklet beállított felett: 77%","hőmérséklet beállított alatt: 22%","fűtöttség egyezik állapottal: 53%","fűtünk amikor nem kéne: 43%","nem fűtünk, amikor kéne: 16%"
+"Mérce","hőmérséklet beállított felett: 93%","hőmérséklet beállított alatt: 6%","fűtöttség egyezik állapottal: 35%","fűtünk amikor nem kéne: 64%","nem fűtünk, amikor kéne: 9%"
+"vendégtér","hőmérséklet beállított felett: 99%","hőmérséklet beállított alatt: 1%","fűtöttség egyezik állapottal: 15%","fűtünk amikor nem kéne: 66%","nem fűtünk, amikor kéne: 0%"
+"kisterem","hőmérséklet beállított felett: 69%","hőmérséklet beállított alatt: 31%","fűtöttség egyezik állapottal: 40%","fűtünk amikor nem kéne: 38%","nem fűtünk, amikor kéne: 7%"
+"Oktopusz 1","hőmérséklet beállított felett: 62%","hőmérséklet beállított alatt: 32%","fűtöttség egyezik állapottal: 33%","fűtünk amikor nem kéne: 46%","nem fűtünk, amikor kéne: 4%"

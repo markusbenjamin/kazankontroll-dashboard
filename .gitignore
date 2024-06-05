@@ -2,7 +2,7 @@
 # data/raw/
 
 # Ignore analysis directory
-analysis/
+# analysis/
 
 # Ignore dev directory
-dev/
+# dev/

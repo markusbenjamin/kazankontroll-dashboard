@@ -448,6 +448,162 @@ def process_and_save_heatmeter_readings(daystamp = datetime.now().strftime("%Y-%
             writer.writerow(entry.split(','))
         line_count += 1
 
+def process_and_save_heatmeter_readings_net(daystamp = datetime.now().strftime("%Y-%m-%d"), minute_step = 5, time_offset = 0):
+    processed_day = datetime.strptime(daystamp, "%Y-%m-%d")
+    belief_states = [[],[],[],[]]
+    last_prior_times = [None, None, None, None]
+    for load_day in [processed_day + timedelta(days=-1), processed_day]:
+        with open(os.path.join(data_raw_path, load_day.strftime("%Y-%m-%d"),"heatmeter_belief_state_net.csv"),'r') as belief_file:
+            for line in belief_file.readlines():
+                cycle_parts = line.split(';')
+
+                for cycle in range(1, 5):
+                    timed_prior = [
+                            (datetime.strptime(cycle_parts[cycle - 1].split(',', maxsplit = 1)[0],"%Y%m%d%H%M") - processed_day).total_seconds()/60,
+                            ast.literal_eval(cycle_parts[cycle - 1].split(',', maxsplit = 1)[1])
+                        ]
+                    if timed_prior[0] != last_prior_times[cycle - 1]:
+                        belief_states[cycle - 1].append(timed_prior)
+                        last_prior_times[cycle - 1] = timed_prior[0]
+
+    pump_state_changes = [[],[],[],[]]
+    last_state_for_pump = [-1,-1,-1,-1] # To only load changes in state
+    for load_day in [processed_day + timedelta(days=-1), processed_day]:
+        with open(os.path.join(data_raw_path, load_day.strftime("%Y-%m-%d"),'pump_states.csv'), 'r') as file:
+            for line in file.readlines():
+                pump_statechange_time = (datetime.strptime(f'{load_day.strftime("%Y-%m-%d ") }{line.strip().split(",")[0]}',"%Y-%m-%d %H:%M:%S")-processed_day).total_seconds()/60
+                cycle = int(line.strip().split(",")[1])
+                state = int(line.strip().split(",")[2])
+                if last_state_for_pump[cycle - 1] != state:
+                    pump_state_changes[cycle - 1].append([pump_statechange_time, state])
+                    last_state_for_pump[cycle - 1] = state
+
+    heating_periods = [[],[],[],[]]
+    for cycle in range(1,5):
+        start_time = None
+        for time, status in pump_state_changes[cycle - 1]:
+            if status == 1 and start_time is None:
+                start_time = time
+            elif status == 0 and start_time is not None:
+                heating_periods[cycle - 1].append((start_time, time))
+                start_time = None
+
+    epost_estimates = [[],[],[],[]]
+    for cycle in range(1,5):
+        for belief_state in belief_states[cycle - 1]:
+            epost_estimate = [
+                belief_state[0],
+                round(sum(key * value for key, value in belief_state[1].items()))
+            ]
+            epost_estimates[cycle - 1].append(epost_estimate)
+
+    heating_signposts = [[],[],[],[]]
+    for cycle in range(1,5):
+        for heating_period in heating_periods[cycle - 1]:
+            preceding, succeeding = find_closest_in_nested(epost_estimates[cycle - 1],heating_period[0],0)
+            if preceding != 'n':
+                heating_signposts[cycle - 1].append([heating_period[0],preceding[1]])
+    
+    heat_stock = []
+    for cycle in range(1,5):
+        heat_stock.append(sorted(epost_estimates[cycle - 1] + heating_signposts[cycle - 1]))
+
+    interpolation_base = heat_stock
+    minute_step = 5
+    heat_stock_interpolated = []
+    line_count = 0
+    for minute in range(0, 24*60, minute_step):
+        line = [minute]
+        for cycle in range(1,5):
+            preceding, succeeding = find_closest_in_nested(interpolation_base[cycle - 1],minute,0)
+            val = 'n'
+            if preceding != 'n':
+                preceding_time = preceding[0]
+                preceding_state = preceding[1]
+                if succeeding != 'n':
+                    succeeding_time = succeeding[0]
+                    succeeding_state = succeeding[1]
+                    val = preceding_state + (succeeding_state - preceding_state)*(minute - preceding_time)/(succeeding_time - preceding_time)
+                else:
+                    val = preceding_state
+
+            line.append(val)
+        
+        heat_stock_interpolated.append(line)
+        entry = f"{minute},{line[1]},{line[2]},{line[3]},{line[4]}"
+        
+        save_path = data_formatted_path+"/"+daystamp+"/"
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        if line_count == 0:
+            open(f'{save_path}/heat_stock_net.csv', 'w', newline='')
+
+        with open(f'{save_path}/heat_stock_net.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(entry.split(','))
+        line_count += 1
+
+    heat_power_raw = [[],[],[],[]]
+    time_step = 1
+    for minute in range(0, 24*60 - time_step, time_step):
+        for cycle in range(4):
+            preceding, succeeding = find_closest_in_nested(heat_stock_interpolated, minute ,0)
+            if preceding != 'n' and succeeding != 'n':
+                preceding_time = preceding[0]
+                preceding_stock = preceding[cycle + 1]
+                succeeding_time = succeeding[0]
+                succeeding_stock = succeeding[cycle + 1]
+
+                time = (preceding_time + succeeding_time) / 2
+                power = (succeeding_stock - preceding_stock) / (succeeding_time - preceding_time)
+
+                heat_power_raw[cycle].append([time, power])
+    
+    power_smooth_window = 60
+    heat_power_smooth = [[],[],[],[]]
+    for minute in range(0, 24*60 - time_step, time_step):
+        for cycle in range(4):
+            power_smoothed = list(map(mean,transpose(select(heat_power_raw[cycle], lambda x: minute - power_smooth_window < x[0] <= minute))))
+            if power_smoothed:
+                heat_power_smooth[cycle].append([minute, power_smoothed[1]])
+
+    heat_power_interpolated = []
+    line_count = 0
+    for minute in range(minute_step,24*60,minute_step):
+        cycle_entries = ['n','n','n','n']
+        for cycle in range(4):
+            preceding, succeeding = find_closest_in_nested(heat_power_smooth[cycle], minute ,0)
+            if preceding != 'n' and succeeding != 'n':
+                preceding_time = preceding[0]
+                preceding_power = preceding[1]
+                succeeding_time = succeeding[0]
+                succeeding_power = succeeding[1]
+                interpolating_factor = (minute - preceding_time)/(succeeding_time - preceding_time)
+                cycle_entries[cycle] = round(preceding_power*(1-interpolating_factor) + succeeding_power*interpolating_factor,5)
+            elif preceding != 'n':
+                preceding_time = preceding[0]
+                preceding_power = preceding[1]
+                cycle_entries[cycle] = round(preceding_power,5)
+            else:
+                cycle_entries[cycle] = 0
+            
+        heat_power_interpolated.append([minute,cycle_entries[0],cycle_entries[1],cycle_entries[2],cycle_entries[3]])
+        entry = f"{minute},{cycle_entries[0]},{cycle_entries[1]},{cycle_entries[2]},{cycle_entries[3]}"
+        
+        save_path = data_formatted_path+"/"+daystamp+"/"
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        if line_count == 0:
+            open(f'{save_path}/heat_flow_net.csv', 'w', newline='')
+
+        with open(f'{save_path}/heat_flow_net.csv', 'a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(entry.split(','))
+        line_count += 1
+
+
 #def plot(datasets, scatter = True, join = False): #DEV
 #    for dataset in datasets:
 #        dataset = transpose(dataset)
@@ -492,16 +648,16 @@ if __name__ == "__main__":
     #    data_to_plot.append(transpose([transpose(heat_stock_interpolated)[0],transpose(heat_stock_interpolated)[cycle]]))
     #    plot(data_to_plot, scatter = False, join = True)
 
-    if False:
-        start_day = datetime(2023, 12, 11)
-        end_day = datetime(2023, 12, 11)
+    if True:
+        start_day = datetime(2024, 3, 30)
+        end_day = datetime(2024, 3, 30)
+        #end_day = datetime(2024, 2, 17)
         day = start_day
         while day <= end_day:
             print(day.strftime("%m-%d"))
             try:
                 pass
-                process_and_save_heatmeter_readings(daystamp = day.strftime("%Y-%m-%d"))
-                #os.remove(os.path.join(data_raw_path, day.strftime("%Y-%m-%d"),"heatmeter_readouts.csv"))
+                process_and_save_heatmeter_readings_net(daystamp = day.strftime("%Y-%m-%d"))
             except Exception as e:
                 print(f"Couldn't format heat data due to {e}.")
             day = day + timedelta(days = 1)
