@@ -208,8 +208,7 @@ function getDatesList(startDaysAgo, endDaysAgo) {
     datesList.push(getFormattedDate(date));
   }
 
-  //return datesList;
-  return ['2024-01-20']
+  return datesList;
 }
 
 function generateFormattedDataFileURL(date, dataFileName) {
@@ -1334,7 +1333,6 @@ function drawGasMeterAndPiping() {
 
     var energyContent = round(burntVolume * 1000 * 34 / 3600)
     var price = burntVolume * 11 * 35 + burntVolume * 30
-    var price = 400;
 
     var message = [
       'Ma elégett gáz: ' + str(burntVolume) + ' m³',
